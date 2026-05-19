@@ -35,7 +35,7 @@ class TelaRF08DashboardUsuario : AppCompatActivity() {
         }
 
         btnNotificacao.setOnClickListener {
-            startActivity(Intent(this, TelaRF20Notificacoes::class.java))
+            startActivity(Intent(this, TelaRF14Notificacoes::class.java))
         }
 
         // Ações Rápidas
@@ -56,7 +56,7 @@ class TelaRF08DashboardUsuario : AppCompatActivity() {
         }
 
         btnHistorico.setOnClickListener {
-            startActivity(Intent(this, TelaRF21Historico::class.java))
+            startActivity(Intent(this, TelaRF15Historico::class.java))
         }
 
         btnStatusAluguel.setOnClickListener {
