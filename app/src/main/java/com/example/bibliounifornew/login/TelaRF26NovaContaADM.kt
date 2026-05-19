@@ -8,15 +8,14 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.bibliounifornew.R
 
-class TelaRF27NovaContaADM : AppCompatActivity() {
+class TelaRF26NovaContaADM : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.telarf27_nova_conta_adm)
+        setContentView(R.layout.telarf26_nova_conta_adm)
 
         val edtNomeCompleto = findViewById<EditText>(R.id.editNomeCompletoAdm)
         val edtNomeUsuario = findViewById<EditText>(R.id.editNomeUsuarioAdm)
@@ -38,11 +37,27 @@ class TelaRF27NovaContaADM : AppCompatActivity() {
 
         var senhaVisivel = false
         iconOlhoSenha.setOnClickListener {
-            senhaVisivel = !senhaVisivel
             if (senhaVisivel) {
-                edtSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                // ESCONDER
+                edtSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                iconOlhoSenha.setImageResource(R.drawable.ic_eye_closed)
+
+                senhaVisivel = false
+
             } else {
-                edtSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                // MOSTRAR
+                edtSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                iconOlhoSenha.setImageResource(R.drawable.ic_eye_open)
+
+                senhaVisivel = true
             }
             edtSenha.setSelection(edtSenha.text.length)
         }
@@ -50,10 +65,27 @@ class TelaRF27NovaContaADM : AppCompatActivity() {
         var confirmaVisivel = false
         iconOlhoConfirma.setOnClickListener {
             confirmaVisivel = !confirmaVisivel
-            if (confirmaVisivel) {
-                edtConfirmaSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            if (senhaVisivel) {
+
+                // ESCONDER
+                edtConfirmaSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                iconOlhoConfirma.setImageResource(R.drawable.ic_eye_closed)
+
+                senhaVisivel = false
+
             } else {
-                edtConfirmaSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                // MOSTRAR
+                edtConfirmaSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                iconOlhoConfirma.setImageResource(R.drawable.ic_eye_open)
+
+                senhaVisivel = true
             }
             edtConfirmaSenha.setSelection(edtConfirmaSenha.text.length)
         }

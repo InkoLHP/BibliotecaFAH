@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 
 class TelaRF19Solicitacoes : AppCompatActivity() {
@@ -13,9 +12,6 @@ class TelaRF19Solicitacoes : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf19_solicitacoes)
 
-        // Padronização da Navegação e Cabeçalho
-        NavigationUtils.setupTopBar(this)
-        NavigationUtils.setupBottomNavigation(this)
 
         // 1. Localizar os botões pelos IDs do XML
         val btnPdf = findViewById<Button>(R.id.buttonSolicitarPdf)

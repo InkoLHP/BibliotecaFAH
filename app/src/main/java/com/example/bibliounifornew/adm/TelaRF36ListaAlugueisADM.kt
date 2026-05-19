@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adm.TelaRF37InfoLivroADM
 
@@ -12,9 +11,6 @@ class TelaRF36ListaAlugueisADM : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf36_lista_alugueis_adm)
-
-        // 👇 BARRA ADM
-        NavigationUtils.setupAdminNavigation(this)
 
         // 1. Encontrar o botão pelo ID que está no XML
         val botaoVerLivro1 = findViewById<Button>(R.id.btnVerLivro1)

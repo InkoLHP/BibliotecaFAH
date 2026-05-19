@@ -215,7 +215,7 @@
     <string name="label_quantidade_exemplares">Quantidade de Exemplares</string>
     <string name="hint_quantidade_exemplares">Quantidade de Exemplares...</string>
     <string name="btn_editar_mais_infos">Editar mais informações</string>
-    <string name="erro_preencha_campos">? Preencha todos os campos\n   para continuar</string>
+    <string name="erro_preencha_campos">Preencha todos os campos\n   para continuar</string>
 
     <string name="titulo_adicionar_midia_extras">Adicionar Mídia - Extras</string>
     <string name="label_quantidade_paginas">Quantidade de Páginas:</string>

@@ -262,7 +262,7 @@
                                 android:textColor="@color/biblio_red"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:background="#CCFFFFFF" />
+                                android:background="@color/white" />
                         </FrameLayout>
                     </com.google.android.material.card.MaterialCardView>
 

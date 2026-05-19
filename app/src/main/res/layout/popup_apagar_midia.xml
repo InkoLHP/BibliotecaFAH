@@ -109,9 +109,9 @@
                     android:id="@+id/iconMostrarSenha"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:src="@drawable/ic_eye"
+                    android:src="@drawable/ic_eye_open"
                     android:alpha="0.6"
-                    app:tint="@color/black" />
+                    app:tint="@color/biblio_blue" />
 
             </LinearLayout>
 

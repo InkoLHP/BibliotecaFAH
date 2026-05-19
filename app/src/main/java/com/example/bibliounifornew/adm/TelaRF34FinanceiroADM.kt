@@ -2,7 +2,6 @@ package com.example.bibliounifornew.adm
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 
 class TelaRF34FinanceiroADM : AppCompatActivity() {
@@ -12,8 +11,5 @@ class TelaRF34FinanceiroADM : AppCompatActivity() {
 
         // Mantive o nome do layout exatamente como você enviou
         setContentView(R.layout.telarf34_finaceiro_adm)
-
-        // 👇 BARRA ADM
-        NavigationUtils.setupAdminNavigation(this)
     }
 }

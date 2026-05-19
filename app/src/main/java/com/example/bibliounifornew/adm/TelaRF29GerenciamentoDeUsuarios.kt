@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adm.TelaRF30UsuariosParaADM
 
@@ -25,8 +24,5 @@ class TelaRF29GerenciamentoDeUsuarios : AppCompatActivity() {
             val intent = Intent(this, TelaRF30UsuariosParaADM::class.java)
             startActivity(intent)
         }
-
-        // 👇 BARRA ADM
-        NavigationUtils.setupAdminNavigation(this)
     }
 }

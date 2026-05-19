@@ -2,9 +2,11 @@ package com.example.bibliounifornew.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -21,13 +23,16 @@ class TelaRF03LoginAluno : AppCompatActivity() {
         val email = findViewById<EditText>(R.id.editEmail)
         val senha = findViewById<EditText>(R.id.editSenha)
 
-        // BOTÃO
+        // BOTÔES
         val botaoEntrar = findViewById<Button>(R.id.buttonEntrar)
+        val MostrarSenha = findViewById<ImageView>(R.id.iconOlhoSenha)
 
         // TEXTOS
         val erro = findViewById<TextView>(R.id.textErroLogin)
         val criarConta = findViewById<TextView>(R.id.textCriarConta)
         val esqueceuSenha = findViewById<TextView>(R.id.textEsqueceuSenha)
+
+        erro.visibility = View.GONE
 
         // LOGIN
         botaoEntrar.setOnClickListener {
@@ -40,7 +45,8 @@ class TelaRF03LoginAluno : AppCompatActivity() {
             // Base de dados mockada
             val usuariosValidos = mapOf(
                 "teste@email.com" to "12345678",
-                "anderson.link.crush@hotmail.com" to "123456"
+                "anderson.link.crush@hotmail.com" to "123456",
+                "1" to "2"
             )
 
             when {
@@ -63,13 +69,13 @@ class TelaRF03LoginAluno : AppCompatActivity() {
             }
         }
 
-        // CRIAR CONTA -> TelaRF05
+        // CRIAR CONTA -> TelaRF04
         criarConta.setOnClickListener {
             val intent = Intent(this, TelaRF04CadastroNovoUsuario::class.java)
             startActivity(intent)
         }
 
-        // ESQUECEU SENHA -> TelaRF06
+        // ESQUECEU SENHA -> TelaRF05
         esqueceuSenha.setOnClickListener {
             val intent = Intent(this, TelaRF05RecuperacaoSenha::class.java)
             startActivity(intent)
@@ -83,6 +89,37 @@ class TelaRF03LoginAluno : AppCompatActivity() {
 
         senha.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) erro.visibility = View.GONE
+        }
+
+        var senhaVisivel = false
+
+        //Mostar senha
+        MostrarSenha.setOnClickListener {
+            if (senhaVisivel) {
+
+                // ESCONDER SENHA
+                senha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                MostrarSenha.setImageResource(R.drawable.ic_eye_closed)
+
+                senhaVisivel = false
+
+            } else {
+
+                // MOSTRAR SENHA
+                senha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                MostrarSenha.setImageResource(R.drawable.ic_eye_open)
+
+                senhaVisivel = true
+            }
+
+            // Mantém cursor no final
+            senha.setSelection(senha.text.length)
         }
     }
 }

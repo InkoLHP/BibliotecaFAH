@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 
 class TelaRF30UsuariosParaADM : AppCompatActivity() {
@@ -15,10 +14,6 @@ class TelaRF30UsuariosParaADM : AppCompatActivity() {
 
         // 🔹 Nome do XML CORRETO
         setContentView(R.layout.telarf30_usuariosparaadm)
-
-        // Padronização da Navegação ADM
-        NavigationUtils.setupAdminTopBar(this)
-        NavigationUtils.setupAdminBottomNavigation(this)
 
         // Botões (IDs do seu XML)
         val btnSolicitacoes = findViewById<Button>(R.id.buttonSolicitacoes)
@@ -41,7 +36,5 @@ class TelaRF30UsuariosParaADM : AppCompatActivity() {
             Toast.makeText(this, "Conta excluída (simulação)", Toast.LENGTH_SHORT).show()
         }
 
-        // 👇 BARRA ADM
-        NavigationUtils.setupAdminNavigation(this)
     }
 }

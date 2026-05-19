@@ -76,7 +76,7 @@
                     android:inputType="textPassword"
                     android:paddingHorizontal="14dp"
                     android:textColor="@color/black"
-                    android:textColorHint="@color/biblio_detalhes"
+                    android:textColorHint="@color/black"
                     android:textSize="15sp" />
 
             </com.google.android.material.textfield.TextInputLayout>

@@ -60,7 +60,7 @@ class TelaRF08DashboardUsuario : AppCompatActivity() {
         }
 
         btnStatusAluguel.setOnClickListener {
-            startActivity(Intent(this, TelaRF19::class.java))
+            startActivity(Intent(this, TelaRF19Solicitacoes::class.java))
         }
 
         btnSair.setOnClickListener {

@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 
 class TelaRF32LivrosCRUD : AppCompatActivity() {
@@ -26,7 +25,5 @@ class TelaRF32LivrosCRUD : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // 👇 BARRA ADM PADRONIZADA
-        NavigationUtils.setupAdminNavigation(this)
     }
 }

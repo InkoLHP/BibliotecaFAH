@@ -70,8 +70,8 @@
             android:contentDescription="@string/desc_mostrar_ocultar_senha"
             android:focusable="true"
             android:padding="12dp"
-            android:src="@drawable/ic_eye_minimal"
-            android:tint="@color/biblio_blue"/>
+            android:src="@drawable/ic_eye_open"
+            app:tint="@color/biblio_blue"/>
 
     </RelativeLayout>
 

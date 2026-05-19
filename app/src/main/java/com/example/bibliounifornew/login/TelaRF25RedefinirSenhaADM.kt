@@ -12,11 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.bibliounifornew.R
 import com.google.android.material.button.MaterialButton
 
-class TelaRF26RedefinirSenhaADM : AppCompatActivity() {
+class TelaRF25RedefinirSenhaADM : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.telarf26_redefinir_senha_adm)
+        setContentView(R.layout.telarf25_redefinir_senha_adm)
 
         // CAMPOS
         val senhaNova = findViewById<EditText>(R.id.editSenhaNova)
@@ -48,11 +48,26 @@ class TelaRF26RedefinirSenhaADM : AppCompatActivity() {
             senhaVisivel = !senhaVisivel
 
             if (senhaVisivel) {
+
+                // ESCONDER
                 senhaNova.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                olhoSenha.setImageResource(R.drawable.ic_eye_closed)
+
+                senhaVisivel = false
+
             } else {
+
+                // MOSTRAR
                 senhaNova.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                olhoSenha.setImageResource(R.drawable.ic_eye_open)
+
+                senhaVisivel = true
             }
 
             senhaNova.setSelection(senhaNova.text.length)
@@ -63,12 +78,27 @@ class TelaRF26RedefinirSenhaADM : AppCompatActivity() {
 
             confirmarVisivel = !confirmarVisivel
 
-            if (confirmarVisivel) {
+            if (senhaVisivel) {
+
+                // ESCONDER
                 confirmarSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                olhoConfirmar.setImageResource(R.drawable.ic_eye_closed)
+
+                senhaVisivel = false
+
             } else {
+
+                // MOSTRAR
                 confirmarSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                olhoConfirmar.setImageResource(R.drawable.ic_eye_open)
+
+                senhaVisivel = true
             }
 
             confirmarSenha.setSelection(confirmarSenha.text.length)

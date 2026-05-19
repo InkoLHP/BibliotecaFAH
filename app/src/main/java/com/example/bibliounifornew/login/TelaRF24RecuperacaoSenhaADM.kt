@@ -5,11 +5,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.usuario.TelaRF08DashboardUsuario
 
 class TelaRF24RecuperacaoSenhaADM : AppCompatActivity() {
 
@@ -50,7 +48,8 @@ class TelaRF24RecuperacaoSenhaADM : AppCompatActivity() {
                 }
 
                 else -> {
-                    //vai pra tela de digitar o codigo
+                    val intent = Intent(this, TelaRF25RedefinirSenhaADM::class.java)
+                    startActivity(intent)
                 }
             }
         }

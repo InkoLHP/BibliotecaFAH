@@ -2,7 +2,6 @@ package com.example.bibliounifornew.usuario
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 
 class TelaRF13VerMaisLivro : AppCompatActivity() {
@@ -10,9 +9,6 @@ class TelaRF13VerMaisLivro : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf13_telavermaislivro)
 
-        // Padronização da Navegação e Cabeçalho
-        NavigationUtils.setupTopBar(this)
-        NavigationUtils.setupBottomNavigation(this)
 
 
     }

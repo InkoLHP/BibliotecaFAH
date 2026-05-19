@@ -256,7 +256,6 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         app:layout_constraintEnd_toStartOf="@id/menu2"
-                        app:layout_constraintStart_of="@id/cover2"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toEndOf="@id/cover2" />
 

@@ -3,7 +3,6 @@ package com.example.bibliounifornew.adm
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 import com.google.android.material.button.MaterialButton
 
@@ -19,8 +18,5 @@ class TelaRF33InfosAdicionais : AppCompatActivity() {
             val intent = Intent(this, TelaRF33Versoes::class.java)
             startActivity(intent)
         }
-
-        // 👇 BARRA ADM
-        NavigationUtils.setupAdminNavigation(this)
     }
 }

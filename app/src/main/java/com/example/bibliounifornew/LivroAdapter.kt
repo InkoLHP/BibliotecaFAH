@@ -15,14 +15,14 @@ class LivroAdapter(
 ) : RecyclerView.Adapter<LivroAdapter.LivroViewHolder>() {
 
     class LivroViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imgLivro: ImageView = view.findViewById(R.id.imgLivro)
+        val imgLivro: ImageView = view.findViewById(R.id.imgCapaLivro)
         val textTitulo: TextView = view.findViewById(R.id.textTituloLivro)
         val textAutor: TextView = view.findViewById(R.id.textAutorLivro)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LivroViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_livro_dashboard, parent, false)
+            .inflate(R.layout.item_book_card, parent, false)
         return LivroViewHolder(view)
     }
 

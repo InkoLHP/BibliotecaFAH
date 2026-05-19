@@ -9,7 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifor.data.AppDatabase
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.usuario.TelaRF19Solicitacoes
 import kotlinx.coroutines.launch
@@ -23,10 +22,6 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.telarf12_teladolivro)
-
-        // Padronização da Navegação e Cabeçalho
-        NavigationUtils.setupTopBar(this)
-        NavigationUtils.setupBottomNavigation(this)
 
         val livroId = intent.getIntExtra("LIVRO_ID", -1)
         if (livroId != -1) {

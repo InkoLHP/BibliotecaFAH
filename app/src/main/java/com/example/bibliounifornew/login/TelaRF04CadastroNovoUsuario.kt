@@ -1,21 +1,21 @@
 package com.example.bibliounifornew.login
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.util.Patterns
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifor.data.AppDatabase
 import com.example.bibliounifor.data.Usuario
 import com.example.bibliounifornew.R
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch
 
 class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
@@ -30,11 +30,15 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
     private lateinit var btnCriar: Button
     private lateinit var btnEntreAqui: TextView
 
+    private lateinit var bntOlhoSenha: ImageView
+
+    private lateinit var bntOlhoConfirmarSenha: ImageView
+
+
     private val db by lazy { AppDatabase.Companion.getDatabase(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.telarf04_cadastrar_novo_usuario)
 
         etNome = findViewById(R.id.editTextNome)
@@ -46,6 +50,8 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
         tvErroSenha = findViewById(R.id.tvErroSenha)
         btnEntreAqui = findViewById(R.id.textEntreAqui)
         btnCriar = findViewById(R.id.btnCriar)
+        bntOlhoSenha = findViewById(R.id.iconOlhoSenha)
+        bntOlhoConfirmarSenha = findViewById(R.id.iconOlhoConfirmarSenha)
 
         btnCriar.setOnClickListener {
             validarECadastrar()
@@ -54,6 +60,71 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
         btnEntreAqui.setOnClickListener {
             irParaLogin()
         }
+
+        tvErroEmail.visibility = View.GONE
+        tvErroSenha.visibility = View.GONE
+
+        var senhaVisivel = false
+        var confirmarSenhaVisivel = false
+
+        //Mostrar Senha
+        bntOlhoSenha.setOnClickListener {
+
+            if (senhaVisivel) {
+
+                // ESCONDER
+                etSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                bntOlhoSenha.setImageResource(R.drawable.ic_eye_closed)
+
+                senhaVisivel = false
+
+            } else {
+
+                // MOSTRAR
+                etSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                bntOlhoSenha.setImageResource(R.drawable.ic_eye_open)
+
+                senhaVisivel = true
+            }
+
+            etSenha.setSelection(etSenha.text.length)
+        }
+
+        bntOlhoConfirmarSenha.setOnClickListener {
+
+            if (confirmarSenhaVisivel) {
+
+                // ESCONDER
+                etConfirmaSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+                bntOlhoConfirmarSenha.setImageResource(R.drawable.ic_eye_closed)
+
+                confirmarSenhaVisivel = false
+
+            } else {
+
+                // MOSTRAR
+                etConfirmaSenha.inputType =
+                    InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+                bntOlhoConfirmarSenha.setImageResource(R.drawable.ic_eye_open)
+
+                confirmarSenhaVisivel = true
+            }
+
+            etConfirmaSenha.setSelection(etConfirmaSenha.text.length)
+        }
+
+
     }
 
     private fun validarECadastrar() {
@@ -98,25 +169,36 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
                             senha = senha
                         )
                     )
-                    mostrarPopUpSucesso()
+                    mostrarPopupSucesso()
                 }
             }
         }
     }
 
-    private fun mostrarPopUpSucesso() {
-        val dialog = Dialog(this)
+    private fun mostrarPopupSucesso() {
+        println("POP UP ABRIU")
+
+        val dialog = android.app.Dialog(this)
+
         dialog.setContentView(R.layout.popup_sucesso_cadastro)
+
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.setCancelable(false)
 
         // BOTÃO DO POPUP
-        val botaoRetornar = dialog.findViewById<Button>(R.id.btnRetorneLogin)
+        val botaoRetornar =
+            dialog.findViewById<MaterialButton>(R.id.btnRetorneLogin)
 
         botaoRetornar.setOnClickListener {
+
+            val intent = Intent(this, TelaRF03LoginAluno::class.java)
+
+            startActivity(intent)
+
             dialog.dismiss()
+
             finish()
         }
+
         dialog.show()
     }
 

@@ -1,10 +1,10 @@
 package com.example.bibliounifor.data
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room3.Dao
+import androidx.room3.Entity
+import androidx.room3.Insert
+import androidx.room3.PrimaryKey
+import androidx.room3.Query
 
 @Entity(tableName = "usuarios")
 data class Usuario(

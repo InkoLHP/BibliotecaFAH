@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/biblio_bg"
-    tools:context=".TelaRF42VerificarMidia">
+    tools:context=".adm.TelaRF33CadastroDeLivros">
 
     <!-- HEADER -->
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -28,7 +28,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BiblioUnifor">
         <activity
-            android:name=".login.TelaRF26RedefinirSenhaADM"
+            android:name=".login.TelaRF25RedefinirSenhaADM"
             android:exported="false" />
         <activity
             android:name=".Appnavigation00Activity"
@@ -40,7 +40,7 @@
             android:name=".login.TelaRF07RedefinirSenha"
             android:exported="false" />
         <activity
-            android:name=".login.TelaRF27NovaContaADM"
+            android:name=".login.TelaRF26NovaContaADM"
             android:exported="false" />
         <activity
             android:name=".adm.TelaRF38ConfigADM"
@@ -160,7 +160,7 @@
             android:name=".TelaLivroBtnAudiobook"
             android:exported="false" />
         <activity
-            android:name=".TelaRF39RedefinirADMInterno"
+            android:name=".adm.TelaRF39RedefinirADMInterno"
             android:exported="false" />
         <activity
             android:name=".TelaRF42VerificarMidia"

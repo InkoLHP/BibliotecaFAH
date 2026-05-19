@@ -3,9 +3,8 @@ package com.example.bibliounifornew.adm
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.TelaRF39RedefinirADMInterno
+import com.example.bibliounifornew.adm.TelaRF39RedefinirADMInterno
 import com.example.bibliounifornew.login.TelaRF02Intermediaria
 import com.google.android.material.button.MaterialButton
 
@@ -15,8 +14,6 @@ class TelaRF38ConfigADM : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf38_config_adm)
 
-        // 👇 Padronização da Navegação ADM
-        NavigationUtils.setupAdminNavigation(this)
 
         // Botões específicos da tela de configuração
         val btnVoltarDashboard = findViewById<MaterialButton>(R.id.btnVoltarDashboard)

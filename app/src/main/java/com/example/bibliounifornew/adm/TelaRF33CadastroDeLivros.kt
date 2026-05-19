@@ -7,9 +7,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.TelaRF35_1Data
 import com.google.android.material.button.MaterialButton
 
 class TelaRF33CadastroDeLivros : AppCompatActivity() {
@@ -30,10 +28,7 @@ class TelaRF33CadastroDeLivros : AppCompatActivity() {
         val tvErro = findViewById<TextView>(R.id.textErroCampos)
 
         // Abrir calendário
-        etData.setOnClickListener {
-            val intent = Intent(this, TelaRF35_1Data::class.java)
-            startActivityForResult(intent, REQUEST_CODE_DATA)
-        }
+        // Ver qual pop up faz isso!
 
         btnEditarMais1.setOnClickListener {
             val titulo = etTitulo.text.toString().trim()
@@ -53,8 +48,6 @@ class TelaRF33CadastroDeLivros : AppCompatActivity() {
             }
         }
 
-        // 👇 BARRA ADM
-        NavigationUtils.setupAdminNavigation(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

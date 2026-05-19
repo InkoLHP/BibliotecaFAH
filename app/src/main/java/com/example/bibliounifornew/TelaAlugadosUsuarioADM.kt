@@ -8,7 +8,5 @@ class TelaAlugadosUsuarioADM : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf_adm_usuario_alugados)
 
-        // Padronização da Navegação ADM
-        NavigationUtils.setupAdminNavigation(this)
     }
 }

@@ -7,7 +7,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.NavigationUtils
 import com.example.bibliounifornew.R
 
 class TelaRF31Solicitacoes : AppCompatActivity() {
@@ -29,8 +28,5 @@ class TelaRF31Solicitacoes : AppCompatActivity() {
         // ABRIR POPUPS
         // =========================
 
-
-        // 👇 BARRA ADM
-        NavigationUtils.setupAdminNavigation(this)
     }
 }
