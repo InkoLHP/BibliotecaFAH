@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifor.data.AppDatabase
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.usuario.TelaRF19Solicitacoes
 import kotlinx.coroutines.launch
 
 class TelaRF12TelaDoLivro : AppCompatActivity() {
@@ -21,7 +20,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.telarf12_teladolivro)
+        setContentView(R.layout.telarf12_tela_livro)
 
         val livroId = intent.getIntExtra("LIVRO_ID", -1)
         if (livroId != -1) {

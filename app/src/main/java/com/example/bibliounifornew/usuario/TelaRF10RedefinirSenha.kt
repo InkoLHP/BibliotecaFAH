@@ -14,7 +14,7 @@ class TelaRF10RedefinirSenha : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.telarf10_redefinirsenha)
+        setContentView(R.layout.telarf10_redefinir_senha)
 
         // CAMPOS
         val editNovaSenha = findViewById<EditText>(R.id.editNovaSenha)

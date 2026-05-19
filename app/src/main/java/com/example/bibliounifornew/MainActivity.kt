@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bibliounifornew.adm.TelaRF28DashboardADM
+import com.example.bibliounifornew.adm.TelaRF21DashboardADM
 import com.example.bibliounifornew.login.TelaRF02Intermediaria
 import com.example.bibliounifornew.usuario.TelaRF08DashboardUsuario
 
@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
 
             } else {
                 if (tipoUsuario == "adm") {
-                    startActivity(Intent(this, TelaRF28DashboardADM::class.java))
+                    startActivity(Intent(this, TelaRF21DashboardADM::class.java))
                 } else {
                     // Aqui deve-se garantir que TelaRF09DashboardUsuario também esteja no pacote correto
                     startActivity(Intent(this, TelaRF08DashboardUsuario::class.java))

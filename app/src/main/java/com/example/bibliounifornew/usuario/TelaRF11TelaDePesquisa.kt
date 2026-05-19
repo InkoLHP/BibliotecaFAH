@@ -1,96 +1,63 @@
 package com.example.bibliounifornew.usuario
 
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.bibliounifornew.R
 
 class TelaRF11TelaDePesquisa : AppCompatActivity() {
 
-    /*private lateinit var adapter: LivroAdapter
-    private val database by lazy { AppDatabase.getDatabase(this) }
-    private val livroDao by lazy { database.livroDao() }
+    private lateinit var recyclerLivros: RecyclerView
+    private lateinit var editPesquisarLivro: EditText
+    private lateinit var buttonProcurar: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.telarf11_teladepesquisa)
+        setContentView(R.layout.telarf11_tela_pesquisa)
 
-        // Padronização da Navegação e Cabeçalho
-        NavigationUtils.setupTopBar(this)
-        NavigationUtils.setupBottomNavigation(this)
+        recyclerLivros = findViewById(R.id.recyclerLivros)
+        editPesquisarLivro = findViewById(R.id.editPesquisarLivro)
+        buttonProcurar = findViewById(R.id.buttonProcurar)
 
-        setupRecyclerView()
-        setupListeners()
-        popularBancoDeDados()
-    }
+        recyclerLivros.layoutManager = LinearLayoutManager(this)
 
-    private fun setupRecyclerView() {
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerLivros)
-        recyclerView.layoutManager = GridLayoutManager(this, 2)
-
-        adapter = LivroAdapter(emptyList()) { livro ->
-            val intent = Intent(this, TelaRF13TelaDoLivro::class.java)
-            intent.putExtra("LIVRO_ID", livro.id)
-            startActivity(intent)
-        }
-        recyclerView.adapter = adapter
-
-        lifecycleScope.launch {
-            livroDao.buscarTodosLivros().collectLatest { lista ->
-                adapter.updateData(lista)
-            }
+        // LISTA VAZIA INICIALMENTE
+        recyclerLivros.adapter = LivroUsuarioAdapter(emptyList()) {
+            abrirTelaLivro()
         }
 
+        buttonProcurar.setOnClickListener {
 
-    private fun setupListeners() {
-        val editPesquisa = findViewById<EditText>(R.id.editPesquisarLivro)
-        val btnPesquisar = findViewById<MaterialButton>(R.id.buttonProcurar)
-        val btnFiltro = findViewById<ImageView>(R.id.iconFiltro)
+            val pesquisa = editPesquisarLivro.text.toString()
 
-        btnPesquisar.setOnClickListener {
-            realizarPesquisa(editPesquisa.text.toString())
-        }
+            // EXEMPLO TEMPORÁRIO
+            // depois tu troca pelos dados do banco
 
-        editPesquisa.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                realizarPesquisa(editPesquisa.text.toString())
-                true
-            } else false
-        }
+            val livrosFake = listOf(
+                Livro(
+                    "O Senhor dos Anéis",
+                    "J. R. R. Tolkien",
+                    "8595084750"
+                ),
+                Livro(
+                    "Dom Casmurro",
+                    "Machado de Assis",
+                    "9786559212466"
+                )
+            )
 
-        btnFiltro.setOnClickListener {
-            mostrarPopupFiltro()
-        }
-    }
-
-fun findViewById(editPesquisa: Any) {}
-
-private fun realizarPesquisa(query: String) {
-        //lifecycleScope.launch {
-            val formatQuery = "%$query%"
-            livroDao.pesquisarLivros(formatQuery).collectLatest { resultados ->
-                adapter.updateData(resultados)
+            recyclerLivros.adapter = LivroUsuarioAdapter(livrosFake) {
+                abrirTelaLivro()
             }
         }
     }
 
-    private fun mostrarPopupFiltro() {
-        val dialog = BottomSheetDialog(this)
-        val view = layoutInflater.inflate(R.layout.popup_filtro_pesquisa, null)
-        dialog.setContentView(view)
-
-        view.findViewById<MaterialButton>(R.id.btnSalvarFiltro).setOnClickListener {
-            dialog.dismiss()
-        }
-
-        view.findViewById<MaterialButton>(R.id.btnLimparFiltro).setOnClickListener {
-            view.findViewById<ChipGroup>(R.id.cgDisponibilidade).clearCheck()
-            view.findViewById<ChipGroup>(R.id.cgCategoria).clearCheck()
-        }
-
-        dialog.show()
+    private fun abrirTelaLivro() {
+        val intent = Intent(this, TelaRF12TelaDoLivro::class.java)
+        startActivity(intent)
     }
-
-    private fun popularBancoDeDados() {
-        //lifecycleScope.launch {
-            // Lógica de população mantida para garantir dados nos testes
-        }
-    }*/
 }

@@ -64,7 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:gravity="center"
-            android:text="Digite sua senha atual!"
+            android:text="Senha incorreta!"
             android:textColor="@color/biblio_red"
             android:textSize="14sp"
             android:visibility="gone"
