@@ -19,9 +19,9 @@ class TelaRF10RedefinirSenha : AppCompatActivity() {
         // CAMPOS
         val editNovaSenha = findViewById<EditText>(R.id.editNovaSenha)
         val editConfirmarSenha = findViewById<EditText>(R.id.editConfirmarSenha)
-        val btnSalvar = findViewById<MaterialButton>(R.id.buttonSalvar)
+        val btnSalvar = findViewById<MaterialButton>(R.id.buttonSalvarAlteracoes)
 
-        val erroSenha = findViewById<TextView>(R.id.textErroSenha)
+        val erroSenha = findViewById<TextView>(R.id.textRegrasSenha)
        // val erroConfirmar = findViewById<TextView>(R.id.textErroConfirmar)
 
         // 🔥 VALIDAÇÃO + SALVAR

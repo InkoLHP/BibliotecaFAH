@@ -13,7 +13,7 @@ class TelaRF15Historico : AppCompatActivity() {
 
         val buttonRemoverHistorico = findViewById<Button>(R.id.btnRemoverHIstorico)
         buttonRemoverHistorico?.setOnClickListener {
-            // Lógica para remover item do histórico
+
         }
     }
 }
