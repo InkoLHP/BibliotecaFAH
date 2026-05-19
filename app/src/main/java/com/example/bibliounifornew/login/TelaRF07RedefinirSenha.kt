@@ -63,10 +63,26 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
                 }
 
                 if (!senhaValida) {
-                    Toast.makeText(this, "A senha não atende aos requisitos", Toast.LENGTH_SHORT).show()
-                    textErroRequisitos.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
+
+                    textErroRequisitos.visibility = View.VISIBLE
+
+                    textErroRequisitos.setTextColor(
+                        ContextCompat.getColor(
+                            this,
+                            android.R.color.holo_red_dark
+                        )
+                    )
+
                 } else {
-                    textErroRequisitos.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+
+                    textErroRequisitos.visibility = View.GONE
+
+                    textErroRequisitos.setTextColor(
+                        ContextCompat.getColor(
+                            this,
+                            android.R.color.darker_gray
+                        )
+                    )
                 }
             }
         }
