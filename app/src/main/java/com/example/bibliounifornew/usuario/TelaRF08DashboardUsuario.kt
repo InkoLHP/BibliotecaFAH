@@ -22,9 +22,7 @@ class TelaRF08DashboardUsuario : AppCompatActivity() {
 
         // Botões de Ações Rápidas (Cards/Buttons no ScrollView)
         //val btnProcurarLivros = findViewById<MaterialButton>(R.id.btnProcurarLivros)
-        val btnMinhaLivraria = findViewById<MaterialButton>(R.id.btnMinhaLivraria)
-        val btnListaDesejo = findViewById<MaterialButton>(R.id.btnListaDesejos)
-        val btnAmigos = findViewById<MaterialButton>(R.id.btnAmigos)
+        val btnPesquisa = findViewById<MaterialButton>(R.id.btnPesquisa)
         val btnHistorico = findViewById<MaterialButton>(R.id.btnHistorico)
         val btnStatusAluguel = findViewById<MaterialButton>(R.id.btnStatusAluguel)
         val btnSair = findViewById<MaterialButton>(R.id.btnSairConta)
@@ -38,30 +36,10 @@ class TelaRF08DashboardUsuario : AppCompatActivity() {
             startActivity(Intent(this, TelaRF14Notificacoes::class.java))
         }
 
-        // Ações Rápidas
-        //btnProcurarLivros.setOnClickListener {
-        //    startActivity(Intent(this, TelaRF12TelaDePesquisa::class.java))
-        //}
-
-        btnMinhaLivraria.setOnClickListener {
-            startActivity(Intent(this, TelaRF15MinhaLivrariaActivity::class.java))
+        btnPesquisa.setOnClickListener {
+            startActivity(Intent(this, TelaRF11TelaDePesquisa::class.java))
         }
 
-        btnListaDesejo.setOnClickListener {
-            startActivity(Intent(this, TelaRF16ListaDesejosActivity::class.java))
-        }
-
-        btnAmigos.setOnClickListener {
-            startActivity(Intent(this, TelaRF17Amigos::class.java))
-        }
-
-        btnHistorico.setOnClickListener {
-            startActivity(Intent(this, TelaRF15Historico::class.java))
-        }
-
-        btnStatusAluguel.setOnClickListener {
-            startActivity(Intent(this, TelaRF19Solicitacoes::class.java))
-        }
 
         btnSair.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)

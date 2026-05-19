@@ -44,9 +44,7 @@ class TelaRF03LoginAluno : AppCompatActivity() {
 
             // Base de dados mockada
             val usuariosValidos = mapOf(
-                "teste@email.com" to "12345678",
-                "anderson.link.crush@hotmail.com" to "123456",
-                "1" to "2"
+                "contamuitofoda@gmail.com" to "123456",
             )
 
             when {

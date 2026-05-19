@@ -120,41 +120,15 @@
             <!-- BOTÕES -->
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMinhaLivraria"
+                android:id="@+id/btnPesquisa"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="14dp"
-                android:text="Minha livraria"
+                android:fontFamily="sans-serif-black"
+                android:text="Pesquisa"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
-                app:backgroundTint="@color/biblio_dark"
-                app:cornerRadius="28dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnListaDesejos"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="14dp"
-                android:text="Lista de desejos"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
-                app:backgroundTint="@color/biblio_dark"
-                app:cornerRadius="28dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAmigos"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="14dp"
-                android:text="Amigos"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
                 app:backgroundTint="@color/biblio_dark"
                 app:cornerRadius="28dp" />
 

@@ -16,8 +16,8 @@ class TelaRF09Configuracao : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf09_configuracao)
 
-        val btnRedefinir = findViewById<MaterialButton>(R.id.btnRedefinirSenha)
-        val btnApagar = findViewById<MaterialButton>(R.id.btnApagarConta) //add pop up
+        val btnRedefinir = findViewById<MaterialButton>(R.id.buttonRedefinirSenha)
+        val btnApagar = findViewById<MaterialButton>(R.id.buttonApagarConta) //add pop up
 
         btnRedefinir.setOnClickListener {
             val intent = Intent(this, TelaRF10RedefinirSenha::class.java)

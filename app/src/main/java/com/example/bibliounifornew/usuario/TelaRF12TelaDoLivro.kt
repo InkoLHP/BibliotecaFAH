@@ -27,18 +27,6 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             carregarDadosDoLivro(livroId)
         }
 
-        findViewById<Button>(R.id.buttonVerMais).setOnClickListener {
-            val intent = Intent(this, TelaRF13VerMaisLivro::class.java)
-            intent.putExtra("LIVRO_ID", livroId)
-            startActivity(intent)
-        }
-
-        findViewById<Button>(R.id.buttonSolicitar).setOnClickListener {
-            val intent = Intent(this, TelaRF19Solicitacoes::class.java)
-            intent.putExtra("LIVRO_ID", livroId)
-            startActivity(intent)
-        }
-
         findViewById<Button>(R.id.buttonLer).setOnClickListener {
             val intent = Intent(this, TelaRF14LeituraActivity::class.java)
             intent.putExtra("LIVRO_ID", livroId)

@@ -31,7 +31,7 @@ class MidiaAdminAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MidiaViewHolder {
 
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_midia_adm, parent, false)
+            .inflate(R.layout.card_livro_adm, parent, false)
 
         return MidiaViewHolder(view)
     }

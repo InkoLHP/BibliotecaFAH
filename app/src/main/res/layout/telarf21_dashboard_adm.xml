@@ -168,7 +168,7 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 tools:itemCount="3"
-                tools:listitem="@layout/item_midia_adm" />
+                tools:listitem="@layout/card_livro_adm" />
 
         </LinearLayout>
 

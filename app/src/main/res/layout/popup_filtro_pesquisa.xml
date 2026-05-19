@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -31,92 +32,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:text="DISPONIBILIDADE"
-        android:textColor="#666666"
-        android:textSize="12sp"
-        android:textStyle="bold" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupDisponibilidade"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipDisponiveis"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Disponíveis"
-            android:textColor="#555555"
-            app:chipBackgroundColor="#EAE4EE"
-            app:chipCornerRadius="16dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipAlugados"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Alugados"
-            android:textColor="#555555"
-            app:chipBackgroundColor="#EAE4EE"
-            app:chipCornerRadius="16dp" />
-
-    </com.google.android.material.chip.ChipGroup>
-
-    <!-- CATEGORIA -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
         android:text="CATEGORIA"
         android:textColor="#666666"
         android:textSize="12sp"
         android:textStyle="bold" />
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupCategoria"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="22dp"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipPresencial"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Presencial"
-            android:textColor="#555555"
-            app:chipBackgroundColor="#EAE4EE"
-            app:chipCornerRadius="16dp" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipOnline"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Online"
-            android:textColor="#555555"
-            app:chipBackgroundColor="#EAE4EE"
-            app:chipCornerRadius="16dp" />
-
-    </com.google.android.material.chip.ChipGroup>
+    <!-- CATEGORIA -->
 
     <!-- INPUT AUTOR -->
-    <EditText
-        android:id="@+id/editAutor"
-        android:layout_width="match_parent"
-        android:layout_height="58dp"
-        android:layout_marginBottom="18dp"
-        android:background="@drawable/bg_input"
-        android:hint="Nome do autor..."
-        android:paddingHorizontal="16dp"
-        android:textColor="#444444"
-        android:textColorHint="#999999" />
 
     <!-- BOTÃO SALVAR -->
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSalvarFiltro"
         android:layout_width="match_parent"

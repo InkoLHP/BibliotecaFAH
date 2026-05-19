@@ -11,11 +11,6 @@ class TelaRF14LeituraActivity : ComponentActivity() {
 
         val livroId = intent.getIntExtra("LIVRO_ID", 1)
 
-        /*setContent {
-            TelaLeituraScreen(
-                livroId = livroId,
-                onBack = { finish() }
-            )
-        }*/
+
     }
 }

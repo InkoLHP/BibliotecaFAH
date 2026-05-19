@@ -31,7 +31,7 @@ class LivroUsuarioAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LivroViewHolder {
 
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_midia_usuario, parent, false)
+            .inflate(R.layout.item_livro_usuario, parent, false)
 
         return LivroViewHolder(view)
     }
