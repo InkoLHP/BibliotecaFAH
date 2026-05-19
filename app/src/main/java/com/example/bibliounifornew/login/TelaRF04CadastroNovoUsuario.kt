@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -169,37 +170,10 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
                             senha = senha
                         )
                     )
-                    mostrarPopupSucesso()
+                    Toast.makeText(this@TelaRF04CadastroNovoUsuario, "Conta criada com sucesso!", Toast.LENGTH_LONG).show()
                 }
             }
         }
-    }
-
-    private fun mostrarPopupSucesso() {
-        println("POP UP ABRIU")
-
-        val dialog = android.app.Dialog(this)
-
-        dialog.setContentView(R.layout.popup_sucesso_cadastro)
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        // BOTÃO DO POPUP
-        val botaoRetornar =
-            dialog.findViewById<MaterialButton>(R.id.btnRetorneLogin)
-
-        botaoRetornar.setOnClickListener {
-
-            val intent = Intent(this, TelaRF03LoginAluno::class.java)
-
-            startActivity(intent)
-
-            dialog.dismiss()
-
-            finish()
-        }
-
-        dialog.show()
     }
 
     private fun irParaLogin() {

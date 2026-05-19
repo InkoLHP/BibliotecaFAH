@@ -28,6 +28,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BiblioUnifor">
         <activity
+            android:name=".login.TelaRF18ValidaçãoCodigoADM"
+            android:exported="false" />
+        <activity
             android:name=".adm.TelaRF24EditarMidia"
             android:exported="false" />
         <activity

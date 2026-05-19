@@ -65,5 +65,10 @@ class TelaRF17RecuperacaoSenhaADM : AppCompatActivity() {
                 erro.visibility = View.GONE
             }
         }
+
+        botaoEnviar.setOnClickListener {
+            val intent = Intent(this, TelaRF18ValidaçãoCodigoADM::class.java)
+            startActivity(intent)
+        }
     }
 }

@@ -3,144 +3,253 @@ package com.example.bibliounifornew.login
 import android.app.Dialog
 import android.os.Bundle
 import android.text.InputType
+import android.util.Patterns
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.bibliounifornew.R
 
 class TelaRF20NovaContaADM : AppCompatActivity() {
 
+    private lateinit var edtNomeCompleto: EditText
+    private lateinit var edtNomeUsuario: EditText
+    private lateinit var edtEmail: EditText
+    private lateinit var edtCredencial: EditText
+    private lateinit var edtSenha: EditText
+    private lateinit var edtConfirmaSenha: EditText
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf20_nova_conta_adm)
 
-        val edtNomeCompleto = findViewById<EditText>(R.id.editNomeCompletoAdm)
-        val edtNomeUsuario = findViewById<EditText>(R.id.editNomeUsuarioAdm)
-        val edtEmail = findViewById<EditText>(R.id.editEmailAdmCadastro)
-        val edtCredencial = findViewById<EditText>(R.id.editCredencialAdmCadastro)
-        val edtSenha = findViewById<EditText>(R.id.editSenhaAdmCadastro)
-        val edtConfirmaSenha = findViewById<EditText>(R.id.editConfirmarSenhaAdm)
+        // CAMPOS
+        edtNomeCompleto = findViewById(R.id.editNomeCompletoAdm)
+        edtNomeUsuario = findViewById(R.id.editNomeUsuarioAdm)
+        edtEmail = findViewById(R.id.editEmailAdmCadastro)
+        edtCredencial = findViewById(R.id.editCredencialAdmCadastro)
+        edtSenha = findViewById(R.id.editSenhaAdmCadastro)
+        edtConfirmaSenha = findViewById(R.id.editConfirmarSenhaAdm)
 
-        val txtErroEmail = findViewById<TextView>(R.id.textErroEmailAdmCadastro)
-        val txtErroCredencial = findViewById<TextView>(R.id.textErroCredencialAdm)
-        val txtErroSenha = findViewById<TextView>(R.id.textRegrasSenhaAdm)
+        // TEXTOS DE ERRO
+        val txtErroEmail =
+            findViewById<TextView>(R.id.textErroEmailAdmCadastro)
 
-        val btnCriar = findViewById<Button>(R.id.buttonCriarContaAdm)
-        val txtEntreAqui = findViewById<TextView>(R.id.textEntreAquiAdm)
+        val txtErroCredencial =
+            findViewById<TextView>(R.id.textErroCredencialAdm)
 
-        // MOSTRAR/OCULTAR SENHA
-        val iconOlhoSenha = findViewById<ImageView>(R.id.iconOlhoSenhaAdmCadastro)
-        val iconOlhoConfirma = findViewById<ImageView>(R.id.iconOlhoConfirmarSenhaAdm)
+        val txtErroSenha =
+            findViewById<TextView>(R.id.textRegrasSenhaAdm)
+
+        // BOTÕES
+        val btnCriar =
+            findViewById<Button>(R.id.buttonCriarContaAdm)
+
+        val txtEntreAqui =
+            findViewById<TextView>(R.id.textEntreAquiAdm)
+
+        // ÍCONES
+        val iconOlhoSenha =
+            findViewById<ImageView>(R.id.iconOlhoSenhaAdmCadastro)
+
+        val iconOlhoConfirma =
+            findViewById<ImageView>(R.id.iconOlhoConfirmarSenhaAdm)
+
+        // ESCONDER ERROS
+        txtErroEmail.visibility = View.GONE
+        txtErroCredencial.visibility = View.GONE
+        txtErroSenha.visibility = View.GONE
+
+        // =========================================
+        // MOSTRAR / ESCONDER SENHA
+        // =========================================
 
         var senhaVisivel = false
+
         iconOlhoSenha.setOnClickListener {
+
             if (senhaVisivel) {
 
-                // ESCONDER
                 edtSenha.inputType =
                     InputType.TYPE_CLASS_TEXT or
                             InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-                iconOlhoSenha.setImageResource(R.drawable.ic_eye_closed)
+                iconOlhoSenha.setImageResource(
+                    R.drawable.ic_eye_closed
+                )
 
                 senhaVisivel = false
 
             } else {
 
-                // MOSTRAR
                 edtSenha.inputType =
                     InputType.TYPE_CLASS_TEXT or
                             InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
 
-                iconOlhoSenha.setImageResource(R.drawable.ic_eye_open)
+                iconOlhoSenha.setImageResource(
+                    R.drawable.ic_eye_open
+                )
 
                 senhaVisivel = true
             }
-            edtSenha.setSelection(edtSenha.text.length)
+
+            edtSenha.setSelection(
+                edtSenha.text.length
+            )
         }
+
+        // =========================================
+        // MOSTRAR / ESCONDER CONFIRMAR SENHA
+        // =========================================
 
         var confirmaVisivel = false
-        iconOlhoConfirma.setOnClickListener {
-            confirmaVisivel = !confirmaVisivel
-            if (senhaVisivel) {
 
-                // ESCONDER
+        iconOlhoConfirma.setOnClickListener {
+
+            if (confirmaVisivel) {
+
                 edtConfirmaSenha.inputType =
                     InputType.TYPE_CLASS_TEXT or
                             InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-                iconOlhoConfirma.setImageResource(R.drawable.ic_eye_closed)
+                iconOlhoConfirma.setImageResource(
+                    R.drawable.ic_eye_closed
+                )
 
-                senhaVisivel = false
+                confirmaVisivel = false
 
             } else {
 
-                // MOSTRAR
                 edtConfirmaSenha.inputType =
                     InputType.TYPE_CLASS_TEXT or
                             InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
 
-                iconOlhoConfirma.setImageResource(R.drawable.ic_eye_open)
+                iconOlhoConfirma.setImageResource(
+                    R.drawable.ic_eye_open
+                )
 
-                senhaVisivel = true
+                confirmaVisivel = true
             }
-            edtConfirmaSenha.setSelection(edtConfirmaSenha.text.length)
+
+            edtConfirmaSenha.setSelection(
+                edtConfirmaSenha.text.length
+            )
         }
 
+        // =========================================
+        // BOTÃO CRIAR CONTA
+        // =========================================
+
         btnCriar.setOnClickListener {
+
             txtErroEmail.visibility = View.GONE
             txtErroCredencial.visibility = View.GONE
             txtErroSenha.visibility = View.GONE
 
-            val email = edtEmail.text.toString().trim()
-            val credencial = edtCredencial.text.toString().trim()
-            val senha1 = edtSenha.text.toString()
-            val senha2 = edtConfirmaSenha.text.toString()
+            val email =
+                edtEmail.text.toString().trim()
+
+            val credencial =
+                edtCredencial.text.toString().trim()
+
+            val senha1 =
+                edtSenha.text.toString()
+
+            val senha2 =
+                edtConfirmaSenha.text.toString()
 
             var temErro = false
 
-            if (email.isEmpty() || !email.contains("@")) {
+            // VALIDAR EMAIL
+            if (
+                email.isBlank() ||
+                !Patterns.EMAIL_ADDRESS.matcher(email).matches()
+            ) {
+
                 txtErroEmail.visibility = View.VISIBLE
+
                 temErro = true
             }
 
-            if (credencial.isEmpty()) {
+            // VALIDAR CREDENCIAL
+            if (credencial.isBlank()) {
+
                 txtErroCredencial.visibility = View.VISIBLE
+
                 temErro = true
             }
 
-            val temMaiuscula = senha1.any { it.isUpperCase() }
-            val temNumero = senha1.any { it.isDigit() }
-            val temTamanho = senha1.length >= 8
+            // VALIDAR SENHA
+            val temMaiuscula =
+                senha1.any { it.isUpperCase() }
 
-            if (!temTamanho || !temNumero || !temMaiuscula || senha1 != senha2) {
+            val temNumero =
+                senha1.any { it.isDigit() }
+
+            val temTamanho =
+                senha1.length >= 8
+
+            if (
+                !temTamanho ||
+                !temNumero ||
+                !temMaiuscula ||
+                senha1 != senha2
+            ) {
+
                 txtErroSenha.visibility = View.VISIBLE
+
                 temErro = true
             }
 
+            // SUCESSO
             if (!temErro) {
+
+                Toast.makeText(
+                    this,
+                    "Conta criada com sucesso!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 mostrarPopUpSucesso()
             }
         }
 
+        // VOLTAR
         txtEntreAqui.setOnClickListener {
             finish()
         }
     }
 
+    // =========================================
+    // POPUP
+    // =========================================
+
     private fun mostrarPopUpSucesso() {
+
         val dialog = Dialog(this)
-        dialog.setContentView(R.layout.popup_sucesso_cadastro)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        dialog.setContentView(
+            R.layout.popup_sucesso_cadastro
+        )
+
+        dialog.window?.setBackgroundDrawableResource(
+            android.R.color.transparent
+        )
+
         dialog.setCancelable(false)
 
-        // BOTÃO DO POPUP
-        val botaoRetornar = dialog.findViewById<Button>(R.id.btnRetorneLogin)
+        val botaoRetornar =
+            dialog.findViewById<Button>(
+                R.id.btnRetorneLogin
+            )
+
         botaoRetornar.setOnClickListener {
+
             dialog.dismiss()
+
             finish()
         }
 
