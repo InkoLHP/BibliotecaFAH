@@ -59,7 +59,6 @@
         <activity android:name=".adm.TelaRF22ConfigADM" android:exported="false" />
         <activity android:name=".adm.TelaRF23RedefinirADMInterno" android:exported="false" />
         <activity android:name=".adm.TelaRF24EditarMidia" android:exported="false" />
-        <activity android:name=".adm.TelaRF25FinanceiroADM" android:exported="false" />
 
         <activity android:name=".MainActivity" android:exported="false" />
 
