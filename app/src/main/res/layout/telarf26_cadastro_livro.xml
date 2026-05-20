@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/biblio_bg">
+
+    <!-- HEADER PREMIUM DESIGN -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerConfig"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@color/biblio_detalhes"
+        app:layout_parent="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Fundo decorativo circular -->
+        <View
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_marginStart="-110dp"
+            android:layout_marginTop="-110dp"
+            android:alpha="0.2"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Título Centralizado do Formulário -->
+        <TextView
+            android:id="@+id/txtHeaderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Adicionar Mídia"
+            android:textColor="@color/white"
+            android:textSize="26sp"
+            android:fontFamily="sans-serif-black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- CONTEÚDO ROLÁVEL (FORMULÁRIO) - Ocupando até o final da tela -->
+    <ScrollView
+        android:id="@+id/scrollFormulario"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/headerConfig"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="32dp"> <!-- Margem extra no fim para o botão respirar -->
+
+            <!-- Campo: Título do Livro -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TÍTULO DO LIVRO"
+                android:textColor="@color/biblio_blue"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_input">
+
+                <EditText
+                    android:id="@+id/etTitulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="Ex: O Alienista"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <!-- Campo: Autor -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AUTOR"
+                android:textColor="@color/biblio_blue"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_input">
+
+                <EditText
+                    android:id="@+id/etAutor"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="Ex: Machado de Assis"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <!-- Campo: Código ISBN -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CÓDIGO ISBN"
+                android:textColor="@color/biblio_blue"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_input">
+
+                <EditText
+                    android:id="@+id/etISBN"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="000-00-000-0000-0"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <!-- Campo: Data de Publicação -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DATA DE PUBLICAÇÃO DO LIVRO"
+                android:textColor="@color/biblio_blue"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_input">
+
+                <EditText
+                    android:id="@+id/etData"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:hint="DD/MM/AAAA"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <!-- Campo: Quantidade de Exemplares -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="QUANTIDADE DE EXEMPLARES"
+                android:textColor="@color/biblio_blue"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_input">
+
+                <EditText
+                    android:id="@+id/etQuantidade"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="Ex: 10"
+                    android:inputType="number"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <!-- Texto de Erro -->
+            <TextView
+                android:id="@+id/tvErro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="16dp"
+                android:text="Preencha todos os campos!"
+                android:textColor="@color/biblio_red"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"
+                android:visibility="gone" />
+
+            <!-- Botão Salvar/Continuar Premium -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEditarMaisInformacoes"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Editar mais informações"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-black"
+                app:backgroundTint="@color/biblio_blue"
+                app:cornerRadius="28dp"
+                app:elevation="4dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
