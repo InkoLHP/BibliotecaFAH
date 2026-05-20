@@ -12,9 +12,15 @@ import com.example.bibliounifornew.R
 
 class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
 
+    // Variável para armazenar o email do administrador recebido da tela anterior
+    private var emailADM: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf06_validacao_de_codigo)
+
+        // Captura o email que veio da tela anterior do ADM
+        emailADM = intent.getStringExtra("USER_EMAIL")
 
         val editCodigo = findViewById<EditText>(R.id.editTextCodigo)
         val textErro = findViewById<TextView>(R.id.textErroCodigo)
@@ -30,8 +36,12 @@ class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
             // Simulação de código correto (ex: 123456)
             if (codigoDigitado == "123456") {
                 textErro.visibility = View.INVISIBLE
+
                 val intent = Intent(this, TelaRF19RedefinirSenhaADM::class.java)
+                // 🔥 Envia o email adiante para a tela de redefinição do ADM
+                intent.putExtra("USER_EMAIL", emailADM)
                 startActivity(intent)
+                finish() // Opcional: fecha esta tela de código
             } else {
                 // Código incorreto
                 textErro.visibility = View.VISIBLE

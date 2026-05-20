@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.model.Livro
 
 class TelaRF11TelaDePesquisa : AppCompatActivity() {
 
@@ -25,39 +26,45 @@ class TelaRF11TelaDePesquisa : AppCompatActivity() {
 
         recyclerLivros.layoutManager = LinearLayoutManager(this)
 
-        // LISTA VAZIA INICIALMENTE
-        recyclerLivros.adapter = LivroUsuarioAdapter(emptyList()) {
-            abrirTelaLivro()
+        // LISTA VAZIA INICIALMENTE - Agora recebe o objeto livro no lambda
+        recyclerLivros.adapter = LivroUsuarioAdapter(emptyList()) { livroClicado ->
+            abrirTelaLivro(livroClicado)
         }
 
         buttonProcurar.setOnClickListener {
-
             val pesquisa = editPesquisarLivro.text.toString()
 
-            // EXEMPLO TEMPORÁRIO
-            // depois tu troca pelos dados do banco
-
+            // Lista mockada corrigida usando o construtor do novo Livro.kt
             val livrosFake = listOf(
                 Livro(
-                    "O Senhor dos Anéis",
-                    "J. R. R. Tolkien",
-                    "8595084750"
+                    id = "1",
+                    titulo = "O Senhor dos Anéis",
+                    autor = "J. R. R. Tolkien",
+                    isbn = "8595084750",
+                    sinopse = "A jornada de Frodo para destruir o Um Anel.",
+                    capaResourceId = 0
                 ),
                 Livro(
-                    "Dom Casmurro",
-                    "Machado de Assis",
-                    "9786559212466"
+                    id = "2",
+                    titulo = "Dom Casmurro",
+                    autor = "Machado de Assis",
+                    isbn = "9786559212466",
+                    sinopse = "A clássica história de Bentinho, Capitu e a dúvida do ciúme.",
+                    capaResourceId = 0
                 )
             )
 
-            recyclerLivros.adapter = LivroUsuarioAdapter(livrosFake) {
-                abrirTelaLivro()
+            // Atualiza o adapter passando a função que envia o ID do livro clicado
+            recyclerLivros.adapter = LivroUsuarioAdapter(livrosFake) { livroClicado ->
+                abrirTelaLivro(livroClicado)
             }
         }
     }
 
-    private fun abrirTelaLivro() {
+    // Agora recebe o Livro inteiro e passa o ID dele para a tela de detalhes
+    private fun abrirTelaLivro(livro: Livro) {
         val intent = Intent(this, TelaRF12TelaDoLivro::class.java)
+        intent.putExtra("LIVRO_ID", livro.id)
         startActivity(intent)
     }
 }

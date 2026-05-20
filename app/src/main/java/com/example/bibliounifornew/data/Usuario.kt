@@ -1,29 +1,14 @@
-package com.example.bibliounifor.data
+package com.example.bibliounifornew.model
 
-import androidx.room3.Dao
-import androidx.room3.Entity
-import androidx.room3.Insert
-import androidx.room3.PrimaryKey
-import androidx.room3.Query
+import kotlinx.serialization.Serializable
 
-@Entity(tableName = "usuarios")
-data class Usuario(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+@Serializable
+data class User(
     val nome: String,
     val usuario: String,
     val email: String,
-    val senha: String
+    val senha: String,
+    val tipo: String,               // Aqui você vai salvar "usuario" ou "adm"
+    val credencial: String? = null,  // Pode ser nulo se o tipo for comum
+    val foto: String? = null        // Começa nulo como você definiu
 )
-
-@Dao
-interface UsuarioDao {
-    @Insert
-    suspend fun inserir(usuario: Usuario)
-
-    @Query("SELECT * FROM usuarios WHERE email = :email LIMIT 1")
-    suspend fun buscarPorEmail(email: String): Usuario?
-
-    @Query("SELECT * FROM usuarios WHERE usuario = :usuario LIMIT 1")
-    suspend fun buscarPorUsuario(usuario: String): Usuario?
-}

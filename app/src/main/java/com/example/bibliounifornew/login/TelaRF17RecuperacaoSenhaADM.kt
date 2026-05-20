@@ -2,12 +2,21 @@ package com.example.bibliounifornew.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.button.MaterialButton
+import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.User
+import com.google.android.material.button.MaterialButton
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF17RecuperacaoSenhaADM : AppCompatActivity() {
 
@@ -25,10 +34,10 @@ class TelaRF17RecuperacaoSenhaADM : AppCompatActivity() {
         // BOTÃO
         val botaoEnviar = findViewById<MaterialButton>(R.id.buttonEnviarCodigo)
 
-        // EMAIL VÁLIDO
-        val emailValido = "emailvalido@gmail.com"
+        // ESCONDER ERRO INICIALMENTE
+        erro.visibility = View.GONE
 
-        // BOTÃO ENVIAR
+        // BOTÃO ENVIAR (UNIFICADO E COM CONEXÃO AO SUPABASE)
         botaoEnviar.setOnClickListener {
 
             val textoEmail = email.text.toString().trim()
@@ -36,20 +45,54 @@ class TelaRF17RecuperacaoSenhaADM : AppCompatActivity() {
             erro.visibility = View.GONE
 
             when {
-
                 textoEmail.isEmpty() -> {
                     erro.text = "Digite um e-mail"
                     erro.visibility = View.VISIBLE
                 }
 
-                textoEmail != emailValido -> {
-                    erro.text = "E-mail não cadastrado"
+                !Patterns.EMAIL_ADDRESS.matcher(textoEmail).matches() -> {
+                    erro.text = "Formato de e-mail inválido"
                     erro.visibility = View.VISIBLE
                 }
 
                 else -> {
-                    val intent = Intent(this, TelaRF19RedefinirSenhaADM::class.java)
-                    startActivity(intent)
+                    // Desativa o botão para evitar múltiplos cliques enquanto consulta o banco
+                    botaoEnviar.isEnabled = false
+
+                    lifecycleScope.launch {
+                        try {
+                            // Consulta se o e-mail existe e pertence a um perfil do tipo "adm"
+                            val admExistente = withContext(Dispatchers.IO) {
+                                SupabaseConfig.client.postgrest["users"]
+                                    .select {
+                                        filter {
+                                            eq("email", textoEmail)
+                                            eq("tipo", "adm")
+                                        }
+                                    }.decodeSingleOrNull<User>()
+                            }
+
+                            if (admExistente != null) {
+                                // Se encontrou o ADM, avança para a tela de validação do código
+                                val intent = Intent(this@TelaRF17RecuperacaoSenhaADM, TelaRF18ValidaçãoCodigoADM::class.java)
+
+                                // 🔥 CORREÇÃO: Passando o e-mail do ADM validado para a próxima tela
+                                intent.putExtra("USER_EMAIL", textoEmail)
+
+                                startActivity(intent)
+                            } else {
+                                // Se o e-mail não existir ou não for um ADM
+                                erro.text = "E-mail de administrador não cadastrado"
+                                erro.visibility = View.VISIBLE
+                                botaoEnviar.isEnabled = true
+                            }
+
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Toast.makeText(this@TelaRF17RecuperacaoSenhaADM, "Erro ao conectar ao banco", Toast.LENGTH_SHORT).show()
+                            botaoEnviar.isEnabled = true
+                        }
+                    }
                 }
             }
         }
@@ -64,11 +107,6 @@ class TelaRF17RecuperacaoSenhaADM : AppCompatActivity() {
             if (hasFocus) {
                 erro.visibility = View.GONE
             }
-        }
-
-        botaoEnviar.setOnClickListener {
-            val intent = Intent(this, TelaRF18ValidaçãoCodigoADM::class.java)
-            startActivity(intent)
         }
     }
 }

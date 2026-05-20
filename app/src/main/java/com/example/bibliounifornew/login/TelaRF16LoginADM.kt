@@ -10,8 +10,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adm.TelaRF21DashboardADM
+import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.User
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF16LoginADM : AppCompatActivity() {
 
@@ -24,7 +31,6 @@ class TelaRF16LoginADM : AppCompatActivity() {
         val senha = findViewById<EditText>(R.id.editSenhaAdm)
         val credential = findViewById<EditText>(R.id.editCredencialAdm)
 
-
         // BOTÃO
         val botaoEntrar = findViewById<Button>(R.id.buttonEntrarAdm)
         val bntMostraSenha = findViewById<ImageView>(R.id.iconOlhoSenhaAdm)
@@ -34,7 +40,9 @@ class TelaRF16LoginADM : AppCompatActivity() {
         val criarConta = findViewById<TextView>(R.id.textCriarContaAdm)
         val esqueceuSenha = findViewById<TextView>(R.id.textEsqueceuSenhaAdm)
 
-        // LOGIN
+        erro.visibility = View.GONE
+
+        // LOGIN CONECTADO AO SUPABASE
         botaoEntrar.setOnClickListener {
 
             val textoEmail = email.text.toString().trim()
@@ -43,47 +51,63 @@ class TelaRF16LoginADM : AppCompatActivity() {
 
             erro.visibility = View.GONE
 
-            when {
+            if (textoEmail.isEmpty() || textoSenha.isEmpty() || textoCredencial.isEmpty()) {
+                erro.text = "Preencha todos os campos"
+                erro.visibility = View.VISIBLE
+            } else {
+                // Desativa o botão para evitar múltiplos cliques na rede
+                botaoEntrar.isEnabled = false
 
-                textoEmail.isEmpty() || textoSenha.isEmpty() || textoCredencial.isEmpty() -> {
-                    erro.text = "Preencha todos os campos"
-                    erro.visibility = View.VISIBLE
-                }
+                lifecycleScope.launch {
+                    try {
+                        // Busca no banco por todas as credenciais fornecidas + o tipo "adm"
+                        val contaAdm = withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.postgrest["users"]
+                                .select {
+                                    filter {
+                                        eq("email", textoEmail)
+                                        eq("senha", textoSenha)
+                                        eq("credencial", textoCredencial)
+                                        eq("tipo", "adm")
+                                    }
+                                }.decodeSingleOrNull<User>()
+                        }
 
-                textoEmail != "a" ||
-                        textoSenha != "b" ||
-                        textoCredencial != "c" -> {
+                        if (contaAdm != null) {
+                            Toast.makeText(this@TelaRF16LoginADM, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
 
-                    erro.text = "E-mail, senha ou credencial incorretos"
-                    erro.visibility = View.VISIBLE
-                }
+                            val intent = Intent(this@TelaRF16LoginADM, TelaRF21DashboardADM::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            // Se as chaves falharem ou o usuário não for administrador
+                            erro.text = "E-mail, senha ou credencial incorretos"
+                            erro.visibility = View.VISIBLE
+                            botaoEntrar.isEnabled = true
+                        }
 
-                else -> {
-                    Toast.makeText(
-                        this,
-                        "Login realizado com sucesso!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    val intent = Intent(this, TelaRF21DashboardADM::class.java)
-                    startActivity(intent)
-                    finish()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this@TelaRF16LoginADM, "Erro ao conectar ao servidor", Toast.LENGTH_SHORT).show()
+                        botaoEntrar.isEnabled = true
+                    }
                 }
             }
         }
 
-        // CRIAR CONTA -> TelaRF27
+        // CRIAR CONTA -> TelaRF20
         criarConta.setOnClickListener {
             val intent = Intent(this, TelaRF20NovaContaADM::class.java)
             startActivity(intent)
         }
 
-        // ESQUECEU SENHA -> TelaRF24
+        // ESQUECEU SENHA -> TelaRF17
         esqueceuSenha.setOnClickListener {
             val intent = Intent(this, TelaRF17RecuperacaoSenhaADM::class.java)
+            // Se o adm já digitou o e-mail, enviamos para adiantar o processo na próxima tela
+            intent.putExtra("USER_EMAIL", email.text.toString().trim())
             startActivity(intent)
         }
-
 
         // UX MELHORADA (remove erro ao focar)
         email.setOnFocusChangeListener { _, hasFocus ->
@@ -98,31 +122,18 @@ class TelaRF16LoginADM : AppCompatActivity() {
 
         bntMostraSenha.setOnClickListener {
             if (senhaVisivel) {
-
                 // ESCONDER SENHA
-                senha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
+                senha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 bntMostraSenha.setImageResource(R.drawable.ic_eye_closed)
-
                 senhaVisivel = false
-
             } else {
-
                 // MOSTRAR SENHA
-                senha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+                senha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 bntMostraSenha.setImageResource(R.drawable.ic_eye_open)
-
                 senhaVisivel = true
             }
-
             // Mantém cursor no final
             senha.setSelection(senha.text.length)
         }
     }
-
 }
