@@ -10,8 +10,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.User
 import com.example.bibliounifornew.usuario.TelaRF08DashboardUsuario
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF03LoginAluno : AppCompatActivity() {
 
@@ -23,7 +30,7 @@ class TelaRF03LoginAluno : AppCompatActivity() {
         val email = findViewById<EditText>(R.id.editEmail)
         val senha = findViewById<EditText>(R.id.editSenha)
 
-        // BOTÔES
+        // BOTÕES
         val botaoEntrar = findViewById<Button>(R.id.buttonEntrar)
         val MostrarSenha = findViewById<ImageView>(R.id.iconOlhoSenha)
 
@@ -34,7 +41,7 @@ class TelaRF03LoginAluno : AppCompatActivity() {
 
         erro.visibility = View.GONE
 
-        // LOGIN
+        // LOGIN COM CONEXÃO REAL AO SUPABASE
         botaoEntrar.setOnClickListener {
 
             val textoEmail = email.text.toString().trim()
@@ -42,27 +49,45 @@ class TelaRF03LoginAluno : AppCompatActivity() {
 
             erro.visibility = View.GONE
 
-            // Base de dados mockada
-            val usuariosValidos = mapOf(
-                "contamuitofoda@gmail.com" to "123456",
-            )
+            if (textoEmail.isEmpty() || textoSenha.isEmpty()) {
+                erro.text = "Preencha todos os campos"
+                erro.visibility = View.VISIBLE
+            } else {
+                // Desativa o botão temporariamente para processar a requisição de rede
+                botaoEntrar.isEnabled = false
 
-            when {
-                textoEmail.isEmpty() || textoSenha.isEmpty() -> {
-                    erro.text = "Preencha todos os campos"
-                    erro.visibility = View.VISIBLE
-                }
+                lifecycleScope.launch {
+                    try {
+                        // Faz a busca no banco pelo e-mail, senha correspondente e tipo "usuario"
+                        val contaEstudante = withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.postgrest["users"]
+                                .select {
+                                    filter {
+                                        eq("email", textoEmail)
+                                        eq("senha", textoSenha)
+                                        eq("tipo", "usuario")
+                                    }
+                                }.decodeSingleOrNull<User>()
+                        }
 
-                usuariosValidos[textoEmail] != textoSenha -> {
-                    erro.text = "E-mail ou senha incorretos"
-                    erro.visibility = View.VISIBLE
-                }
+                        if (contaEstudante != null) {
+                            Toast.makeText(this@TelaRF03LoginAluno, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
 
-                else -> {
-                    Toast.makeText(this, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, TelaRF08DashboardUsuario::class.java)
-                    startActivity(intent)
-                    finish() // Opcional: encerra a tela de login para não voltar a ela ao apertar 'back'
+                            val intent = Intent(this@TelaRF03LoginAluno, TelaRF08DashboardUsuario::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            // Caso não encontre nenhum registro correspondente
+                            erro.text = "E-mail ou senha incorretos"
+                            erro.visibility = View.VISIBLE
+                            botaoEntrar.isEnabled = true
+                        }
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this@TelaRF03LoginAluno, "Erro ao conectar ao servidor", Toast.LENGTH_SHORT).show()
+                        botaoEntrar.isEnabled = true
+                    }
                 }
             }
         }
@@ -76,9 +101,10 @@ class TelaRF03LoginAluno : AppCompatActivity() {
         // ESQUECEU SENHA -> TelaRF05
         esqueceuSenha.setOnClickListener {
             val intent = Intent(this, TelaRF05RecuperacaoSenha::class.java)
+            // Se o usuário já tiver digitado algo no campo de e-mail, repassamos para facilitar a vida dele
+            intent.putExtra("USER_EMAIL", email.text.toString().trim())
             startActivity(intent)
         }
-
 
         // UX MELHORADA (remove erro ao focar)
         email.setOnFocusChangeListener { _, hasFocus ->
@@ -91,32 +117,20 @@ class TelaRF03LoginAluno : AppCompatActivity() {
 
         var senhaVisivel = false
 
-        //Mostar senha
+        // Mostrar / Esconder senha
         MostrarSenha.setOnClickListener {
             if (senhaVisivel) {
-
                 // ESCONDER SENHA
-                senha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
+                senha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 MostrarSenha.setImageResource(R.drawable.ic_eye_closed)
-
                 senhaVisivel = false
-
             } else {
-
                 // MOSTRAR SENHA
-                senha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+                senha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 MostrarSenha.setImageResource(R.drawable.ic_eye_open)
-
                 senhaVisivel = true
             }
-
-            // Mantém cursor no final
+            // Mantém o cursor posicionado no final do texto
             senha.setSelection(senha.text.length)
         }
     }
