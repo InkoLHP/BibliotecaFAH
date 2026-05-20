@@ -6,118 +6,106 @@
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
 
-    <!-- HEADER -->
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerUsuario"
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:background="@color/biblio_detalhes"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- FUNDO DECORATIVO -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <View
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginStart="-100dp"
+            android:layout_marginTop="-100dp"
+            android:alpha="0.3"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <View
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_marginStart="-100dp"
-                android:layout_marginTop="-100dp"
-                android:alpha="0.3"
-                android:background="@drawable/bg_circle"
-                android:backgroundTint="@color/white" />
+        <ImageView
+            android:id="@+id/btnNotificacao"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:contentDescription="Notificações"
+            android:src="@android:drawable/ic_popup_reminder"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/black" />
 
-            <!-- ÍCONES -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal"
-                android:paddingHorizontal="24dp">
+        <ImageView
+            android:id="@+id/btnConfig"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:contentDescription="Configurações"
+            android:src="@android:drawable/ic_menu_manage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/black" />
 
-                <ImageView
-                    android:id="@+id/btnNotificacao"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@android:drawable/ic_popup_reminder"
-                    app:tint="@color/black" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <ImageView
-                    android:id="@+id/btnConfig"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@android:drawable/ic_menu_manage"
-                    app:tint="@color/black" />
-
-            </LinearLayout>
-
-        </FrameLayout>
-
-        <!-- FOTO PERFIL -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imagePerfilUsuario"
             android:layout_width="85dp"
             android:layout_height="85dp"
-            android:layout_marginTop="-40dp"
+            android:layout_marginTop="40dp"
             android:scaleType="centerCrop"
             android:src="@drawable/user_placeholder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent" />
 
-        <!-- NOME -->
         <TextView
             android:id="@+id/textNomeUsuario"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-black"
             android:text="João Bobo"
             android:textColor="@color/white"
-            android:textSize="26sp"
-            android:fontFamily="sans-serif-black" />
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imagePerfilUsuario" />
 
-        <!-- BEM VINDO -->
         <TextView
             android:id="@+id/textBemVindoUsuario"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:text="Bem vindo"
             android:textColor="@color/white"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textNomeUsuario" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- CONTEÚDO -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/headerUsuario"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerUsuario">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="24dp">
-
-            <!-- CARD PROCURAR -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"/>
-
-            <!-- BOTÕES -->
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPesquisa"
@@ -137,11 +125,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="14dp"
+                android:fontFamily="sans-serif-black"
                 android:text="Histórico"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
                 app:backgroundTint="@color/biblio_dark"
                 app:cornerRadius="28dp" />
 
@@ -150,11 +138,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="14dp"
+                android:fontFamily="sans-serif-black"
                 android:text="Status aluguel"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
                 app:backgroundTint="@color/biblio_dark"
                 app:cornerRadius="28dp" />
 
@@ -163,29 +151,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="14dp"
+                android:fontFamily="sans-serif-black"
                 android:text="Salvar alterações"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
                 app:backgroundTint="@color/biblio_dark"
                 app:cornerRadius="28dp" />
 
-            <!-- BOTÃO SAIR -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSairConta"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="32dp"
+                android:fontFamily="sans-serif-black"
                 android:text="Sair da conta"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
                 app:backgroundTint="@color/biblio_red"
                 app:cornerRadius="28dp" />
 
-            <!-- DESCOBRIR -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -203,14 +189,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:fontFamily="sans-serif-black"
                     android:text="Descobrir"
                     android:textColor="@color/black"
-                    android:textSize="26sp"
-                    android:fontFamily="sans-serif-black" />
+                    android:textSize="26sp" />
 
             </LinearLayout>
 
-            <!-- LIVROS -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -221,7 +206,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- CARD LIVRO -->
                     <androidx.cardview.widget.CardView
                         android:layout_width="160dp"
                         android:layout_height="wrap_content"
@@ -274,11 +258,8 @@
                                 app:cornerRadius="10dp" />
 
                         </LinearLayout>
-
                     </androidx.cardview.widget.CardView>
-
                 </LinearLayout>
-
             </HorizontalScrollView>
 
             <Space
@@ -286,7 +267,5 @@
                 android:layout_height="40dp" />
 
         </LinearLayout>
-
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
