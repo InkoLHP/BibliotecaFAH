@@ -10,7 +10,8 @@
         <item name="android:statusBarColor">?attr/colorPrimary</item>
     </style>
 
-    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
+    <!-- CORRIGIDO: Adicionado parent adequado para cortes circulares -->
+    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="ShapeAppearance.MaterialComponents.SmallComponent">
         <item name="cornerSize">50%</item>
     </style>
 
@@ -22,6 +23,11 @@
     <style name="RoundedImage">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">8dp</item>
+    </style>
+
+    <!-- CORRIGIDO: Adicionado parent adequado para bordas arredondadas -->
+    <style name="ShapeAppearanceOverlay.App.CornerSize12dp" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerSize">12dp</item>
     </style>
 
 </resources>
