@@ -83,9 +83,6 @@ class TelaRF22ConfigADM : AppCompatActivity() {
             val btnConfirmar =
                 dialog.findViewById<Button>(R.id.buttonConfirmarApagarConta)
 
-            val btnCancelar =
-                dialog.findViewById<TextView>(R.id.textCancelarApagarConta)
-
             val iconOlho =
                 dialog.findViewById<ImageView>(R.id.iconOlhoSenhaPopup)
 
@@ -148,12 +145,6 @@ class TelaRF22ConfigADM : AppCompatActivity() {
 
                     textErro.visibility = View.VISIBLE
                 }
-            }
-
-            // CANCELAR
-            btnCancelar.setOnClickListener {
-
-                dialog.dismiss()
             }
 
             dialog.show()
