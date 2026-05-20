@@ -10,14 +10,15 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.bibliounifor.data.AppDatabase
-import com.example.bibliounifor.data.Usuario
 import com.example.bibliounifornew.R
-import com.google.android.material.button.MaterialButton
+import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.User
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
 
@@ -32,11 +33,7 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
     private lateinit var btnEntreAqui: TextView
 
     private lateinit var bntOlhoSenha: ImageView
-
     private lateinit var bntOlhoConfirmarSenha: ImageView
-
-
-    private val db by lazy { AppDatabase.Companion.getDatabase(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,67 +65,37 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
         var senhaVisivel = false
         var confirmarSenhaVisivel = false
 
-        //Mostrar Senha
+        // Mostrar/Esconder Senha
         bntOlhoSenha.setOnClickListener {
-
             if (senhaVisivel) {
-
-                // ESCONDER
-                etSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
+                etSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 bntOlhoSenha.setImageResource(R.drawable.ic_eye_closed)
-
                 senhaVisivel = false
-
             } else {
-
-                // MOSTRAR
-                etSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+                etSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 bntOlhoSenha.setImageResource(R.drawable.ic_eye_open)
-
                 senhaVisivel = true
             }
-
             etSenha.setSelection(etSenha.text.length)
         }
 
         bntOlhoConfirmarSenha.setOnClickListener {
-
             if (confirmarSenhaVisivel) {
-
-                // ESCONDER
-                etConfirmaSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
+                etConfirmaSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 bntOlhoConfirmarSenha.setImageResource(R.drawable.ic_eye_closed)
-
                 confirmarSenhaVisivel = false
-
             } else {
-
-                // MOSTRAR
-                etConfirmaSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+                etConfirmaSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 bntOlhoConfirmarSenha.setImageResource(R.drawable.ic_eye_open)
-
                 confirmarSenhaVisivel = true
             }
-
             etConfirmaSenha.setSelection(etConfirmaSenha.text.length)
         }
-
-
     }
 
     private fun validarECadastrar() {
+        val nome = etNome.text.toString().trim()
+        val usuario = etUsuario.text.toString().trim()
         val email = etEmail.text.toString().trim()
         val senha = etSenha.text.toString()
         val confirmaSenha = etConfirmaSenha.text.toString()
@@ -136,6 +103,12 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
         var valido = true
         tvErroEmail.visibility = View.GONE
         tvErroSenha.visibility = View.GONE
+
+        // Validar campos vazios de nome e usuário
+        if (nome.isEmpty() || usuario.isEmpty()) {
+            Toast.makeText(this, "Preencha todos os campos obrigatórios", Toast.LENGTH_SHORT).show()
+            valido = false
+        }
 
         // Validar E-mail
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -147,6 +120,7 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
         // Validar Senha (8 caracteres, 1 número, 1 maiúscula)
         val senhaRegex = "^(?=.*[0-9])(?=.*[A-Z]).{8,}$".toRegex()
         if (!senhaRegex.matches(senha)) {
+            tvErroSenha.text = "A senha deve conter no mínimo 8 caracteres, 1 número e 1 letra maiúscula"
             tvErroSenha.visibility = View.VISIBLE
             valido = false
         } else if (senha != confirmaSenha) {
@@ -156,21 +130,50 @@ class TelaRF04CadastroNovoUsuario : AppCompatActivity() {
         }
 
         if (valido) {
+            // Desabilita o botão temporariamente para evitar cliques duplos enquanto envia ao banco
+            btnCriar.isEnabled = false
+
             lifecycleScope.launch {
-                val usuarioExistente = db.usuarioDao().buscarPorEmail(email)
-                if (usuarioExistente != null) {
-                    tvErroEmail.text = "E-mail já cadastrado"
-                    tvErroEmail.visibility = View.VISIBLE
-                } else {
-                    db.usuarioDao().inserir(
-                        Usuario(
-                            nome = etNome.text.toString(),
-                            usuario = etUsuario.text.toString(),
+                try {
+                    // 1. Verifica se o e-mail já existe na tabela "users" do Supabase
+                    val usuarioExistente = withContext(Dispatchers.IO) {
+                        SupabaseConfig.client.postgrest["users"]
+                            .select {
+                                filter {
+                                    eq("email", email)
+                                }
+                            }.decodeSingleOrNull<User>()
+                    }
+
+                    if (usuarioExistente != null) {
+                        tvErroEmail.text = "E-mail já cadastrado"
+                        tvErroEmail.visibility = View.VISIBLE
+                        btnCriar.isEnabled = true
+                    } else {
+                        // 2. Monta o objeto User para o Supabase
+                        val novoUsuario = User(
+                            nome = nome,
+                            usuario = usuario,
                             email = email,
-                            senha = senha
+                            senha = senha,
+                            tipo = "usuario", // Define fixo que é usuário comum
+                            credencial = null,
+                            foto = null
                         )
-                    )
-                    Toast.makeText(this@TelaRF04CadastroNovoUsuario, "Conta criada com sucesso!", Toast.LENGTH_LONG).show()
+
+                        // 3. Insere o novo usuário no banco remoto
+                        withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.postgrest["users"].insert(novoUsuario)
+                        }
+
+                        Toast.makeText(this@TelaRF04CadastroNovoUsuario, "Conta criada com sucesso!", Toast.LENGTH_LONG).show()
+                        irParaLogin()
+                    }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this@TelaRF04CadastroNovoUsuario, "Erro ao conectar ao banco de dados", Toast.LENGTH_SHORT).show()
+                    btnCriar.isEnabled = true
                 }
             }
         }

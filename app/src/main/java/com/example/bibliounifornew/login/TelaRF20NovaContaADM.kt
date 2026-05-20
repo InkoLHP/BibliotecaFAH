@@ -11,7 +11,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.User
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF20NovaContaADM : AppCompatActivity() {
 
@@ -35,28 +42,17 @@ class TelaRF20NovaContaADM : AppCompatActivity() {
         edtConfirmaSenha = findViewById(R.id.editConfirmarSenhaAdm)
 
         // TEXTOS DE ERRO
-        val txtErroEmail =
-            findViewById<TextView>(R.id.textErroEmailAdmCadastro)
-
-        val txtErroCredencial =
-            findViewById<TextView>(R.id.textErroCredencialAdm)
-
-        val txtErroSenha =
-            findViewById<TextView>(R.id.textRegrasSenhaAdm)
+        val txtErroEmail = findViewById<TextView>(R.id.textErroEmailAdmCadastro)
+        val txtErroCredencial = findViewById<TextView>(R.id.textErroCredencialAdm)
+        val txtErroSenha = findViewById<TextView>(R.id.textRegrasSenhaAdm)
 
         // BOTÕES
-        val btnCriar =
-            findViewById<Button>(R.id.buttonCriarContaAdm)
-
-        val txtEntreAqui =
-            findViewById<TextView>(R.id.textEntreAquiAdm)
+        val btnCriar = findViewById<Button>(R.id.buttonCriarContaAdm)
+        val txtEntreAqui = findViewById<TextView>(R.id.textEntreAquiAdm)
 
         // ÍCONES
-        val iconOlhoSenha =
-            findViewById<ImageView>(R.id.iconOlhoSenhaAdmCadastro)
-
-        val iconOlhoConfirma =
-            findViewById<ImageView>(R.id.iconOlhoConfirmarSenhaAdm)
+        val iconOlhoSenha = findViewById<ImageView>(R.id.iconOlhoSenhaAdmCadastro)
+        val iconOlhoConfirma = findViewById<ImageView>(R.id.iconOlhoConfirmarSenhaAdm)
 
         // ESCONDER ERROS
         txtErroEmail.visibility = View.GONE
@@ -66,154 +62,132 @@ class TelaRF20NovaContaADM : AppCompatActivity() {
         // =========================================
         // MOSTRAR / ESCONDER SENHA
         // =========================================
-
         var senhaVisivel = false
-
         iconOlhoSenha.setOnClickListener {
-
             if (senhaVisivel) {
-
-                edtSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
-                iconOlhoSenha.setImageResource(
-                    R.drawable.ic_eye_closed
-                )
-
+                edtSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                iconOlhoSenha.setImageResource(R.drawable.ic_eye_closed)
                 senhaVisivel = false
-
             } else {
-
-                edtSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
-                iconOlhoSenha.setImageResource(
-                    R.drawable.ic_eye_open
-                )
-
+                edtSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                iconOlhoSenha.setImageResource(R.drawable.ic_eye_open)
                 senhaVisivel = true
             }
-
-            edtSenha.setSelection(
-                edtSenha.text.length
-            )
+            edtSenha.setSelection(edtSenha.text.length)
         }
 
         // =========================================
         // MOSTRAR / ESCONDER CONFIRMAR SENHA
         // =========================================
-
         var confirmaVisivel = false
-
         iconOlhoConfirma.setOnClickListener {
-
             if (confirmaVisivel) {
-
-                edtConfirmaSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
-                iconOlhoConfirma.setImageResource(
-                    R.drawable.ic_eye_closed
-                )
-
+                edtConfirmaSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                iconOlhoConfirma.setImageResource(R.drawable.ic_eye_closed)
                 confirmaVisivel = false
-
             } else {
-
-                edtConfirmaSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
-                iconOlhoConfirma.setImageResource(
-                    R.drawable.ic_eye_open
-                )
-
+                edtConfirmaSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                iconOlhoConfirma.setImageResource(R.drawable.ic_eye_open)
                 confirmaVisivel = true
             }
-
-            edtConfirmaSenha.setSelection(
-                edtConfirmaSenha.text.length
-            )
+            edtConfirmaSenha.setSelection(edtConfirmaSenha.text.length)
         }
 
         // =========================================
         // BOTÃO CRIAR CONTA
         // =========================================
-
         btnCriar.setOnClickListener {
 
             txtErroEmail.visibility = View.GONE
             txtErroCredencial.visibility = View.GONE
             txtErroSenha.visibility = View.GONE
 
-            val email =
-                edtEmail.text.toString().trim()
-
-            val credencial =
-                edtCredencial.text.toString().trim()
-
-            val senha1 =
-                edtSenha.text.toString()
-
-            val senha2 =
-                edtConfirmaSenha.text.toString()
+            val nomeCompleto = edtNomeCompleto.text.toString().trim()
+            val nomeUsuario = edtNomeUsuario.text.toString().trim()
+            val email = edtEmail.text.toString().trim()
+            val credencial = edtCredencial.text.toString().trim()
+            val senha1 = edtSenha.text.toString()
+            val senha2 = edtConfirmaSenha.text.toString()
 
             var temErro = false
 
+            // VALIDAR CAMPOS VAZIOS BÁSICOS
+            if (nomeCompleto.isEmpty() || nomeUsuario.isEmpty()) {
+                Toast.makeText(this, "Preencha todos os campos obrigatórios", Toast.LENGTH_SHORT).show()
+                temErro = true
+            }
+
             // VALIDAR EMAIL
-            if (
-                email.isBlank() ||
-                !Patterns.EMAIL_ADDRESS.matcher(email).matches()
-            ) {
-
+            if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                txtErroEmail.text = "E-mail inválido"
                 txtErroEmail.visibility = View.VISIBLE
-
                 temErro = true
             }
 
             // VALIDAR CREDENCIAL
             if (credencial.isBlank()) {
-
                 txtErroCredencial.visibility = View.VISIBLE
-
                 temErro = true
             }
 
             // VALIDAR SENHA
-            val temMaiuscula =
-                senha1.any { it.isUpperCase() }
+            val temMaiuscula = senha1.any { it.isUpperCase() }
+            val temNumero = senha1.any { it.isDigit() }
+            val temTamanho = senha1.length >= 8
 
-            val temNumero =
-                senha1.any { it.isDigit() }
-
-            val temTamanho =
-                senha1.length >= 8
-
-            if (
-                !temTamanho ||
-                !temNumero ||
-                !temMaiuscula ||
-                senha1 != senha2
-            ) {
-
+            if (!temTamanho || !temNumero || !temMaiuscula || senha1 != senha2) {
                 txtErroSenha.visibility = View.VISIBLE
-
                 temErro = true
             }
 
-            // SUCESSO
+            // SE NÃO HOUVER ERROS DE VALIDAÇÃO LOCAL
             if (!temErro) {
+                // Desativa o botão para evitar cliques duplicados
+                btnCriar.isEnabled = false
 
-                Toast.makeText(
-                    this,
-                    "Conta criada com sucesso!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                lifecycleScope.launch {
+                    try {
+                        // 1. Verifica se já existe um administrador ou usuário cadastrado com esse e-mail
+                        val usuarioExistente = withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.postgrest["users"]
+                                .select {
+                                    filter {
+                                        eq("email", email)
+                                    }
+                                }.decodeSingleOrNull<User>()
+                        }
 
-                mostrarPopUpSucesso()
+                        if (usuarioExistente != null) {
+                            txtErroEmail.text = "E-mail já cadastrado"
+                            txtErroEmail.visibility = View.VISIBLE
+                            btnCriar.isEnabled = true
+                        } else {
+                            // 2. Cria o objeto contendo o tipo "adm" e a credencial informada
+                            val novoAdm = User(
+                                nome = nomeCompleto,
+                                usuario = nomeUsuario,
+                                email = email,
+                                senha = senha1,
+                                tipo = "adm",
+                                credencial = credencial,
+                                foto = null
+                            )
+
+                            // 3. Salva no banco de dados do Supabase
+                            withContext(Dispatchers.IO) {
+                                SupabaseConfig.client.postgrest["users"].insert(novoAdm)
+                            }
+
+                            // 4. Abre o pop-up de sucesso do seu layout
+                            mostrarPopUpSucesso()
+                        }
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this@TelaRF20NovaContaADM, "Erro ao salvar no banco de dados", Toast.LENGTH_SHORT).show()
+                        btnCriar.isEnabled = true
+                    }
+                }
             }
         }
 
@@ -224,35 +198,19 @@ class TelaRF20NovaContaADM : AppCompatActivity() {
     }
 
     // =========================================
-    // POPUP
+    // POPUP PERSONALIZADO DE SUCESSO
     // =========================================
-
     private fun mostrarPopUpSucesso() {
-
         val dialog = Dialog(this)
-
-        dialog.setContentView(
-            R.layout.popup_sucesso_cadastro
-        )
-
-        dialog.window?.setBackgroundDrawableResource(
-            android.R.color.transparent
-        )
-
+        dialog.setContentView(R.layout.popup_sucesso_cadastro)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.setCancelable(false)
 
-        val botaoRetornar =
-            dialog.findViewById<Button>(
-                R.id.btnRetorneLogin
-            )
-
+        val botaoRetornar = dialog.findViewById<Button>(R.id.btnRetorneLogin)
         botaoRetornar.setOnClickListener {
-
             dialog.dismiss()
-
             finish()
         }
-
         dialog.show()
     }
 }

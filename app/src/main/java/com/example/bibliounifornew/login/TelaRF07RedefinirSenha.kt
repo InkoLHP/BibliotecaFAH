@@ -11,13 +11,25 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
 import com.google.android.material.button.MaterialButton
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF07RedefinirSenha : AppCompatActivity() {
+
+    private var emailUsuario: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf07_redefinicao_de_senha)
+
+        // Recupera o e-mail que deve ter sido passado pelas telas anteriores
+        emailUsuario = intent.getStringExtra("USER_EMAIL")
 
         val editSenhaNova = findViewById<EditText>(R.id.editSenhaNova)
         val editConfirmarSenha = findViewById<EditText>(R.id.editConfirmarSenha)
@@ -33,7 +45,7 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
         val bntOlhoSenha = findViewById<ImageView>(R.id.iconOlhoSenhaNova)
         val bntOlhoConfirmarSenha = findViewById<ImageView>(R.id.iconOlhoConfirmarSenha)
 
-        // Inicializa erros como invisíveis ou cor padrão
+        // Inicializa erros como invisíveis
         textErroDiferente.visibility = View.GONE
         textErroIgual.visibility = View.GONE
         textErroRequisitos.visibility = View.GONE
@@ -44,45 +56,66 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
             val senhanova = editSenhaNova.text.toString()
             val confirmarsenha = editConfirmarSenha.text.toString()
 
+            // Reseta alertas visuais de erro de campos vazios
+            erroSenha1.visibility = View.GONE
+            erroSenha2.visibility = View.GONE
+            textErroDiferente.visibility = View.GONE
+
             val senhaValida = validarSenha(senhanova)
             val senhasIguais = senhanova == confirmarsenha
 
-            if (senhaValida && senhasIguais) {
-                mostrarPopupSucesso()
-            }
-            else if(editSenhaNova.text.toString().isEmpty()|| editConfirmarSenha.text.toString().isEmpty()){
+            if (editSenhaNova.text.toString().isEmpty() || editConfirmarSenha.text.toString().isEmpty()) {
                 erroSenha2.visibility = View.VISIBLE
                 erroSenha1.visibility = View.VISIBLE
-            }
-            else {
+            } else if (senhaValida && senhasIguais) {
+
+                // Se o e-mail não foi repassado corretamente pelas intents, usamos um aviso de segurança
+                if (emailUsuario.isNullOrBlank()) {
+                    Toast.makeText(this, "Erro: Identificação do usuário não encontrada.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                // Desativa o botão para evitar cliques múltiplos
+                btnConfirmar.isEnabled = false
+
+                lifecycleScope.launch {
+                    try {
+                        // Atualiza a senha na tabela "users" onde o email for igual ao guardado
+                        withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.postgrest["users"].update(
+                                {
+                                    set("senha", senhanova)
+                                }
+                            ) {
+                                filter {
+                                    eq("email", emailUsuario!!)
+                                }
+                            }
+                        }
+
+                        // Abre o pop-up de sucesso se a operação no banco funcionar
+                        mostrarPopupSucesso()
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this@TelaRF07RedefinirSenha, "Erro ao atualizar a senha no banco", Toast.LENGTH_SHORT).show()
+                        btnConfirmar.isEnabled = true
+                    }
+                }
+
+            } else {
                 if (!senhasIguais) {
                     textErroDiferente.visibility = View.VISIBLE
                     textErroDiferente.text = "As senhas não coincidem"
-                } else {
-                    textErroDiferente.visibility = View.GONE
                 }
 
                 if (!senhaValida) {
-
                     textErroRequisitos.visibility = View.VISIBLE
-
                     textErroRequisitos.setTextColor(
-                        ContextCompat.getColor(
-                            this,
-                            android.R.color.holo_red_dark
-                        )
+                        ContextCompat.getColor(this, android.R.color.holo_red_dark)
                     )
-
                 } else {
-
                     textErroRequisitos.visibility = View.GONE
-
-                    textErroRequisitos.setTextColor(
-                        ContextCompat.getColor(
-                            this,
-                            android.R.color.darker_gray
-                        )
-                    )
                 }
             }
         }
@@ -90,63 +123,33 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
         var senhaVisivel = false
         var confirmarSenhaVisivel = false
 
-        //Mostrar Senha
+        // Mostrar/Esconder Senha Nova
         bntOlhoSenha.setOnClickListener {
-
             if (senhaVisivel) {
-
-                // ESCONDER
-                editSenhaNova.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
+                editSenhaNova.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 bntOlhoSenha.setImageResource(R.drawable.ic_eye_closed)
-
                 senhaVisivel = false
-
             } else {
-
-                // MOSTRAR
-                editSenhaNova.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+                editSenhaNova.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 bntOlhoSenha.setImageResource(R.drawable.ic_eye_open)
-
                 senhaVisivel = true
             }
-
             editSenhaNova.setSelection(editSenhaNova.text.length)
         }
 
+        // Mostrar/Esconder Confirmar Senha
         bntOlhoConfirmarSenha.setOnClickListener {
-
             if (confirmarSenhaVisivel) {
-
-                // ESCONDER
-                editConfirmarSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_PASSWORD
-
+                editConfirmarSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 bntOlhoConfirmarSenha.setImageResource(R.drawable.ic_eye_closed)
-
                 confirmarSenhaVisivel = false
-
             } else {
-
-                // MOSTRAR
-                editConfirmarSenha.inputType =
-                    InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-
+                editConfirmarSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 bntOlhoConfirmarSenha.setImageResource(R.drawable.ic_eye_open)
-
                 confirmarSenhaVisivel = true
             }
-
             editConfirmarSenha.setSelection(editConfirmarSenha.text.length)
         }
-
     }
 
     private fun validarSenha(senha: String): Boolean {
@@ -157,28 +160,17 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
     }
 
     private fun mostrarPopupSucesso() {
-
         val dialog = android.app.Dialog(this)
-
         dialog.setContentView(R.layout.popup_confirmar_redefinir_senha)
-
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        // BOTÃO DO POPUP
-        val botaoRetornar =
-            dialog.findViewById<Button>(R.id.btnRetornarLogin)
-
+        val botaoRetornar = dialog.findViewById<Button>(R.id.btnRetornarLogin)
         botaoRetornar.setOnClickListener {
-
             val intent = Intent(this, TelaRF03LoginAluno::class.java)
-
             startActivity(intent)
-
             dialog.dismiss()
-
             finish()
         }
-
         dialog.show()
     }
 }

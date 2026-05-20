@@ -12,9 +12,15 @@ import com.example.bibliounifornew.R
 
 class TelaRF06ValidacaoDeCodigo : AppCompatActivity() {
 
+    // Variável para armazenar o email recebido da tela anterior
+    private var emailUsuario: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf06_validacao_de_codigo)
+
+        // Captura o email que veio da tela de "Esqueci a Senha"
+        emailUsuario = intent.getStringExtra("USER_EMAIL")
 
         val editCodigo = findViewById<EditText>(R.id.editTextCodigo)
         val textErro = findViewById<TextView>(R.id.textErroCodigo)
@@ -30,8 +36,12 @@ class TelaRF06ValidacaoDeCodigo : AppCompatActivity() {
             // Simulação de código correto (ex: 123456)
             if (codigoDigitado == "123456") {
                 textErro.visibility = View.INVISIBLE
+
                 val intent = Intent(this, TelaRF07RedefinirSenha::class.java)
+                // 🔥 Envia o email adiante para a tela de redefinição
+                intent.putExtra("USER_EMAIL", emailUsuario)
                 startActivity(intent)
+                finish() // Opcional: fecha esta tela de código para o usuário não voltar nela
             } else {
                 // Código incorreto
                 textErro.visibility = View.VISIBLE

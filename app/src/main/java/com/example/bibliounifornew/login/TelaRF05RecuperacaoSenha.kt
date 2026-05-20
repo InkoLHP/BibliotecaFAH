@@ -2,12 +2,21 @@ package com.example.bibliounifornew.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.User
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF05RecuperacaoSenha : AppCompatActivity() {
 
@@ -23,26 +32,59 @@ class TelaRF05RecuperacaoSenha : AppCompatActivity() {
         textErroEmail.visibility = View.GONE
 
         btnEnviar.setOnClickListener {
-            val email = etEmail.text.toString()
+            val email = etEmail.text.toString().trim()
 
-            // Simulação de validação de e-mail (ex: verificar se não está vazio e se existe no "banco")
-            if (email.isNotEmpty() && email.contains("@")) {
-                textErroEmail.visibility = View.INVISIBLE
+            // Validação local do formato do e-mail
+            if (email.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                textErroEmail.visibility = View.GONE
 
-                // Navegar para a tela de validação de código
-                val intent = Intent(this, TelaRF06ValidacaoDeCodigo::class.java)
-                startActivity(intent)
+                // Desativa o botão para evitar múltiplos cliques enquanto consulta o banco
+                btnEnviar.isEnabled = false
+
+                lifecycleScope.launch {
+                    try {
+                        // Consulta no banco se o e-mail inserido existe na tabela "users"
+                        val usuarioExistente = withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.postgrest["users"]
+                                .select {
+                                    filter {
+                                        eq("email", email)
+                                    }
+                                }.decodeSingleOrNull<User>()
+                        }
+
+                        if (usuarioExistente != null) {
+                            // Se o e-mail existir, segue para a tela de validação do código
+                            val intent = Intent(this@TelaRF05RecuperacaoSenha, TelaRF06ValidacaoDeCodigo::class.java)
+
+                            // 🔥 CORREÇÃO: Passando o e-mail validado para a próxima tela
+                            intent.putExtra("USER_EMAIL", email)
+
+                            startActivity(intent)
+                        } else {
+                            // Se o e-mail não estiver cadastrado
+                            textErroEmail.text = "E-mail não cadastrado no sistema"
+                            textErroEmail.visibility = View.VISIBLE
+                            btnEnviar.isEnabled = true
+                        }
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this@TelaRF05RecuperacaoSenha, "Erro ao conectar ao banco", Toast.LENGTH_SHORT).show()
+                        btnEnviar.isEnabled = true
+                    }
+                }
             } else {
-                // E-mail inválido ou não cadastrado
+                // Se o formato do e-mail digitado for inválido
+                textErroEmail.text = "E-mail inválido"
                 textErroEmail.visibility = View.VISIBLE
             }
         }
 
         voltar.setOnClickListener {
-            val Intent = Intent(this, TelaRF03LoginAluno::class.java)
-            startActivity(Intent)
+            val intent = Intent(this, TelaRF03LoginAluno::class.java)
+            startActivity(intent)
             finish()
         }
-
     }
 }
