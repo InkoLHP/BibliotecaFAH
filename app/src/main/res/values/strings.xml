@@ -235,4 +235,6 @@
     <string name="hint_audiobook">Audiobook...</string>
     <string name="label_disponivel_braille">Disponível em Braille</string>
     <string name="btn_salvar_novo_livro">Salvar novo livro</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
