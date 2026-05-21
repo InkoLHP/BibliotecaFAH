@@ -2,14 +2,12 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@color/white"
     android:padding="24dp">
 
-    <!-- BARRINHA SUPERIOR -->
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
@@ -17,7 +15,6 @@
         android:layout_marginBottom="22dp"
         android:background="#DDDDDD" />
 
-    <!-- TÍTULO -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -27,27 +24,110 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <!-- DISPONIBILIDADE -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="8dp"
+        android:text="NOME DO AUTOR"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/editFiltroAutor"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_input"
+        android:hint="Ex: Machado de Assis"
+        android:paddingHorizontal="12dp"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="DATA DE PUBLICAÇÃO"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/editFiltroData"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_input"
+        android:hint="Ex: 1899 ou 10/12/1899"
+        android:inputType="date"
+        android:paddingHorizontal="12dp"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="DISPONIBILIDADE"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupDisponibilidade"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <RadioButton
+            android:id="@+id/radioDisponivel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Disponível" />
+
+        <RadioButton
+            android:id="@+id/radioAlugado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Já Alugados" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="CATEGORIA"
         android:textColor="#666666"
         android:textSize="12sp"
         android:textStyle="bold" />
 
-    <!-- CATEGORIA -->
+    <RadioGroup
+        android:id="@+id/radioGroupCategoria"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="32dp">
 
-    <!-- INPUT AUTOR -->
+        <RadioButton
+            android:id="@+id/radioOnline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Online" />
 
-    <!-- BOTÃO SALVAR -->
+        <RadioButton
+            android:id="@+id/radioPresencial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Presencial" />
+    </RadioGroup>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSalvarFiltro"
         android:layout_width="match_parent"
         android:layout_height="58dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="12dp"
         android:text="Salvar Filtro"
         android:textAllCaps="false"
         android:textColor="@color/white"
@@ -56,7 +136,6 @@
         app:cornerRadius="8dp"
         app:elevation="2dp" />
 
-    <!-- BOTÃO LIMPAR -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonLimparFiltro"
         android:layout_width="match_parent"
