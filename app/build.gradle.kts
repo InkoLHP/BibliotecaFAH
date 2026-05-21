@@ -50,8 +50,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
-
+    implementation(libs.okhttp)
     implementation("io.github.jan-tennert.supabase:postgrest-kt:3.6.0")
     implementation("io.ktor:ktor-client-android:3.5.0")
     implementation("io.ktor:ktor-client-serialization:3.5.0")
+    implementation("org.json:json:20240303")
 }

@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.api.CodigoManager
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.User
 import io.github.jan.supabase.postgrest.postgrest
@@ -54,18 +55,32 @@ class TelaRF05RecuperacaoSenha : AppCompatActivity() {
                         }
 
                         if (usuarioExistente != null) {
-                            // Se o e-mail existir, segue para a tela de validação do código
-                            val intent = Intent(this@TelaRF05RecuperacaoSenha, TelaRF06ValidacaoDeCodigo::class.java)
+                            // 1. Gera o código e guarda o e-mail no seu CodigoManager Singleton
+                            val codigoGerado = CodigoManager.gerarCodigo()
+                            CodigoManager.emailRecuperacao = email
 
-                            // 🔥 CORREÇÃO: Passando o e-mail validado para a próxima tela
-                            intent.putExtra("USER_EMAIL", email)
+                            // 2. Dispara o e-mail usando o seu EmailSender (OkHttp)
+                            com.example.bibliounifornew.utils.EmailSender.enviarEmail(
+                                email = email,
+                                codigo = codigoGerado,
+                                onSuccess = {
+                                    // Como o OkHttp roda em background, voltamos para a main thread para mudar de tela
+                                    runOnUiThread {
+                                        btnEnviar.isEnabled = true
+                                        Toast.makeText(this@TelaRF05RecuperacaoSenha, "Código enviado com sucesso!", Toast.LENGTH_SHORT).show()
 
-                            startActivity(intent)
-                        } else {
-                            // Se o e-mail não estiver cadastrado
-                            textErroEmail.text = "E-mail não cadastrado no sistema"
-                            textErroEmail.visibility = View.VISIBLE
-                            btnEnviar.isEnabled = true
+                                        // 3. Abre a tela de validação do código (TelaRF06)
+                                        val intent = Intent(this@TelaRF05RecuperacaoSenha, TelaRF06ValidacaoDeCodigo::class.java)
+                                        startActivity(intent)
+                                    }
+                                },
+                                onError = {
+                                    runOnUiThread {
+                                        btnEnviar.isEnabled = true
+                                        Toast.makeText(this@TelaRF05RecuperacaoSenha, "Erro ao enviar e-mail. Tente novamente.", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            )
                         }
 
                     } catch (e: Exception) {
