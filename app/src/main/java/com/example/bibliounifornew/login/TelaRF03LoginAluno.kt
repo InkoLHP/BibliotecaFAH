@@ -15,7 +15,6 @@ import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.User
 // 1. IMPORTAÇÃO ATUALIZADA AQUI:
-import com.example.bibliounifornew.usuario.MainActivityUsuario
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -76,7 +75,7 @@ class TelaRF03LoginAluno : AppCompatActivity() {
 
                             // 2. MUDANÇA PRINCIPAL AQUI:
                             // Agora o login manda o aluno para a MainActivityUsuario
-                            val intent = Intent(this@TelaRF03LoginAluno, MainActivityUsuario::class.java)
+                            val intent = Intent(this@TelaRF03LoginAluno, UsuarioMainActivity::class.java)
                             startActivity(intent)
                             finish()
                         } else {
