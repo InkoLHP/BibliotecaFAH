@@ -14,10 +14,10 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [telarf19_solicitacoes.newInstance] factory method to
+ * Use the [TelaRF19Solicitacoes.newInstance] factory method to
  * create an instance of this fragment.
  */
-class telarf19_solicitacoes : Fragment() {
+class TelaRF19Solicitacoes : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -50,7 +50,7 @@ class telarf19_solicitacoes : Fragment() {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            telarf19_solicitacoes().apply {
+            TelaRF19Solicitacoes().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
