@@ -14,10 +14,10 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [telarf17_amigos.newInstance] factory method to
+ * Use the [TelaRF15MinhaLivraria.newInstance] factory method to
  * create an instance of this fragment.
  */
-class telarf17_amigos : Fragment() {
+class TelaRF15MinhaLivraria : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -35,7 +35,7 @@ class telarf17_amigos : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.telarf17_amigos, container, false)
+        return inflater.inflate(R.layout.telarf15_minha_livraria, container, false)
     }
 
     companion object {
@@ -45,12 +45,12 @@ class telarf17_amigos : Fragment() {
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
-         * @return A new instance of fragment telarf17_amigos.
+         * @return A new instance of fragment telarf15_minha_livraria.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            telarf17_amigos().apply {
+            TelaRF15MinhaLivraria().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
