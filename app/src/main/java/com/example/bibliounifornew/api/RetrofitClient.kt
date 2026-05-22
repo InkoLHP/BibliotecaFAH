@@ -1,6 +1,6 @@
 package com.example.bibliounifornew.api
 
-import retrofit2.Retrofit
+/*import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
@@ -14,6 +14,7 @@ object RetrofitClient {
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create()) // Traduz os dados do Google para o Kotlin
             .build()
-            .create(BooksApi::class.java)
+           .create(BooksApi::class.java)
     }
 }
+*/

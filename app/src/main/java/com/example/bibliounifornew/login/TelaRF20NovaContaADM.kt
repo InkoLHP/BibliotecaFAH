@@ -29,6 +29,13 @@ class TelaRF20NovaContaADM : AppCompatActivity() {
     private lateinit var edtSenha: EditText
     private lateinit var edtConfirmaSenha: EditText
 
+    //Credenciais
+    private val CredencialADM = arrayOf (
+        "30062007",
+        "01042007",
+        "22112006"
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf20_nova_conta_adm)
@@ -126,6 +133,11 @@ class TelaRF20NovaContaADM : AppCompatActivity() {
 
             // VALIDAR CREDENCIAL
             if (credencial.isBlank()) {
+                txtErroCredencial.visibility = View.VISIBLE
+                temErro = true
+            }
+            if(credencial !in CredencialADM){
+                txtErroCredencial.text = "Credencial invalida!"
                 txtErroCredencial.visibility = View.VISIBLE
                 temErro = true
             }

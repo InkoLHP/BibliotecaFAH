@@ -22,6 +22,13 @@ import kotlinx.coroutines.withContext
 
 class TelaRF16LoginADM : AppCompatActivity() {
 
+    //Credenciais
+    private val CredencialADM = arrayOf (
+        "30062007",
+        "01042007",
+        "22112006"
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf16_login_adm)
@@ -57,40 +64,55 @@ class TelaRF16LoginADM : AppCompatActivity() {
             } else {
                 // Desativa o botão para evitar múltiplos cliques na rede
                 botaoEntrar.isEnabled = false
+                if (textoCredencial in CredencialADM) {
+                    lifecycleScope.launch {
+                        try {
+                            // Busca no banco por todas as credenciais fornecidas + o tipo "adm"
+                            val contaAdm = withContext(Dispatchers.IO) {
+                                SupabaseConfig.client.postgrest["users"]
+                                    .select {
+                                        filter {
+                                            eq("email", textoEmail)
+                                            eq("senha", textoSenha)
+                                            eq("credencial", textoCredencial)
+                                            eq("tipo", "adm")
+                                        }
+                                    }.decodeSingleOrNull<User>()
+                            }
 
-                lifecycleScope.launch {
-                    try {
-                        // Busca no banco por todas as credenciais fornecidas + o tipo "adm"
-                        val contaAdm = withContext(Dispatchers.IO) {
-                            SupabaseConfig.client.postgrest["users"]
-                                .select {
-                                    filter {
-                                        eq("email", textoEmail)
-                                        eq("senha", textoSenha)
-                                        eq("credencial", textoCredencial)
-                                        eq("tipo", "adm")
-                                    }
-                                }.decodeSingleOrNull<User>()
-                        }
+                            if (contaAdm != null) {
+                                Toast.makeText(
+                                    this@TelaRF16LoginADM,
+                                    "Login realizado com sucesso!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
 
-                        if (contaAdm != null) {
-                            Toast.makeText(this@TelaRF16LoginADM, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
+                                val intent =
+                                    Intent(this@TelaRF16LoginADM, TelaRF21DashboardADM::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                // Se as chaves falharem ou o usuário não for administrador
+                                erro.text = "E-mail, senha ou credencial incorretos"
+                                erro.visibility = View.VISIBLE
+                                botaoEntrar.isEnabled = true
+                            }
 
-                            val intent = Intent(this@TelaRF16LoginADM, TelaRF21DashboardADM::class.java)
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            // Se as chaves falharem ou o usuário não for administrador
-                            erro.text = "E-mail, senha ou credencial incorretos"
-                            erro.visibility = View.VISIBLE
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Toast.makeText(
+                                this@TelaRF16LoginADM,
+                                "Erro ao conectar ao servidor",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             botaoEntrar.isEnabled = true
                         }
-
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Toast.makeText(this@TelaRF16LoginADM, "Erro ao conectar ao servidor", Toast.LENGTH_SHORT).show()
-                        botaoEntrar.isEnabled = true
                     }
+                }
+                else{
+                    erro.text = "Essa credencial não está cadastrada!"
+                    erro.visibility = View.VISIBLE
+                    botaoEntrar.isEnabled = true
                 }
             }
         }
