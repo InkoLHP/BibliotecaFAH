@@ -14,7 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.User
-import com.example.bibliounifornew.usuario.TelaRF08DashboardUsuario
+// 1. IMPORTAÇÃO ATUALIZADA AQUI:
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,7 +73,9 @@ class TelaRF03LoginAluno : AppCompatActivity() {
                         if (contaEstudante != null) {
                             Toast.makeText(this@TelaRF03LoginAluno, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
 
-                            val intent = Intent(this@TelaRF03LoginAluno, TelaRF08DashboardUsuario::class.java)
+                            // 2. MUDANÇA PRINCIPAL AQUI:
+                            // Agora o login manda o aluno para a MainActivityUsuario
+                            val intent = Intent(this@TelaRF03LoginAluno, UsuarioMainActivity::class.java)
                             startActivity(intent)
                             finish()
                         } else {
