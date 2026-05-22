@@ -2,13 +2,15 @@ package com.example.bibliounifornew.usuario
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
@@ -20,112 +22,123 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TelaRF09Configuracao : AppCompatActivity() {
+class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
 
     private var emailUsuarioLogado: String? = null
-    private lateinit var textUsuario: TextView
     private var objetoUsuarioAtual: User? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.telarf09_configuracao)
+    // Declaração das Views
+    private lateinit var textEmailTop: TextView
+    private lateinit var editNome: EditText
+    private lateinit var editUsuario: EditText
+    private lateinit var editBio: EditText
+    private lateinit var editSenhaAtual: EditText
 
-        // Captura o e-mail do usuário logado enviado pela Dashboard
-        emailUsuarioLogado = intent.getStringExtra("USER_EMAIL")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // MAPEAMENTO DOS ELEMENTOS DA TELA
-        val btnRedefinir = findViewById<MaterialButton>(R.id.buttonRedefinirSenha)
-        val btnApagar = findViewById<MaterialButton>(R.id.buttonApagarConta)
-        val btnEditarUsuario = findViewById<ImageView>(R.id.btnEditarUsuario)
-        textUsuario = findViewById(R.id.textUsuario)
+        // Captura o e-mail via Arguments (mochila do Fragment)
+        emailUsuarioLogado = arguments?.getString("USER_EMAIL")
 
-        // Busca as informações atuais do usuário no Supabase para exibir na tela
+        // MAPEAMENTO DAS VIEWS (RF09.1 e RF09.2)
+        textEmailTop = view.findViewById(R.id.textUsuario)
+        editNome = view.findViewById(R.id.editNome)
+        editUsuario = view.findViewById(R.id.editUsuario)
+        editBio = view.findViewById(R.id.editBio)
+        editSenhaAtual = view.findViewById(R.id.editSenhaAtual)
+
+        val imagePerfilUsuario = view.findViewById<ImageView>(R.id.imagePerfilUsuario)
+        val btnEditarEmailTop = view.findViewById<ImageView>(R.id.btnEditarUsuario)
+        val iconEditNome = view.findViewById<ImageView>(R.id.iconEditNome)
+        val iconEditUsuario = view.findViewById<ImageView>(R.id.iconEditUsuario)
+        val iconEditBio = view.findViewById<ImageView>(R.id.iconEditBio)
+        val iconOlhoSenhaAtual = view.findViewById<ImageView>(R.id.iconOlhoSenhaAtual)
+
+        val btnRedefinir = view.findViewById<MaterialButton>(R.id.buttonRedefinirSenha)
+        val btnApagar = view.findViewById<MaterialButton>(R.id.buttonApagarConta)
+
+        // Busca informações atuais
         carregarDadosUsuario()
 
-        // Ir para a tela de redefinir senha (repassando o e-mail junto)
+        // RF09.7 - Alterar Foto de Perfil
+        imagePerfilUsuario.setOnClickListener {
+            Toast.makeText(requireContext(), "Abrir galeria para escolher foto...", Toast.LENGTH_SHORT).show()
+            // Aqui futuramente você implementa a lógica do ImagePicker
+        }
+
+        // RF09.5 - Alterar E-mail (Lápis do topo)
+        btnEditarEmailTop.setOnClickListener {
+            abrirDialogEdicao("E-mail", textEmailTop.text.toString(), "email") { novoValor ->
+                textEmailTop.text = novoValor
+                emailUsuarioLogado = novoValor // Atualiza a variável de controle
+            }
+        }
+
+        // RF09.3 - Alterar Nome
+        iconEditNome.setOnClickListener {
+            salvarNoBanco("nome", editNome.text.toString().trim())
+        }
+
+        // RF09.4 - Alterar Nome de Usuário
+        iconEditUsuario.setOnClickListener {
+            salvarNoBanco("usuario", editUsuario.text.toString().trim())
+        }
+
+        // RF09.6 - Alterar Biografia
+        iconEditBio.setOnClickListener {
+            salvarNoBanco("bio", editBio.text.toString().trim()) // Assumindo que a coluna seja "bio"
+        }
+
+        // RF09.8 - Exibir/Ocultar Senha Atual na Tela Principal
+        var senhaPrincipalVisivel = false
+        iconOlhoSenhaAtual.setOnClickListener {
+            senhaPrincipalVisivel = !senhaPrincipalVisivel
+            if (senhaPrincipalVisivel) {
+                editSenhaAtual.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                iconOlhoSenhaAtual.setImageResource(R.drawable.ic_eye_open) // Pode trocar o ícone se tiver um ic_eye_closed
+            } else {
+                editSenhaAtual.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                iconOlhoSenhaAtual.setImageResource(R.drawable.ic_eye_closed) // Ícone de senha oculta
+            }
+            editSenhaAtual.setSelection(editSenhaAtual.text.length)
+        }
+
+        // RF09.9 - Botão Redefinir Senha
         btnRedefinir.setOnClickListener {
-            val intent = Intent(this, TelaRF10RedefinirSenha::class.java)
+            val intent = Intent(requireContext(), TelaRF10RedefinirSenha::class.java)
             intent.putExtra("USER_EMAIL", emailUsuarioLogado)
             startActivity(intent)
         }
 
-        // Abrir o pop-up de apagar conta
+        // RF09.10 - Pop-up Apagar Conta
         btnApagar.setOnClickListener {
             if (objetoUsuarioAtual != null) {
                 exibirPopupApagarConta()
             } else {
-                Toast.makeText(this, "Aguardando carregamento de dados do servidor...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Aguardando servidor...", Toast.LENGTH_SHORT).show()
             }
-        }
-
-        // LÓGICA PARA EDITAR USUÁRIO NO BANCO
-        btnEditarUsuario.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Editar Usuário")
-
-            val input = EditText(this)
-            input.hint = "Digite o novo nome de usuário"
-            input.setText(textUsuario.text)
-            builder.setView(input)
-
-            builder.setPositiveButton("Salvar") { dialog, _ ->
-                val novoNomeUsuario = input.text.toString().trim()
-                if (novoNomeUsuario.isNotEmpty() && emailUsuarioLogado != null) {
-
-                    lifecycleScope.launch {
-                        try {
-                            // Atualiza a coluna "usuario" correspondente ao e-mail no Supabase
-                            withContext(Dispatchers.IO) {
-                                SupabaseConfig.client.postgrest["users"].update(
-                                    {
-                                        set("usuario", novoNomeUsuario)
-                                    }
-                                ) {
-                                    filter {
-                                        eq("email", emailUsuarioLogado!!)
-                                    }
-                                }
-                            }
-
-                            // Atualiza a UI local e o objeto em memória
-                            textUsuario.text = novoNomeUsuario
-                            objetoUsuarioAtual = objetoUsuarioAtual?.copy(usuario = novoNomeUsuario)
-                            Toast.makeText(this@TelaRF09Configuracao, "Nome de usuário atualizado!", Toast.LENGTH_SHORT).show()
-
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            Toast.makeText(this@TelaRF09Configuracao, "Erro ao salvar no servidor", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-                dialog.dismiss()
-            }
-
-            builder.setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.cancel()
-            }
-
-            builder.show()
         }
     }
 
-    // --- BUSCA DADOS DO USUÁRIO NA INICIALIZAÇÃO ---
+    // --- CARREGAR DADOS NA INICIALIZAÇÃO ---
     private fun carregarDadosUsuario() {
         if (emailUsuarioLogado.isNullOrBlank()) return
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val user = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["users"]
-                        .select {
-                            filter {
-                                eq("email", emailUsuarioLogado!!)
-                            }
-                        }.decodeSingleOrNull<User>()
+                        .select { filter { eq("email", emailUsuarioLogado!!) } }
+                        .decodeSingleOrNull<User>()
                 }
                 if (user != null) {
                     objetoUsuarioAtual = user
-                    textUsuario.text = user.usuario
+                    // Preenche a tela com os dados do banco
+                    textEmailTop.text = user.email
+                    editNome.setText(user.nome) // Certifique-se que sua classe User tem "nome" e "bio"
+                    editUsuario.setText(user.usuario)
+                    editBio.setText(user.bio) // Se a coluna existir
+                    editSenhaAtual.setText(user.senha)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -133,55 +146,107 @@ class TelaRF09Configuracao : AppCompatActivity() {
         }
     }
 
-    // --- FUNÇÃO DO POP-UP DE APAGAR CONTA COM VALIDAÇÃO REAL ---
-    private fun exibirPopupApagarConta() {
-        val dialogView = layoutInflater.inflate(R.layout.popup_apagar_conta, null)
+    // --- FUNÇÃO PARA SALVAR ALTERAÇÕES DIRETAS (Nome, Usuário, Bio) ---
+    private fun salvarNoBanco(coluna: String, novoValor: String) {
+        if (novoValor.isBlank() || emailUsuarioLogado == null) return
 
-        val alertDialog = AlertDialog.Builder(this)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["users"].update(
+                        { set(coluna, novoValor) }
+                    ) {
+                        filter { eq("email", emailUsuarioLogado!!) }
+                    }
+                }
+                Toast.makeText(requireContext(), "Atualizado com sucesso!", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao atualizar", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // --- DIALOG PARA EDITAR CAMPOS SENSÍVEIS (Ex: E-mail) ---
+    private fun abrirDialogEdicao(titulo: String, valorAtual: String, coluna: String, onSuccess: (String) -> Unit) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Editar $titulo")
+
+        val input = EditText(requireContext())
+        input.setText(valorAtual)
+        builder.setView(input)
+
+        builder.setPositiveButton("Salvar") { dialog, _ ->
+            val novoValor = input.text.toString().trim()
+            if (novoValor.isNotEmpty()) {
+                salvarNoBanco(coluna, novoValor)
+                onSuccess(novoValor)
+            }
+            dialog.dismiss()
+        }
+        builder.setNegativeButton("Cancelar") { dialog, _ -> dialog.cancel() }
+        builder.show()
+    }
+
+    // --- RF09.10 e RF09.11: POP-UP APAGAR CONTA ---
+    private fun exibirPopupApagarConta() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_apagar_conta, null)
+
+        val alertDialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .setCancelable(true)
             .create()
+        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent) // Deixa os cantos arredondados do XML funcionarem
 
         val editSenhaPopup = dialogView.findViewById<EditText>(R.id.editSenhaPopup)
         val textErroSenhaPopup = dialogView.findViewById<TextView>(R.id.textErroSenhaPopup)
-        val buttonConfirmarApagarConta = dialogView.findViewById<MaterialButton>(R.id.buttonConfirmarApagarConta)
+        val buttonConfirmar = dialogView.findViewById<MaterialButton>(R.id.buttonConfirmarApagarConta)
+        val iconOlhoPopup = dialogView.findViewById<ImageView>(R.id.iconOlhoSenhaPopup)
 
-        buttonConfirmarApagarConta.setOnClickListener {
+        // Exibir/Ocultar Senha no Pop-up
+        var senhaPopupVisivel = false
+        iconOlhoPopup.setOnClickListener {
+            senhaPopupVisivel = !senhaPopupVisivel
+            if (senhaPopupVisivel) {
+                editSenhaPopup.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            } else {
+                editSenhaPopup.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
+            editSenhaPopup.setSelection(editSenhaPopup.text.length)
+        }
+
+        buttonConfirmar.setOnClickListener {
             val senhaDigitada = editSenhaPopup.text.toString().trim()
 
-            // Valida se a senha digitada bate com a senha do usuário salva no Supabase
             if (senhaDigitada == objetoUsuarioAtual?.senha) {
                 textErroSenhaPopup.visibility = View.GONE
-                buttonConfirmarApagarConta.isEnabled = false // Evita múltiplos cliques
+                buttonConfirmar.isEnabled = false
 
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     try {
-                        // Deleta permanentemente a linha do usuário logado no Supabase
                         withContext(Dispatchers.IO) {
                             SupabaseConfig.client.postgrest["users"].delete {
-                                filter {
-                                    eq("email", emailUsuarioLogado!!)
-                                }
+                                filter { eq("email", emailUsuarioLogado!!) }
                             }
                         }
 
                         alertDialog.dismiss()
-                        Toast.makeText(this@TelaRF09Configuracao, "Conta excluída com sucesso!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Conta excluída com sucesso!", Toast.LENGTH_SHORT).show()
 
-                        // Redireciona para a tela de Boas-Vindas limpando a pilha de telas
-                        val intent = Intent(this@TelaRF09Configuracao, TelaRF01BemVindo::class.java)
+                        val intent = Intent(requireContext(), TelaRF01BemVindo::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
-                        finish()
+                        requireActivity().finish()
 
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        Toast.makeText(this@TelaRF09Configuracao, "Erro ao deletar conta no servidor", Toast.LENGTH_SHORT).show()
-                        buttonConfirmarApagarConta.isEnabled = true
+                        Toast.makeText(requireContext(), "Erro ao deletar conta", Toast.LENGTH_SHORT).show()
+                        buttonConfirmar.isEnabled = true
                     }
                 }
             } else {
-                textErroSenhaPopup.text = "Senha incorreta!"
+                // RF09.11 - Validação da senha atual
+                textErroSenhaPopup.text = "Digite sua senha atual!"
                 textErroSenhaPopup.visibility = View.VISIBLE
             }
         }

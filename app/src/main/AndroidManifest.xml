@@ -30,6 +30,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BiblioUnifor">
         <activity
+            android:name=".usuario.MainActivityUsuario"
+            android:exported="false" />
+        <activity
             android:name=".adm.TelaRF27CadastroMaisInformacoes"
             android:exported="false" />
         <activity
@@ -73,9 +76,6 @@
             android:exported="false" />
         <activity
             android:name=".login.TelaRF20NovaContaADM"
-            android:exported="false" />
-        <activity
-            android:name=".usuario.TelaRF08DashboardUsuario"
             android:exported="false" />
         <activity
             android:name=".usuario.TelaRF09Configuracao"

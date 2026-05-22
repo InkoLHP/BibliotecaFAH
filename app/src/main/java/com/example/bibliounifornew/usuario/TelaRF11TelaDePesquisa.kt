@@ -2,39 +2,47 @@ package com.example.bibliounifornew.usuario
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
+import android.view.View
 import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.model.Livro
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class TelaRF11TelaDePesquisa : AppCompatActivity() {
+class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
     private lateinit var recyclerLivros: RecyclerView
     private lateinit var editPesquisarLivro: EditText
-    private lateinit var buttonProcurar: Button
+    private lateinit var buttonProcurar: MaterialButton
+    private lateinit var iconFiltro: ImageView
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.telarf11_tela_pesquisa)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        recyclerLivros = findViewById(R.id.recyclerLivros)
-        editPesquisarLivro = findViewById(R.id.editPesquisarLivro)
-        buttonProcurar = findViewById(R.id.buttonProcurar)
+        // MAPEAMENTO
+        recyclerLivros = view.findViewById(R.id.recyclerLivros)
+        editPesquisarLivro = view.findViewById(R.id.editPesquisarLivro)
+        buttonProcurar = view.findViewById(R.id.buttonProcurar)
+        iconFiltro = view.findViewById(R.id.iconFiltro) // NOVO: Ícone de filtro no XML
 
-        recyclerLivros.layoutManager = LinearLayoutManager(this)
+        recyclerLivros.layoutManager = LinearLayoutManager(requireContext())
 
-        // LISTA VAZIA INICIALMENTE - Agora recebe o objeto livro no lambda
+        // RF11.6 - Adaptador inicial vazio
         recyclerLivros.adapter = LivroUsuarioAdapter(emptyList()) { livroClicado ->
-            abrirTelaLivro(livroClicado)
+            abrirOpcoesLivro(livroClicado) // RF11.7 - Redireciona para as opções (detalhes, desejo, livraria)
         }
 
+        // RF11.5 - Botão procurar
         buttonProcurar.setOnClickListener {
             val pesquisa = editPesquisarLivro.text.toString()
 
-            // Lista mockada corrigida usando o construtor do novo Livro.kt
+            // Mock de livros simulando a busca
             val livrosFake = listOf(
                 Livro(
                     id = "1",
@@ -54,17 +62,56 @@ class TelaRF11TelaDePesquisa : AppCompatActivity() {
                 )
             )
 
-            // Atualiza o adapter passando a função que envia o ID do livro clicado
             recyclerLivros.adapter = LivroUsuarioAdapter(livrosFake) { livroClicado ->
-                abrirTelaLivro(livroClicado)
+                abrirOpcoesLivro(livroClicado)
             }
+        }
+
+        // ABRIR POP-UP DE FILTROS
+        iconFiltro.setOnClickListener {
+            exibirPopupFiltros()
         }
     }
 
-    // Agora recebe o Livro inteiro e passa o ID dele para a tela de detalhes
-    private fun abrirTelaLivro(livro: Livro) {
-        val intent = Intent(this, TelaRF12TelaDoLivro::class.java)
-        intent.putExtra("LIVRO_ID", livro.id)
-        startActivity(intent)
+    // RF11.2, RF11.3, RF11.4 - Exibe o pop-up (BottomSheet) com os filtros
+    private fun exibirPopupFiltros() {
+        val bottomSheet = BottomSheetDialog(requireContext())
+        val viewFiltro = layoutInflater.inflate(R.layout.popup_filtro_pesquisa, null)
+        bottomSheet.setContentView(viewFiltro)
+
+        val btnSalvar = viewFiltro.findViewById<MaterialButton>(R.id.buttonSalvarFiltro)
+        val btnLimpar = viewFiltro.findViewById<MaterialButton>(R.id.buttonLimparFiltro)
+
+        btnSalvar.setOnClickListener {
+            Toast.makeText(requireContext(), "Filtros aplicados!", Toast.LENGTH_SHORT).show()
+            bottomSheet.dismiss()
+        }
+
+        btnLimpar.setOnClickListener {
+            Toast.makeText(requireContext(), "Filtros limpos!", Toast.LENGTH_SHORT).show()
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
+    }
+
+    // RF11.7 - Simula o clique nos três pontos permitindo escolher a ação
+    private fun abrirOpcoesLivro(livro: Livro) {
+        val opcoes = arrayOf("Ver Detalhes", "Adicionar à Minha Livraria", "Adicionar à Lista de Desejos")
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(livro.titulo)
+            .setItems(opcoes) { _, qual ->
+                when (qual) {
+                    0 -> { // Ver Detalhes
+                        val intent = Intent(requireContext(), TelaRF12TelaDoLivro::class.java)
+                        intent.putExtra("LIVRO_ID", livro.id)
+                        startActivity(intent)
+                    }
+                    1 -> Toast.makeText(requireContext(), "Adicionado à Livraria!", Toast.LENGTH_SHORT).show()
+                    2 -> Toast.makeText(requireContext(), "Adicionado à Lista de Desejos!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
     }
 }

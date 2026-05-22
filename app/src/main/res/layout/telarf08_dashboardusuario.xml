@@ -113,7 +113,46 @@
                 android:layout_height="56dp"
                 android:layout_marginBottom="14dp"
                 android:fontFamily="sans-serif-black"
-                android:text="Pesquisa"
+                android:text="Procurar Livros"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:backgroundTint="@color/biblio_dark"
+                app:cornerRadius="28dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMinhaLivraria"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:fontFamily="sans-serif-black"
+                android:text="Minha livraria"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:backgroundTint="@color/biblio_dark"
+                app:cornerRadius="28dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnListaDesejos"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:fontFamily="sans-serif-black"
+                android:text="Lista de desejos"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:backgroundTint="@color/biblio_dark"
+                app:cornerRadius="28dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAmigos"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:fontFamily="sans-serif-black"
+                android:text="Amigos"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
