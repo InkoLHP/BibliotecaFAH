@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_status"
+        android:title="Status"
+        android:icon="@drawable/ic_status"/>
+
+    <item
+        android:id="@+id/nav_pesquisa"
+        android:title="Pesquisa"
+        android:icon="@drawable/ic_pesquisa"/>
+
+    <item
+        android:id="@+id/nav_dashboard"
+        android:title="Dashboard"
+        android:icon="@drawable/ic_dashboard"/>
+
+    <item
+        android:id="@+id/nav_livraria"
+        android:title="Livraria"
+        android:icon="@drawable/ic_minha_livraria"/>
+
+    <item
+        android:id="@+id/nav_amigos"
+        android:title="Amigos"
+        android:icon="@drawable/ic_amigos"/>
+
+</menu>

@@ -30,6 +30,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BiblioUnifor">
         <activity
+            android:name=".usuario.UsuarioMainActivity"
+            android:exported="false" />
+        <activity
             android:name=".adm.TelaRF27CadastroMaisInformacoes"
             android:exported="false" />
         <activity
