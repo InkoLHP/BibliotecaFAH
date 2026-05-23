@@ -50,7 +50,7 @@ class Telarf36AlugueisADM : Fragment() {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            telarf36_alugueis_adm().apply {
+            Telarf36AlugueisADM().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)

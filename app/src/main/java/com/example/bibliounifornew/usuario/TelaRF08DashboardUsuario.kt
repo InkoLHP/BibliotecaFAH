@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.login.TelaRF03LoginAluno
@@ -24,19 +25,36 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         val profileImage = view.findViewById<ImageView>(R.id.imagePerfilUsuario)
         val textNomeUsuario = view.findViewById<TextView>(R.id.textNomeUsuario)
 
+        val sharedPref = requireActivity().getSharedPreferences("user_session", AppCompatActivity.MODE_PRIVATE)
+
+        val nomeUsuario = sharedPref.getString("USER_NOME", "Usuário")
+
+        textNomeUsuario.text = nomeUsuario
+
+
+        textNomeUsuario.text = nomeUsuario ?: "Usuário"
+
         // MAPEAMENTO DOS BOTÕES PRINCIPAIS
         val btnPesquisa = view.findViewById<MaterialButton>(R.id.btnPesquisa)
         val btnMinhaLivraria = view.findViewById<MaterialButton>(R.id.btnMinhaLivraria)
         val btnAmigos = view.findViewById<MaterialButton>(R.id.btnAmigos)
         val btnHistorico = view.findViewById<MaterialButton>(R.id.btnHistorico)
         val btnStatusAluguel = view.findViewById<MaterialButton>(R.id.btnStatusAluguel)
-        val btnSalvarAlteracoes = view.findViewById<MaterialButton>(R.id.btnSalvarAlteracoes)
         val btnSair = view.findViewById<MaterialButton>(R.id.btnSairConta)
 
         // AÇÕES DOS BOTÕES (Navegação)
 
-        btnConfig?.setOnClickListener {
-            irParaFragment(TelaRF09Configuracao())
+        btnConfig.setOnClickListener {
+
+            val sharedPref = requireActivity().getSharedPreferences("user_session", AppCompatActivity.MODE_PRIVATE)
+
+            val emailUsuario = sharedPref.getString("USER_EMAIL", null)
+
+            val fragment = TelaRF09Configuracao().apply {
+                arguments = Bundle().apply { putString("USER_EMAIL", emailUsuario) }
+            }
+
+            irParaFragment(fragment)
         }
 
         btnNotificacao?.setOnClickListener {
@@ -61,14 +79,6 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
 
         btnStatusAluguel?.setOnClickListener {
             irParaFragment(TelaRF13StatusAluguel())
-        }
-
-        btnSalvarAlteracoes?.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "Alterações salvas com sucesso!",
-                Toast.LENGTH_SHORT
-            ).show()
         }
 
         btnSair?.setOnClickListener {
@@ -97,9 +107,17 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         val btnConfirmarSair = dialogView.findViewById<MaterialButton>(R.id.btnConfirmarSair)
 
         btnConfirmarSair?.setOnClickListener {
+
+            val sharedPref = requireActivity().getSharedPreferences("user_session", AppCompatActivity.MODE_PRIVATE)
+
+            sharedPref.edit().clear().apply()
+
             alertDialog.dismiss()
+
             val intent = Intent(requireContext(), TelaRF03LoginAluno::class.java)
+
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
             startActivity(intent)
         }
 

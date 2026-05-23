@@ -13,7 +13,7 @@
         android:icon="@drawable/ic_pesquisa"/>
 
     <item
-        android:id="@+id/nav_dashboard"
+        android:id="@+id/nav_dashboard_usuario"
         android:title="Dashboard"
         android:icon="@drawable/ic_dashboard"/>
 

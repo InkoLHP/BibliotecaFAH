@@ -13,6 +13,9 @@ class UsuarioMainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_usuario_main)
 
+        val nomeUsuario = intent.getStringExtra("USER_NOME")
+        val emailUsuario = intent.getStringExtra("USER_EMAIL")
+
         val bottomNavigationView =
             findViewById<BottomNavigationView>(
                 R.id.bottomNavigationView
@@ -20,15 +23,20 @@ class UsuarioMainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
 
+            val dashboardFragment = TelaRF08DashboardUsuario()
+
+            val bundle = Bundle()
+            bundle.putString("USER_NOME", nomeUsuario)
+            bundle.putString("USER_EMAIL", emailUsuario)
+
+            dashboardFragment.arguments = bundle
+
             supportFragmentManager.beginTransaction()
-                .replace(
-                    R.id.frameLayout,
-                    TelaRF08DashboardUsuario()
-                )
+                .replace(R.id.frameLayout, dashboardFragment)
                 .commit()
 
             bottomNavigationView.selectedItemId =
-                R.id.nav_dashboard
+                R.id.nav_dashboard_usuario
         }
 
         bottomNavigationView.setOnItemSelectedListener { item ->
@@ -45,7 +53,7 @@ class UsuarioMainActivity : AppCompatActivity() {
                     true
                 }
 
-                R.id.nav_dashboard -> {
+                R.id.nav_dashboard_usuario -> {
                     trocarFragment(TelaRF08DashboardUsuario())
                     true
                 }

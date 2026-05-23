@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.login.TelaRF01BemVindo
-import com.example.bibliounifornew.model.User
+import com.example.bibliounifornew.data.User
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
@@ -54,8 +54,9 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
         val iconEditBio = view.findViewById<ImageView>(R.id.iconEditBio)
         val iconOlhoSenhaAtual = view.findViewById<ImageView>(R.id.iconOlhoSenhaAtual)
 
-        val btnRedefinir = view.findViewById<MaterialButton>(R.id.buttonRedefinirSenha)
+        val btnRedefinir = view.findViewById<MaterialButton>(R.id.buttonRedefinirSenha2)
         val btnApagar = view.findViewById<MaterialButton>(R.id.buttonApagarConta)
+        val btnSalvarAlteracoes = view.findViewById<MaterialButton>(R.id.buttonSalvarAlteracoes)
 
         // Busca informações atuais
         carregarDadosUsuario()
@@ -76,17 +77,17 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
 
         // RF09.3 - Alterar Nome
         iconEditNome.setOnClickListener {
-            salvarNoBanco("nome", editNome.text.toString().trim())
+            editNome.requestFocus()
         }
 
         // RF09.4 - Alterar Nome de Usuário
         iconEditUsuario.setOnClickListener {
-            salvarNoBanco("usuario", editUsuario.text.toString().trim())
+            editUsuario.requestFocus()
         }
 
         // RF09.6 - Alterar Biografia
         iconEditBio.setOnClickListener {
-            salvarNoBanco("bio", editBio.text.toString().trim()) // Assumindo que a coluna seja "bio"
+            editBio.requestFocus()
         }
 
         // RF09.8 - Exibir/Ocultar Senha Atual na Tela Principal
@@ -118,28 +119,53 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
                 Toast.makeText(requireContext(), "Aguardando servidor...", Toast.LENGTH_SHORT).show()
             }
         }
+
+        btnSalvarAlteracoes.setOnClickListener {
+
+            salvarNoBanco("nome", editNome.text.toString().trim())
+
+            salvarNoBanco("usuario", editUsuario.text.toString().trim())
+
+            salvarNoBanco("bio", editBio.text.toString().trim())
+
+            Toast.makeText(requireContext(), "Alterações salvas com sucesso!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // --- CARREGAR DADOS NA INICIALIZAÇÃO ---
     private fun carregarDadosUsuario() {
-        if (emailUsuarioLogado.isNullOrBlank()) return
+        if (emailUsuarioLogado.isNullOrBlank()) return Toast.makeText(
+            requireContext(),
+            "Email recebido: $emailUsuarioLogado",
+            Toast.LENGTH_LONG
+        ).show()
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val user = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["users"]
-                        .select { filter { eq("email", emailUsuarioLogado!!) } }
+                        .select {
+                            filter {
+                                eq("email", emailUsuarioLogado!!)
+                            }
+                        }
                         .decodeSingleOrNull<User>()
                 }
-                if (user != null) {
-                    objetoUsuarioAtual = user
-                    // Preenche a tela com os dados do banco
-                    textEmailTop.text = user.email
-                    editNome.setText(user.nome) // Certifique-se que sua classe User tem "nome" e "bio"
-                    editUsuario.setText(user.usuario)
-                    editBio.setText(user.bio) // Se a coluna existir
-                    editSenhaAtual.setText(user.senha)
+
+                user?.let {
+                    objetoUsuarioAtual = it
+
+                    textEmailTop.text = it.email ?: ""
+
+                    editNome.setText(it.nome ?: "")
+
+                    editUsuario.setText(it.usuario ?: "")
+
+                    editBio.setText(it.bio ?: "")
+
+                    editSenhaAtual.setText(it.senha ?: "")
                 }
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -147,22 +173,62 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
     }
 
     // --- FUNÇÃO PARA SALVAR ALTERAÇÕES DIRETAS (Nome, Usuário, Bio) ---
-    private fun salvarNoBanco(coluna: String, novoValor: String) {
-        if (novoValor.isBlank() || emailUsuarioLogado == null) return
+    private fun salvarNoBanco(
+        coluna: String,
+        novoValor: String
+    ) {
+
+        if (emailUsuarioLogado.isNullOrBlank()) return
+        if (novoValor.isBlank()) return
 
         viewLifecycleOwner.lifecycleScope.launch {
+
             try {
+
                 withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["users"].update(
-                        { set(coluna, novoValor) }
-                    ) {
-                        filter { eq("email", emailUsuarioLogado!!) }
+
+                    SupabaseConfig.client.postgrest["users"]
+                        .update(
+                            {
+                                set(coluna, novoValor)
+                            }
+                        ) {
+                            filter {
+                                eq("email", emailUsuarioLogado!!)
+                            }
+                        }
+                }
+
+                when (coluna) {
+
+                    "nome" -> objetoUsuarioAtual?.nome = novoValor
+
+                    "usuario" -> objetoUsuarioAtual?.usuario = novoValor
+
+                    "bio" -> objetoUsuarioAtual?.bio = novoValor
+
+                    "email" -> {
+                        objetoUsuarioAtual?.email = novoValor
+                        emailUsuarioLogado = novoValor
+                        textEmailTop.text = novoValor
                     }
                 }
-                Toast.makeText(requireContext(), "Atualizado com sucesso!", Toast.LENGTH_SHORT).show()
+
+                Toast.makeText(
+                    requireContext(),
+                    "Dados atualizados!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
             } catch (e: Exception) {
+
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao atualizar", Toast.LENGTH_SHORT).show()
+
+                Toast.makeText(
+                    requireContext(),
+                    "Erro ao salvar",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

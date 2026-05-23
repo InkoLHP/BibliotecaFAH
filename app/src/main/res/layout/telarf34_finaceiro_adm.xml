@@ -7,87 +7,71 @@
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
 
-    <!-- HEADER PREMIUM FINACEIRO -->
+    <!-- HEADER (Padronizado com a tela de Verificar Mídia) -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/headerConfig"
+        android:id="@+id/headerFinanceiro"
         android:layout_width="match_parent"
         android:layout_height="240dp"
         android:background="@color/biblio_detalhes"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Fundo decorativo idêntico ao modelo -->
+        <!-- CÍRCULOS DECORATIVOS -->
         <View
-            android:layout_width="220dp"
-            android:layout_height="220dp"
-            android:layout_marginStart="-110dp"
-            android:layout_marginTop="-110dp"
-            android:alpha="0.2"
+            android:layout_width="230dp"
+            android:layout_height="230dp"
+            android:layout_marginStart="-90dp"
+            android:layout_marginTop="-90dp"
+            android:alpha="0.16"
             android:background="@drawable/bg_circle"
             android:backgroundTint="@color/white"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Foto perfil premium -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/imgProfileHeader"
-            android:layout_width="95dp"
-            android:layout_height="95dp"
-            android:layout_marginTop="32dp"
-            android:scaleType="centerCrop"
-            tools:src="@tools:sample/avatars"
-            app:strokeWidth="3dp"
-            app:strokeColor="@color/white"
+        <View
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="-60dp"
+            android:layout_marginEnd="70dp"
+            android:alpha="0.16"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Títulos Centrais do Header -->
-        <LinearLayout
+        <!-- FOTO PERFIL -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFotoADM"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="32dp"
+            app:cardCornerRadius="50dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/user_placeholder" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- TÍTULO ÚNICO -->
+        <TextView
+            android:id="@+id/textTituloTela"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imgProfileHeader">
-
-            <TextView
-                android:id="@+id/txtBemVindo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Financeiro"
-                android:textColor="@color/white"
-                android:textSize="26sp"
-                android:fontFamily="sans-serif-black" />
-
-            <TextView
-                android:id="@+id/txtLivrosVencidos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Livros Vencidos"
-                android:textColor="@color/white"
-                android:alpha="0.85"
-                android:textSize="15sp"
-                android:letterSpacing="0.05"
-                android:fontFamily="sans-serif-medium" />
-        </LinearLayout>
-
-        <!-- Botão Configurações sutil no canto superior esquerdo -->
-        <ImageView
-            android:id="@+id/btnConfigAdm"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:src="@android:drawable/ic_menu_manage"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:text="Livros Vencidos"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/cardFotoADM"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -97,31 +81,16 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/headerConfig"
+        app:layout_constraintTop_toBottomOf="@id/headerFinanceiro"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingVertical="16dp">
-
-            <!-- Botão Ver Pendentes Estilizado conforme os Botões do modelo -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnVerPendentes"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="16dp"
-                android:text="Ver pendentes / retirada"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif-black"
-                app:backgroundTint="@color/biblio_blue"
-                app:cornerRadius="28dp"
-                app:elevation="4dp" />
+            android:paddingHorizontal="24dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="32dp">
 
             <!-- Inclusão e Preview do Layout Separado do Livro -->
             <include layout="@layout/item_livro_vencido" />
