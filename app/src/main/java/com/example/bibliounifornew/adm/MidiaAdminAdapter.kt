@@ -1,77 +1,63 @@
 package com.example.bibliounifornew.adm
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import android.content.Intent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.button.MaterialButton
 
-class AdmMainActivity : AppCompatActivity() {
+class MidiaAdminAdapter(
+    private val listaMidias: List<Midia>
+) : RecyclerView.Adapter<MidiaAdminAdapter.MidiaViewHolder>() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    class MidiaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        // Lembre-se de criar esse layout (activity_adm_main.xml)
-        // contendo o FrameLayout e o BottomNavigationView do ADM
-        setContentView(R.layout.activity_adm_main)
+        val textTituloLivro: TextView =
+            itemView.findViewById(R.id.textTituloLivro)
 
-        // Cuidado para usar o ID correto da barra do ADM aqui
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavAdm)
+        val textAutorLivro: TextView =
+            itemView.findViewById(R.id.textAutorLivro)
 
-        // Carrega o Dashboard ADM como tela inicial assim que o app abre
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.frameLayoutAdm, TelaRF28DashboardADM())
-                .commit()
+        val textIsbnLivro: TextView =
+            itemView.findViewById(R.id.textIsbnLivro)
 
-            // Marca o ícone do Dashboard como selecionado
-            bottomNavigationView.selectedItemId = R.id.nav_dashboard_adm
-        }
+        val btnEditarInformacoes: MaterialButton =
+            itemView.findViewById(R.id.btnEditarInformacoes)
+    }
 
-        bottomNavigationView.setOnItemSelectedListener { item ->
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MidiaViewHolder {
 
-            when (item.itemId) {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.card_livro_adm, parent, false)
 
-                // RF28 - Dashboard
-                R.id.nav_dashboard_adm -> {
-                    trocarFragment(TelaRF28DashboardADM())
-                    true
-                }
+        return MidiaViewHolder(view)
+    }
 
-                // RF34 - Financeiro
-                R.id.nav_financeiro_adm -> {
-                    trocarFragment(TelaRF34FinanceiroADM())
-                    true
-                }
+    override fun onBindViewHolder(holder: MidiaViewHolder, position: Int) {
 
-                // RF31 - Solicitações
-                R.id.nav_solicitacoes_adm -> {
-                    // TODO: Trocar pelo nome exato do seu Fragment de Solicitações
-                    trocarFragment(TelaRF31SolicitacoesADM())
-                    true
-                }
+        val midia = listaMidias[position]
 
-                // RF29 - Gerenciamento de Usuários
-                R.id.nav_usuarios_adm -> {
-                    // TODO: Trocar pelo nome exato do seu Fragment de Gerenciamento de Usuários
-                    trocarFragment(TelaRF29GerenciarUsuariosADM())
-                    true
-                }
+        holder.textTituloLivro.text = midia.titulo
+        holder.textAutorLivro.text = midia.autor
+        holder.textIsbnLivro.text = "ISBN: ${midia.isbn}"
 
-                // RF32 - Livros / CRUD (Coloquei a de cadastro como exemplo)
-                R.id.nav_livros_adm -> {
-                    trocarFragment(TelaRF33CadastroDeLivros())
-                    true
-                }
+        holder.btnEditarInformacoes.setOnClickListener {
 
-                else -> false
-            }
+            val context = holder.itemView.context
+
+            val intent = Intent(
+                context,
+                TelaRF37EditarMidia::class.java
+            )
+
+            context.startActivity(intent)
         }
     }
 
-    private fun trocarFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.frameLayoutAdm, fragment)
-            .commit()
+    override fun getItemCount(): Int {
+        return listaMidias.size
     }
 }
