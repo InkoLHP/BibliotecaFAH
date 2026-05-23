@@ -12,9 +12,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.adm.TelaRF28DashboardADM
+import com.example.bibliounifornew.adm.AdmMainActivity // IMPORTAÇÃO CORRETA DA ACTIVITY MÃE
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.User
+import com.example.bibliounifornew.data.User
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,8 +22,8 @@ import kotlinx.coroutines.withContext
 
 class TelaRF16LoginADM : AppCompatActivity() {
 
-    //Credenciais
-    private val CredencialADM = arrayOf (
+    // Credenciais válidas de Administrador
+    private val CredencialADM = arrayOf(
         "30062007",
         "01042007",
         "22112006"
@@ -51,7 +51,6 @@ class TelaRF16LoginADM : AppCompatActivity() {
 
         // LOGIN CONECTADO AO SUPABASE
         botaoEntrar.setOnClickListener {
-
             val textoEmail = email.text.toString().trim()
             val textoSenha = senha.text.toString().trim()
             val textoCredencial = credential.text.toString().trim()
@@ -64,6 +63,7 @@ class TelaRF16LoginADM : AppCompatActivity() {
             } else {
                 // Desativa o botão para evitar múltiplos cliques na rede
                 botaoEntrar.isEnabled = false
+
                 if (textoCredencial in CredencialADM) {
                     lifecycleScope.launch {
                         try {
@@ -81,18 +81,19 @@ class TelaRF16LoginADM : AppCompatActivity() {
                             }
 
                             if (contaAdm != null) {
+                                android.util.Log.d("LOGIN_DEBUG", "Login ADM Sucesso. Abrindo AdmMainActivity")
                                 Toast.makeText(
                                     this@TelaRF16LoginADM,
                                     "Login realizado com sucesso!",
                                     Toast.LENGTH_SHORT
                                 ).show()
 
-                                val intent =
-                                    Intent(this@TelaRF16LoginADM, TelaRF28DashboardADM::class.java)
+                                // CORREÇÃO: Abre a Activity mãe que gerencia os Fragments
+                                val intent = Intent(this@TelaRF16LoginADM, AdmMainActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                 startActivity(intent)
                                 finish()
                             } else {
-                                // Se as chaves falharem ou o usuário não for administrador
                                 erro.text = "E-mail, senha ou credencial incorretos"
                                 erro.visibility = View.VISIBLE
                                 botaoEntrar.isEnabled = true
@@ -108,8 +109,7 @@ class TelaRF16LoginADM : AppCompatActivity() {
                             botaoEntrar.isEnabled = true
                         }
                     }
-                }
-                else{
+                } else {
                     erro.text = "Essa credencial não está cadastrada!"
                     erro.visibility = View.VISIBLE
                     botaoEntrar.isEnabled = true
@@ -126,7 +126,6 @@ class TelaRF16LoginADM : AppCompatActivity() {
         // ESQUECEU SENHA -> TelaRF17
         esqueceuSenha.setOnClickListener {
             val intent = Intent(this, TelaRF17RecuperacaoSenhaADM::class.java)
-            // Se o adm já digitou o e-mail, enviamos para adiantar o processo na próxima tela
             intent.putExtra("USER_EMAIL", email.text.toString().trim())
             startActivity(intent)
         }
@@ -144,17 +143,14 @@ class TelaRF16LoginADM : AppCompatActivity() {
 
         bntMostraSenha.setOnClickListener {
             if (senhaVisivel) {
-                // ESCONDER SENHA
                 senha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 bntMostraSenha.setImageResource(R.drawable.ic_eye_closed)
                 senhaVisivel = false
             } else {
-                // MOSTRAR SENHA
                 senha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 bntMostraSenha.setImageResource(R.drawable.ic_eye_open)
                 senhaVisivel = true
             }
-            // Mantém cursor no final
             senha.setSelection(senha.text.length)
         }
     }

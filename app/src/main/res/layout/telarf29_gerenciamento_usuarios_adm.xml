@@ -125,7 +125,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:padding="4dp"
-                        android:src="@drawable/ic_search_minimal"
+                        android:src="@drawable/ic_pesquisa"
                         app:tint="@color/biblio_blue" />
 
                 </LinearLayout>

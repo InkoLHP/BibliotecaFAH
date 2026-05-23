@@ -28,7 +28,7 @@ class UsuarioMainActivity : AppCompatActivity() {
                 .commit()
 
             bottomNavigationView.selectedItemId =
-                R.id.nav_dashboard
+                R.id.nav_dashboard_usuario
         }
 
         bottomNavigationView.setOnItemSelectedListener { item ->
@@ -45,7 +45,7 @@ class UsuarioMainActivity : AppCompatActivity() {
                     true
                 }
 
-                R.id.nav_dashboard -> {
+                R.id.nav_dashboard_usuario -> {
                     trocarFragment(TelaRF08DashboardUsuario())
                     true
                 }

@@ -50,7 +50,7 @@ class Telarf33AdicionarMidiaArquivos : Fragment() {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            telarf33_adicionar_midia_arquivos().apply {
+            Telarf33AdicionarMidiaArquivos().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
