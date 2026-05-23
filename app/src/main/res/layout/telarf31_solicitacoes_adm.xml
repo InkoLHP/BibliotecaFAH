@@ -236,7 +236,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Solicitação: Audiobook, PDF, Braille"
+                        android:text="Solicitação: PDF"
                         android:textColor="@color/biblio_blue"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -260,60 +260,13 @@
                         app:elevation="4dp"
                         app:rippleColor="#33FFFFFF" />
 
-                    <!-- LINHA 1 ACCESSIBILITY -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:orientation="horizontal">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/buttonEnviarAudiobook"
-                            android:layout_width="0dp"
-                            android:layout_height="48dp"
-                            android:layout_weight="1"
-                            android:text="Enviar Audiobook"
-                            android:textAllCaps="false"
-                            android:textColor="@color/white"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.01"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            app:backgroundTint="@color/biblio_blue"
-                            app:cornerRadius="24dp"
-                            app:elevation="2dp" />
-
-                        <Space
-                            android:layout_width="12dp"
-                            android:layout_height="wrap_content" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/buttonEnviarPDF"
-                            android:layout_width="0dp"
-                            android:layout_height="48dp"
-                            android:layout_weight="1"
-                            android:text="Enviar PDF"
-                            android:textAllCaps="false"
-                            android:textColor="@color/white"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.01"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            app:backgroundTint="@color/biblio_blue"
-                            app:cornerRadius="24dp"
-                            app:elevation="2dp" />
-
-                    </LinearLayout>
-
-                    <!-- BRAILLE -->
+                    <!-- BOTÃO ENVIAR PDF (Ajustado para ocupar a largura total) -->
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonBrailleConcluido"
+                        android:id="@+id/buttonEnviarPDF"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
-                        android:layout_marginTop="12dp"
-                        android:text="Notificar Braille Concluído"
+                        android:layout_marginTop="16dp"
+                        android:text="Enviar PDF"
                         android:textAllCaps="false"
                         android:textColor="@color/white"
                         android:textSize="14sp"
