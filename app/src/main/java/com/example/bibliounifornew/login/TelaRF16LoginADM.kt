@@ -12,7 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.adm.TelaRF21DashboardADM
+import com.example.bibliounifornew.adm.TelaRF28DashboardADM
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.User
 import io.github.jan.supabase.postgrest.postgrest
@@ -88,7 +88,7 @@ class TelaRF16LoginADM : AppCompatActivity() {
                                 ).show()
 
                                 val intent =
-                                    Intent(this@TelaRF16LoginADM, TelaRF21DashboardADM::class.java)
+                                    Intent(this@TelaRF16LoginADM, TelaRF28DashboardADM::class.java)
                                 startActivity(intent)
                                 finish()
                             } else {

@@ -30,10 +30,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BiblioUnifor">
         <activity
+            android:name=".adm.AdmMainActivity"
+            android:exported="false" />
+        <activity
             android:name=".usuario.UsuarioMainActivity"
             android:exported="false" />
         <activity
-            android:name=".adm.TelaRF27CadastroMaisInformacoes"
+            android:name=".adm.TelaRF33CadastroMaisInformacoes"
             android:exported="false" />
         <activity
             android:name=".login.TelaRF01BemVindo"
@@ -105,22 +108,22 @@
             android:name=".usuario.TelaRF15Historico"
             android:exported="false" />
         <activity
-            android:name=".adm.TelaRF21DashboardADM"
+            android:name=".adm.TelaRF28DashboardADM"
             android:exported="false" />
         <activity
-            android:name=".adm.TelaRF22ConfigADM"
+            android:name=".adm.TelaRF38ConfigADM"
             android:exported="false" />
         <activity
-            android:name=".adm.TelaRF23RedefinirADMInterno"
+            android:name=".adm.TelaRF39RedefinirADMInterno"
             android:exported="false" />
         <activity
-            android:name=".adm.TelaRF24EditarMidia"
+            android:name=".adm.TelaRF37EditarMidia"
             android:exported="false" />
         <activity
-            android:name=".adm.TelaRF25FinanceiroADM"
+            android:name=".adm.TelaRF34FinanceiroADM"
             android:exported="false" />
         <activity
-            android:name=".adm.TelaRF26CadastroDeLivros"
+            android:name=".adm.TelaRF33CadastroDeLivros"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
