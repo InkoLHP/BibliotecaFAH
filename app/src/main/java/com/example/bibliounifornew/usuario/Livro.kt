@@ -1,13 +1,19 @@
-package com.example.bibliounifornew.model // Organizando no pacote model
+package com.example.bibliounifornew.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Livro(
-    val id: String? = null, // ID do Supabase (pode ser Int se sua coluna for int8)
+    val id: String? = null,
     val titulo: String,
     val autor: String,
     val isbn: String,
-    val sinopse: String? = null,     // Adicionado para usar na TelaRF12
-    val capaResourceId: Int = 0      // Adicionado para usar na TelaRF12
+    // Adicionamos a URL da capa que virá do Supabase
+    val capaUrl: String? = null,
+
+    val sinopse: String? = null,
+    val data_publicacao: String? = null,
+    val categoria: String? = null,
+    val formato: String? = null,
+    val disponível: Boolean = true
 )

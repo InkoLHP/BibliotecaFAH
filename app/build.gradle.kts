@@ -57,4 +57,5 @@ dependencies {
     implementation("io.ktor:ktor-client-android:3.5.0")
     implementation("io.ktor:ktor-client-serialization:3.5.0")
     implementation("org.json:json:20240303")
+    implementation("io.coil-kt:coil:2.6.0")
 }
