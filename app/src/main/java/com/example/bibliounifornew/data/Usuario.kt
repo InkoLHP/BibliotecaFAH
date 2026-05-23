@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.model
+package com.example.bibliounifornew.data
 
 import kotlinx.serialization.Serializable
 

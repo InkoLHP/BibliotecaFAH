@@ -13,7 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.api.CodigoManager
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.User
+import com.example.bibliounifornew.data.User
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

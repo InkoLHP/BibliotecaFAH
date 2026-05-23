@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.User
+import com.example.bibliounifornew.data.User
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import io.github.jan.supabase.postgrest.postgrest
