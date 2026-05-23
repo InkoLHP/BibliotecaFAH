@@ -27,7 +27,6 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         // MAPEAMENTO DOS BOTÕES PRINCIPAIS
         val btnPesquisa = view.findViewById<MaterialButton>(R.id.btnPesquisa)
         val btnMinhaLivraria = view.findViewById<MaterialButton>(R.id.btnMinhaLivraria)
-        val btnListaDesejos = view.findViewById<MaterialButton>(R.id.btnListaDesejos)
         val btnAmigos = view.findViewById<MaterialButton>(R.id.btnAmigos)
         val btnHistorico = view.findViewById<MaterialButton>(R.id.btnHistorico)
         val btnStatusAluguel = view.findViewById<MaterialButton>(R.id.btnStatusAluguel)
@@ -48,20 +47,13 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
             irParaFragment(TelaRF11TelaDePesquisa())
         }
 
-        // Novos botões adicionados
         btnMinhaLivraria?.setOnClickListener {
-            irParaFragment(telarf15_minha_livraria())
-        }
-
-        btnListaDesejos?.setOnClickListener {
-            irParaFragment(telarf16_lista_desejos())
+            irParaFragment(TelaRF15MinhaLivraria())
         }
 
         btnAmigos?.setOnClickListener {
-            irParaFragment(telarf17_amigos())
+            irParaFragment(TelaRF17Amigos())
         }
-
-        // Fim dos novos botões
 
         btnHistorico?.setOnClickListener {
             irParaFragment(TelaRF15Historico())
@@ -88,8 +80,8 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
 
     private fun irParaFragment(fragment: Fragment) {
         requireActivity().supportFragmentManager.beginTransaction()
-            // Usamos o ID real que criamos na MainActivityUsuario
-            .replace(R.id.fragment_container, fragment)
+            // CORREÇÃO: Ajustado para o ID correto que está no XML da sua Activity principal (frameLayout)
+            .replace(R.id.frameLayout, fragment)
             .addToBackStack(null)
             .commit()
     }
