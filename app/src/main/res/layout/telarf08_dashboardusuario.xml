@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
@@ -41,14 +42,14 @@
 
         <ImageView
             android:id="@+id/btnConfig"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="24dp"
+            android:layout_width="57dp"
+            android:layout_height="55dp"
             android:layout_marginTop="16dp"
+            android:layout_marginEnd="24dp"
             android:clickable="true"
+            android:contentDescription="Configurações"
             android:focusable="true"
             android:padding="8dp"
-            android:contentDescription="Configurações"
             android:src="@android:drawable/ic_menu_manage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -166,19 +167,6 @@
                 android:layout_marginBottom="14dp"
                 android:fontFamily="sans-serif-black"
                 android:text="Status aluguel"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                app:backgroundTint="@color/biblio_dark"
-                app:cornerRadius="28dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSalvarAlteracoes"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="14dp"
-                android:fontFamily="sans-serif-black"
-                android:text="Salvar alterações"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
