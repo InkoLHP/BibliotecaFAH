@@ -32,6 +32,7 @@ class AdmMainActivity : AppCompatActivity() {
 
             when (item.itemId) {
 
+                //Trocar eventualmente
                 // RF28 - Dashboard
                 R.id.nav_dashboard_adm -> {
                     trocarFragment(TelaRF28DashboardADM())
