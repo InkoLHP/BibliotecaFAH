@@ -72,11 +72,12 @@ class TelaRF03LoginAluno : AppCompatActivity() {
                         }
 
                         if (contaEstudante != null) {
-                            Toast.makeText(this@TelaRF03LoginAluno, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
+                            val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
 
-                            // 2. MUDANÇA PRINCIPAL AQUI:
-                            // Agora o login manda o aluno para a MainActivityUsuario
+                            sharedPref.edit().putString("USER_NOME", contaEstudante.nome).putString("USER_EMAIL", contaEstudante.email).apply()
+
                             val intent = Intent(this@TelaRF03LoginAluno, UsuarioMainActivity::class.java)
+
                             startActivity(intent)
                             finish()
                         } else {
