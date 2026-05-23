@@ -50,7 +50,7 @@ class MidiaAdminAdapter(
 
             val intent = Intent(
                 context,
-                TelaRF24EditarMidia::class.java
+                TelaRF37EditarMidia::class.java
             )
 
             context.startActivity(intent)

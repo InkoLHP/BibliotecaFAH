@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.androidx.room3.runtime)
     implementation(libs.material)
     implementation("androidx.activity:activity-ktx:1.13.0")
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
