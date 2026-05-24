@@ -10,21 +10,49 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.data.User
 import com.example.bibliounifornew.login.TelaRF02Intermediaria
 import com.google.android.material.button.MaterialButton
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
 
     private lateinit var olhoADMconfig: ImageView
     private lateinit var editSenhaADMconfig: EditText
+    private lateinit var textUsuarioHeader: TextView
+    private lateinit var editNomeAdm: EditText
+    private lateinit var editUsuarioAdm: EditText
+    private lateinit var imagePerfilUsuario: ImageView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // MAPEAMENTO DAS INFORMAÇÕES DO ADM (Sessão)
+        val sharedPref = requireActivity().getSharedPreferences("user_session", android.content.Context.MODE_PRIVATE)
+        val emailAdm = sharedPref.getString("USER_EMAIL", "") ?: ""
+
         // Adicionando 'view.' antes do findViewById
         olhoADMconfig = view.findViewById(R.id.iconOlhoSenhaAtual)
         editSenhaADMconfig = view.findViewById(R.id.editSenhaAtual)
+        textUsuarioHeader = view.findViewById(R.id.textUsuario)
+        editNomeAdm = view.findViewById(R.id.editNomeAdm)
+        editUsuarioAdm = view.findViewById(R.id.editUsuarioAdm)
+        imagePerfilUsuario = view.findViewById(R.id.imagePerfilUsuario)
+
+        // Carrega dados iniciais da sessão
+        textUsuarioHeader.text = emailAdm
+        editNomeAdm.setText(sharedPref.getString("USER_NOME", ""))
+        
+        // Busca dados atualizados do Supabase
+        carregarDadosADM(emailAdm)
 
         // Botões específicos da tela de configuração
         val btnRedefinirSenha = view.findViewById<MaterialButton>(R.id.btnRedefinirSenha)
@@ -60,7 +88,17 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
         }
 
         btnRedefinirSenha?.setOnClickListener {
-            // TODO: Navegar para TelaRF39RedefinirADMInterno usando o sistema de navegação de Fragments
+            // Navega para a tela de redefinir senha passando o e-mail do ADM logado
+            val fragment = TelaRF39RedefinirADMInterno().apply {
+                arguments = Bundle().apply {
+                    putString("USER_EMAIL", emailAdm)
+                }
+            }
+
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frameLayout, fragment)
+                .addToBackStack(null)
+                .commit()
         }
 
         btnApagarConta?.setOnClickListener {
@@ -130,6 +168,38 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
             }
 
             dialog.show()
+        }
+    }
+
+    private fun carregarDadosADM(email: String) {
+        if (email.isEmpty()) return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val user = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["users"]
+                        .select { filter { eq("email", email) } }
+                        .decodeSingleOrNull<User>()
+                }
+
+                user?.let {
+                    textUsuarioHeader.text = it.email
+                    editNomeAdm.setText(it.nome)
+                    editUsuarioAdm.setText(it.usuario)
+                    editSenhaADMconfig.setText(it.senha)
+
+                    // Carrega a foto de perfil usando Coil
+                    if (!it.foto.isNullOrEmpty()) {
+                        imagePerfilUsuario.load(it.foto) {
+                            crossfade(true)
+                            placeholder(R.drawable.user_placeholder)
+                            transformations(CircleCropTransformation())
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }
