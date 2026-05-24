@@ -6,6 +6,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.bibliounifornew.R
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 
 class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
@@ -61,6 +62,8 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
     }
 
     private fun setupListeners(emailAdm: String?) {
+        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+
         // RF28.2 - Configurações (Botão RF38)
         iconConfigAdm.setOnClickListener {
             val fragment = TelaRF38ConfigADM().apply {
@@ -92,26 +95,17 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
 
         // RF28.6 - Livros Atrasados / Financeiro (Botão RF34)
         buttonVerAtrasos.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, TelaRF34FinanceiroADM())
-                .addToBackStack(null)
-                .commit()
+            bottomNav.selectedItemId = R.id.nav_financeiro
         }
 
         // RF28.4 - Confirmação de Cadastro (Botão RF35 - Se houver, caso contrário mandamos para usuários)
         buttonVerCadastros.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, Telarf29GerenciamentoUsuariosADM())
-                .addToBackStack(null)
-                .commit()
+            bottomNav.selectedItemId = R.id.nav_gerenciamento_usuarios
         }
 
         // RF28.7 - Solicitações dos Usuários (Botão RF31)
         buttonVerSolicitacoes.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, Telarf31SolicitacoesADM())
-                .addToBackStack(null)
-                .commit()
+            bottomNav.selectedItemId = R.id.nav_solicitacoes
         }
     }
 }

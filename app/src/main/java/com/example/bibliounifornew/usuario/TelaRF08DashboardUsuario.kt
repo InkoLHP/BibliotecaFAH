@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.login.TelaRF03LoginAluno
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 
 class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
@@ -42,18 +43,16 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         val btnStatusAluguel = view.findViewById<MaterialButton>(R.id.btnStatusAluguel)
         val btnSair = view.findViewById<MaterialButton>(R.id.btnSairConta)
 
+        // REFERÊNCIA À BOTTOM NAV DA ACTIVITY
+        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+
         // AÇÕES DOS BOTÕES (Navegação)
 
         btnConfig.setOnClickListener {
-
-            val sharedPref = requireActivity().getSharedPreferences("user_session", AppCompatActivity.MODE_PRIVATE)
-
             val emailUsuario = sharedPref.getString("USER_EMAIL", null)
-
             val fragment = TelaRF09Configuracao().apply {
                 arguments = Bundle().apply { putString("USER_EMAIL", emailUsuario) }
             }
-
             irParaFragment(fragment)
         }
 
@@ -62,15 +61,15 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         }
 
         btnPesquisa?.setOnClickListener {
-            irParaFragment(TelaRF11TelaDePesquisa())
+            bottomNav.selectedItemId = R.id.nav_pesquisa
         }
 
         btnMinhaLivraria?.setOnClickListener {
-            irParaFragment(TelaRF15MinhaLivraria())
+            bottomNav.selectedItemId = R.id.nav_livraria
         }
 
         btnAmigos?.setOnClickListener {
-            irParaFragment(TelaRF17Amigos())
+            bottomNav.selectedItemId = R.id.nav_amigos
         }
 
         btnHistorico?.setOnClickListener {
@@ -78,7 +77,7 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         }
 
         btnStatusAluguel?.setOnClickListener {
-            irParaFragment(TelaRF13StatusAluguel())
+            bottomNav.selectedItemId = R.id.nav_status
         }
 
         btnSair?.setOnClickListener {
