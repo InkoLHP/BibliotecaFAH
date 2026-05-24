@@ -106,9 +106,16 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
 
         // RF09.9 - Botão Redefinir Senha
         btnRedefinir.setOnClickListener {
-            val intent = Intent(requireContext(), TelaRF10RedefinirSenha::class.java)
-            intent.putExtra("USER_EMAIL", emailUsuarioLogado)
-            startActivity(intent)
+            val fragment = TelaRF10RedefinirSenha().apply {
+                arguments = Bundle().apply {
+                    putString("USER_EMAIL", emailUsuarioLogado)
+                }
+            }
+            
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frameLayout, fragment)
+                .addToBackStack(null)
+                .commit()
         }
 
         // RF09.10 - Pop-up Apagar Conta

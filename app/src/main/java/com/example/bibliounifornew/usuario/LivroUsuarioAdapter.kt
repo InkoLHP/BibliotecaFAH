@@ -22,7 +22,7 @@ class LivroUsuarioAdapter(
         val textIsbn: TextView = itemView.findViewById(R.id.textIsbnLivro)
 
         // Mapeando a imagem e o botão do seu layout
-        val imagemCapa: ImageView = itemView.findViewById(R.id.imagemCapaLivro) // Substitua pelo ID real da sua capa no XML
+        val imagemCapa: ImageView = itemView.findViewById(R.id.imgCapaLivro) // Substitua pelo ID real da sua capa no XML
         val btnVerMais: MaterialButton = itemView.findViewById(R.id.btnVerMais)
     }
 
@@ -45,8 +45,8 @@ class LivroUsuarioAdapter(
             crossfade(true) // Faz uma transição suave ao carregar
             // Você pode colocar a capa do "Alienista" ou outra genérica como placeholder
             // caso a internet esteja lenta ou o livro não tenha foto no banco
-            placeholder(R.drawable.sua_imagem_padrao_de_capa)
-            error(R.drawable.sua_imagem_padrao_de_capa) // Mostra se a URL estiver quebrada
+            placeholder(R.drawable.o_alienista_capa)
+            error(R.drawable.o_alienista_capa) // Mostra se a URL estiver quebrada
         }
 
         // O clique no botão "Ver mais" aciona a abertura das opções

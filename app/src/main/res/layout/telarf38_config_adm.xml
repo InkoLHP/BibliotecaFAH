@@ -101,6 +101,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp">
                 <EditText
+                    android:id="@+id/editNomeAdm"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:background="@drawable/bg_input_pill"
@@ -133,6 +134,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp">
                 <EditText
+                    android:id="@+id/editUsuarioAdm"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:background="@drawable/bg_input_pill"
@@ -211,7 +213,7 @@
                 android:textAllCaps="false"
                 android:textSize="17sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/biblio_blue"
+                app:backgroundTint="@color/biblio_red"
                 app:cornerRadius="12dp" />
 
         </LinearLayout>

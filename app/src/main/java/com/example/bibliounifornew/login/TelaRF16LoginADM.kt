@@ -82,6 +82,15 @@ class TelaRF16LoginADM : AppCompatActivity() {
 
                             if (contaAdm != null) {
                                 android.util.Log.d("LOGIN_DEBUG", "Login ADM Sucesso. Abrindo AdmMainActivity")
+
+                                // SALVA A SESSÃO DO ADM (Nome, E-mail e Tipo)
+                                val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+                                val editor = sharedPref.edit()
+                                editor.putString("USER_NOME", contaAdm.nome)
+                                editor.putString("USER_EMAIL", contaAdm.email)
+                                editor.putString("USER_TIPO", contaAdm.tipo)
+                                editor.apply()
+
                                 Toast.makeText(
                                     this@TelaRF16LoginADM,
                                     "Login realizado com sucesso!",

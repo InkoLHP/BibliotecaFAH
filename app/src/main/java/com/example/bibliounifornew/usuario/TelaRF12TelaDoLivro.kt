@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.Livro
@@ -71,10 +72,10 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                     findViewById<TextView>(R.id.textSobreLivro).text = it.sinopse ?: "Sinopse não disponível."
 
                     val imgCapa = findViewById<ImageView>(R.id.imageLivroDetalhes)
-                    if (it.capaResourceId != 0) {
-                        imgCapa.setImageResource(it.capaResourceId)
-                    } else {
-                        imgCapa.setImageResource(R.drawable.osda) // Imagem padrão de fallback
+                    imgCapa.load(it.capaUrl) {
+                        crossfade(true)
+                        placeholder(R.drawable.osda)
+                        error(R.drawable.osda)
                     }
                 } ?: run {
                     Toast.makeText(this@TelaRF12TelaDoLivro, "O livro solicitado não existe no banco.", Toast.LENGTH_SHORT).show()
