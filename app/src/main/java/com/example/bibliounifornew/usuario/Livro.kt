@@ -1,6 +1,8 @@
-package com.example.bibliounifornew.model
+package com.example.bibliounifornew.usuario
 
 import kotlinx.serialization.Serializable
+
+// data class dos livros, representa os dados vindo da tabela livros do supabase
 
 @Serializable
 data class Livro(

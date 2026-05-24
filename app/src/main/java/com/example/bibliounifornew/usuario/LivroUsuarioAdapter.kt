@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load // Importação do Coil
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Livro
 import com.google.android.material.button.MaterialButton
 
 class LivroUsuarioAdapter(

@@ -14,7 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.Livro
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
