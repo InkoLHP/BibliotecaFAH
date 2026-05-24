@@ -71,6 +71,7 @@ class TelaRF05RecuperacaoSenha : AppCompatActivity() {
 
                                         // 3. Abre a tela de validação do código (TelaRF06)
                                         val intent = Intent(this@TelaRF05RecuperacaoSenha, TelaRF06ValidacaoDeCodigo::class.java)
+                                        intent.putExtra("USER_EMAIL", email)
                                         startActivity(intent)
                                     }
                                 },
@@ -81,6 +82,11 @@ class TelaRF05RecuperacaoSenha : AppCompatActivity() {
                                     }
                                 }
                             )
+                        } else {
+                            // Se o e-mail não existir na tabela "users"
+                            textErroEmail.text = "E-mail não cadastrado"
+                            textErroEmail.visibility = View.VISIBLE
+                            btnEnviar.isEnabled = true
                         }
 
                     } catch (e: Exception) {

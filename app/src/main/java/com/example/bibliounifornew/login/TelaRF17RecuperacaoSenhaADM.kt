@@ -73,13 +73,32 @@ class TelaRF17RecuperacaoSenhaADM : AppCompatActivity() {
                             }
 
                             if (admExistente != null) {
-                                // Se encontrou o ADM, avança para a tela de validação do código
-                                val intent = Intent(this@TelaRF17RecuperacaoSenhaADM, TelaRF18ValidaçãoCodigoADM::class.java)
+                                // 1. Gera o código e guarda no CodigoManager
+                                val codigoGerado = com.example.bibliounifornew.api.CodigoManager.gerarCodigo()
+                                com.example.bibliounifornew.api.CodigoManager.emailRecuperacao = textoEmail
 
-                                // 🔥 CORREÇÃO: Passando o e-mail do ADM validado para a próxima tela
-                                intent.putExtra("USER_EMAIL", textoEmail)
-
-                                startActivity(intent)
+                                // 2. Envia o e-mail
+                                com.example.bibliounifornew.utils.EmailSender.enviarEmail(
+                                    email = textoEmail,
+                                    codigo = codigoGerado,
+                                    onSuccess = {
+                                        runOnUiThread {
+                                            botaoEnviar.isEnabled = true
+                                            Toast.makeText(this@TelaRF17RecuperacaoSenhaADM, "Código enviado com sucesso!", Toast.LENGTH_SHORT).show()
+                                            
+                                            // 3. Abre a tela de validação do código
+                                            val intent = Intent(this@TelaRF17RecuperacaoSenhaADM, TelaRF18ValidaçãoCodigoADM::class.java)
+                                            intent.putExtra("USER_EMAIL", textoEmail)
+                                            startActivity(intent)
+                                        }
+                                    },
+                                    onError = {
+                                        runOnUiThread {
+                                            botaoEnviar.isEnabled = true
+                                            Toast.makeText(this@TelaRF17RecuperacaoSenhaADM, "Erro ao enviar e-mail. Tente novamente.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                )
                             } else {
                                 // Se o e-mail não existir ou não for um ADM
                                 erro.text = "E-mail de administrador não cadastrado"

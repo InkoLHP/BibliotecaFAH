@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 class TelaRF19RedefinirSenhaADM : AppCompatActivity() {
 
     private var emailAdm: String? = null
+    private var senhaAntigaBanco: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,156 +50,123 @@ class TelaRF19RedefinirSenhaADM : AppCompatActivity() {
         val erroSenhaDiferente = findViewById<TextView>(R.id.textErroSenhaDiferente)
         val regrasSenha = findViewById<TextView>(R.id.textRegrasSenha)
 
-        // Esconder todos os alertas e requisitos assim que a tela abre para melhor UX
-        erroSenha1.visibility = View.GONE
-        erroSenha2.visibility = View.GONE
-        erroSenhaIgual.visibility = View.GONE
-        erroSenhaDiferente.visibility = View.GONE
-        regrasSenha?.visibility = View.GONE
+        // Esconde todos os alertas e requisitos no início
+        ocultarErros(erroSenha1, erroSenha2, erroSenhaIgual, erroSenhaDiferente, regrasSenha)
+
+        // Busca a senha atual no banco para validação futura
+        carregarSenhaAntiga()
 
         // CONTROLE VISIBILIDADE SENHA
-        var senhaVisivel = false
-        var confirmarVisivel = false
-
-        // OLHO SENHA
-        olhoSenha.setOnClickListener {
-            if (senhaVisivel) {
-                senhaNova.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                olhoSenha.setImageResource(R.drawable.ic_eye_closed)
-                senhaVisivel = false
-            } else {
-                senhaNova.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                olhoSenha.setImageResource(R.drawable.ic_eye_open)
-                senhaVisivel = true
-            }
-            senhaNova.setSelection(senhaNova.text.length)
-        }
-
-        // OLHO CONFIRMAR
-        olhoConfirmar.setOnClickListener {
-            if (confirmarVisivel) {
-                confirmarSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                olhoConfirmar.setImageResource(R.drawable.ic_eye_closed)
-                confirmarVisivel = false
-            } else {
-                confirmarSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                olhoConfirmar.setImageResource(R.drawable.ic_eye_open)
-                confirmarVisivel = true
-            }
-            confirmarSenha.setSelection(confirmarSenha.text.length)
-        }
+        configurarOlhoSenha(olhoSenha, senhaNova)
+        configurarOlhoSenha(olhoConfirmar, confirmarSenha)
 
         // BOTÃO REDEFINIR
         botaoRedefinir.setOnClickListener {
-
             val textoSenha = senhaNova.text.toString().trim()
             val textoConfirmar = confirmarSenha.text.toString().trim()
 
             // RESET ERROS AO CLICAR
-            erroSenha1.visibility = View.GONE
-            erroSenha2.visibility = View.GONE
-            erroSenhaIgual.visibility = View.GONE
-            erroSenhaDiferente.visibility = View.GONE
-            regrasSenha?.visibility = View.GONE
+            ocultarErros(erroSenha1, erroSenha2, erroSenhaIgual, erroSenhaDiferente, regrasSenha)
 
-            when {
-                textoSenha.isEmpty() -> {
-                    erroSenha1.text = "Digite uma senha"
-                    erroSenha1.visibility = View.VISIBLE
+            var valido = true
+
+            // 1. Verifica campos vazios
+            if (textoSenha.isEmpty()) {
+                erroSenha1.text = "Campo obrigatório"
+                erroSenha1.visibility = View.VISIBLE
+                valido = false
+            }
+            if (textoConfirmar.isEmpty()) {
+                erroSenha2.text = "Campo obrigatório"
+                erroSenha2.visibility = View.VISIBLE
+                valido = false
+            }
+
+            if (!valido) return@setOnClickListener
+
+            // 2. Validação de requisitos (Força da Senha)
+            val regexForcaSenha = Regex("^(?=.*[A-Z])(?=.*[0-9]).{8,}\$")
+            if (!regexForcaSenha.matches(textoSenha)) {
+                regrasSenha.text = "A senha deve conter pelo menos 8 caracteres, um número e uma letra maiúscula!"
+                regrasSenha.visibility = View.VISIBLE
+                valido = false
+            }
+
+            // 3. Verifica se é igual a anterior
+            if (senhaAntigaBanco != null && textoSenha == senhaAntigaBanco) {
+                erroSenhaIgual.visibility = View.VISIBLE
+                valido = false
+            }
+
+            // 4. Verifica se coincidem
+            if (textoSenha != textoConfirmar) {
+                erroSenhaDiferente.visibility = View.VISIBLE
+                valido = false
+            }
+
+            if (valido) {
+                if (emailAdm.isNullOrBlank()) {
+                    Toast.makeText(this, "Erro: Identificação do administrador não encontrada.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
 
-                textoConfirmar.isEmpty() -> {
-                    erroSenha2.text = "Confirme a senha"
-                    erroSenha2.visibility = View.VISIBLE
-                }
+                botaoRedefinir.isEnabled = false
 
-                // 🔥 CORREÇÃO: erroSenha1 agora exibe apenas um aviso curto, evitando duplicidade com o bloco de regras embaixo
-                textoSenha.length < 8 -> {
-                    erroSenha1.text = "Senha fraca"
-                    erroSenha1.visibility = View.VISIBLE
-                    regrasSenha?.visibility = View.VISIBLE
-                }
-
-                !textoSenha.any { it.isDigit() } -> {
-                    erroSenha1.text = "Senha fraca"
-                    erroSenha1.visibility = View.VISIBLE
-                    regrasSenha?.visibility = View.VISIBLE
-                }
-
-                !textoSenha.any { it.isUpperCase() } -> {
-                    erroSenha1.text = "Senha fraca"
-                    erroSenha1.visibility = View.VISIBLE
-                    regrasSenha?.visibility = View.VISIBLE
-                }
-
-                // Só verifica se são iguais se a senha passar nos requisitos acima
-                textoSenha != textoConfirmar -> {
-                    erroSenhaDiferente.visibility = View.VISIBLE
-                }
-
-                else -> {
-                    if (emailAdm.isNullOrBlank()) {
-                        Toast.makeText(this, "Erro: Identificação do administrador não encontrada.", Toast.LENGTH_SHORT).show()
-                        return@setOnClickListener
-                    }
-
-                    botaoRedefinir.isEnabled = false
-
-                    lifecycleScope.launch {
-                        try {
-                            val dadosAdm = withContext(Dispatchers.IO) {
-                                SupabaseConfig.client.postgrest["users"]
-                                    .select {
-                                        filter {
-                                            eq("email", emailAdm!!)
-                                            eq("tipo", "adm")
-                                        }
-                                    }.decodeSingleOrNull<User>()
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.postgrest["users"].update(
+                                { set("senha", textoSenha) }
+                            ) {
+                                filter { eq("email", emailAdm!!) }
                             }
-
-                            if (dadosAdm != null && dadosAdm.senha == textoSenha) {
-                                erroSenhaIgual.visibility = View.VISIBLE
-                                botaoRedefinir.isEnabled = true
-                            } else {
-                                withContext(Dispatchers.IO) {
-                                    SupabaseConfig.client.postgrest["users"].update(
-                                        {
-                                            set("senha", textoSenha)
-                                        }
-                                    ) {
-                                        filter {
-                                            eq("email", emailAdm!!)
-                                        }
-                                    }
-                                }
-                                mostrarPopupSucesso()
-                            }
-
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            Toast.makeText(this@TelaRF19RedefinirSenhaADM, "Erro ao conectar ao banco", Toast.LENGTH_SHORT).show()
-                            botaoRedefinir.isEnabled = true
                         }
+                        mostrarPopupSucesso()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this@TelaRF19RedefinirSenhaADM, "Erro ao atualizar senha no servidor", Toast.LENGTH_SHORT).show()
+                        botaoRedefinir.isEnabled = true
                     }
                 }
             }
         }
+    }
 
-        // UX - Limpa erros ao focar novamente nos inputs
-        senhaNova.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                erroSenha1.visibility = View.GONE
-                erroSenhaIgual.visibility = View.GONE
-                erroSenhaDiferente.visibility = View.GONE
-                regrasSenha?.visibility = View.GONE
+    private fun carregarSenhaAntiga() {
+        if (emailAdm.isNullOrBlank()) return
+
+        lifecycleScope.launch {
+            try {
+                val user = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["users"]
+                        .select { filter { eq("email", emailAdm!!) } }
+                        .decodeSingleOrNull<User>()
+                }
+                senhaAntigaBanco = user?.senha
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
+    }
 
-        confirmarSenha.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                erroSenha2.visibility = View.GONE
-                erroSenhaDiferente.visibility = View.GONE
+    private fun configurarOlhoSenha(icone: ImageView, campoTexto: EditText) {
+        var senhaVisivel = false
+        icone.setOnClickListener {
+            senhaVisivel = !senhaVisivel
+            if (senhaVisivel) {
+                campoTexto.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                icone.setImageResource(R.drawable.ic_eye_open)
+            } else {
+                campoTexto.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                icone.setImageResource(R.drawable.ic_eye_open)
             }
+            campoTexto.setSelection(campoTexto.text.length)
+        }
+    }
+
+    private fun ocultarErros(vararg textViews: TextView) {
+        for (tv in textViews) {
+            tv.visibility = View.GONE
         }
     }
 

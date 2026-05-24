@@ -36,7 +36,7 @@ class TelaRF06ValidacaoDeCodigo : AppCompatActivity() {
         val timer = findViewById<TextView>(R.id.textTimer)
 
         // Inicialmente o erro fica invisível
-        textErro.visibility = View.INVISIBLE
+        textErro.visibility = View.GONE
 
         iniciarTimer(buttonReenviarCod, timer)
 
@@ -45,13 +45,14 @@ class TelaRF06ValidacaoDeCodigo : AppCompatActivity() {
 
             // Valida contra o código dinâmico gerado no seu CodigoManager
             if (codigoDigitado.isNotEmpty() && codigoDigitado == CodigoManager.codigoGerado) {
-                textErro.visibility = View.INVISIBLE
+                textErro.visibility = View.GONE
 
                 // Para o timer para economizar memória do celular
                 countDownTimer?.cancel()
 
                 // Avança para a tela de redefinição de senha
                 val intent = Intent(this, TelaRF07RedefinirSenha::class.java)
+                intent.putExtra("USER_EMAIL", emailUsuario)
                 startActivity(intent)
                 finish()
             } else {

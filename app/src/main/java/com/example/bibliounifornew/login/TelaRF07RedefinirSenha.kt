@@ -10,10 +10,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.data.User
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 class TelaRF07RedefinirSenha : AppCompatActivity() {
 
     private var emailUsuario: String? = null
+    private var senhaAntigaBanco: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,54 +47,69 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
         val bntOlhoConfirmarSenha = findViewById<ImageView>(R.id.iconOlhoConfirmarSenha)
 
         // Inicializa erros como invisíveis
-        textErroDiferente.visibility = View.GONE
-        textErroIgual.visibility = View.GONE
-        textErroRequisitos.visibility = View.GONE
-        erroSenha2.visibility = View.GONE
-        erroSenha1.visibility = View.GONE
+        ocultarErros(erroSenha1, erroSenha2, textErroDiferente, textErroIgual, textErroRequisitos)
+
+        // Busca a senha atual no banco para validação
+        carregarSenhaAntiga()
 
         btnConfirmar.setOnClickListener {
-            val senhanova = editSenhaNova.text.toString()
-            val confirmarsenha = editConfirmarSenha.text.toString()
+            val senhanova = editSenhaNova.text.toString().trim()
+            val confirmarsenha = editConfirmarSenha.text.toString().trim()
 
-            // Reseta alertas visuais de erro de campos vazios
-            erroSenha1.visibility = View.GONE
-            erroSenha2.visibility = View.GONE
-            textErroDiferente.visibility = View.GONE
+            // Reseta alertas
+            ocultarErros(erroSenha1, erroSenha2, textErroDiferente, textErroIgual, textErroRequisitos)
 
-            val senhaValida = validarSenha(senhanova)
-            val senhasIguais = senhanova == confirmarsenha
+            var valido = true
 
-            if (editSenhaNova.text.toString().isEmpty() || editConfirmarSenha.text.toString().isEmpty()) {
-                erroSenha2.visibility = View.VISIBLE
+            // 1. Verifica campos vazios
+            if (senhanova.isEmpty()) {
                 erroSenha1.visibility = View.VISIBLE
-            } else if (senhaValida && senhasIguais) {
+                valido = false
+            }
+            if (confirmarsenha.isEmpty()) {
+                erroSenha2.visibility = View.VISIBLE
+                valido = false
+            }
 
-                // Se o e-mail não foi repassado corretamente pelas intents, usamos um aviso de segurança
+            if (!valido) return@setOnClickListener
+
+            // 2. Validação de requisitos (Força da Senha)
+            if (!validarSenha(senhanova)) {
+                textErroRequisitos.text = "A senha deve conter pelo menos 8 caracteres, um número e uma letra maiúscula!"
+                textErroRequisitos.visibility = View.VISIBLE
+                valido = false
+            }
+
+            // 3. Verifica se é igual a anterior
+            if (senhaAntigaBanco != null && (senhanova == senhaAntigaBanco)) {
+                textErroIgual.visibility = View.VISIBLE
+                valido = false
+            }
+
+            // 4. Verifica se coincidem
+            if (senhanova != confirmarsenha) {
+                textErroDiferente.visibility = View.VISIBLE
+                valido = false
+            }
+
+            if (valido) {
                 if (emailUsuario.isNullOrBlank()) {
                     Toast.makeText(this, "Erro: Identificação do usuário não encontrada.", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
-                // Desativa o botão para evitar cliques múltiplos
                 btnConfirmar.isEnabled = false
 
                 lifecycleScope.launch {
                     try {
-                        // Atualiza a senha na tabela "users" onde o email for igual ao guardado
                         withContext(Dispatchers.IO) {
                             SupabaseConfig.client.postgrest["users"].update(
-                                {
-                                    set("senha", senhanova)
-                                }
+                                { set("senha", senhanova) },
                             ) {
-                                filter {
-                                    eq("email", emailUsuario!!)
-                                }
+                                filter { eq("email", emailUsuario!!) }
                             }
                         }
 
-                        // Abre o pop-up de sucesso se a operação no banco funcionar
                         mostrarPopupSucesso()
 
                     } catch (e: Exception) {
@@ -101,21 +117,6 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
                         Toast.makeText(this@TelaRF07RedefinirSenha, "Erro ao atualizar a senha no banco", Toast.LENGTH_SHORT).show()
                         btnConfirmar.isEnabled = true
                     }
-                }
-
-            } else {
-                if (!senhasIguais) {
-                    textErroDiferente.visibility = View.VISIBLE
-                    textErroDiferente.text = "As senhas não coincidem"
-                }
-
-                if (!senhaValida) {
-                    textErroRequisitos.visibility = View.VISIBLE
-                    textErroRequisitos.setTextColor(
-                        ContextCompat.getColor(this, android.R.color.holo_red_dark)
-                    )
-                } else {
-                    textErroRequisitos.visibility = View.GONE
                 }
             }
         }
@@ -149,6 +150,29 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
                 confirmarSenhaVisivel = true
             }
             editConfirmarSenha.setSelection(editConfirmarSenha.text.length)
+        }
+    }
+
+    private fun carregarSenhaAntiga() {
+        if (emailUsuario.isNullOrBlank()) return
+
+        lifecycleScope.launch {
+            try {
+                val user = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["users"]
+                        .select { filter { eq("email", emailUsuario!!) } }
+                        .decodeSingleOrNull<User>()
+                }
+                senhaAntigaBanco = user?.senha
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun ocultarErros(vararg textViews: TextView) {
+        for (tv in textViews) {
+            tv.visibility = View.GONE
         }
     }
 
