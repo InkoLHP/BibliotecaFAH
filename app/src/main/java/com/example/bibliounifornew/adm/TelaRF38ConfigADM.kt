@@ -17,7 +17,7 @@ import coil.load
 import coil.transform.CircleCropTransformation
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.data.User
+import com.example.bibliounifornew.model.User
 import com.example.bibliounifornew.login.TelaRF02Intermediaria
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.postgrest

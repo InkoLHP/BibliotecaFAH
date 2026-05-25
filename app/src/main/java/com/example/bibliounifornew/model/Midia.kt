@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.adm
+package com.example.bibliounifornew.model
 
 data class Midia(
     val titulo: String,

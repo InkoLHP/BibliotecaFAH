@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.data.User
+import com.example.bibliounifornew.model.User
 import com.example.bibliounifornew.usuario.UsuarioMainActivity
 // 1. IMPORTAÇÃO ATUALIZADA AQUI:
 import io.github.jan.supabase.postgrest.postgrest

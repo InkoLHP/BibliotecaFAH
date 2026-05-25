@@ -1,9 +1,6 @@
-package com.example.bibliounifornew.usuario
+package com.example.bibliounifornew.model
 
 import kotlinx.serialization.Serializable
-import java.io.Serializable as JavaSerializable
-
-// data class dos livros, representa os dados vindo da tabela livros do supabase
 
 @Serializable
 data class Livro(
@@ -17,4 +14,4 @@ data class Livro(
     val categoria: String? = null,
     val formato: String? = null,
     val disponível: Boolean = true
-) : JavaSerializable
+) : java.io.Serializable
