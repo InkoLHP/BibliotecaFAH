@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Livro
 import com.google.android.material.button.MaterialButton
 
 class LivroUsuarioAdapter(

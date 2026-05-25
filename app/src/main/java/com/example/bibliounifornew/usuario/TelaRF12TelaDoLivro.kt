@@ -11,7 +11,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import coil.load
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Livro
 
 class TelaRF12TelaDoLivro : AppCompatActivity() {
 

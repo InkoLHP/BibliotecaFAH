@@ -8,8 +8,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.data.Aluguel
 import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.usuario.Aluguel // Importado da pasta usuario
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,11 +32,10 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
             listaAlugueis = listaAlugueis,
             onVerLivroClick = { aluguel ->
                 Toast.makeText(requireContext(), "Carregando info do livro...", Toast.LENGTH_SHORT).show()
-                // Futuramente: Navegar para RF37 Editar Livro passando o nome/autor
             },
             onVerUsuarioClick = { aluguel ->
-                Toast.makeText(requireContext(), "Acessando perfil de: ${aluguel.emailUsuario}", Toast.LENGTH_SHORT).show()
-                // Futuramente: Navegar para o Perfil do Usuário
+                // Ajustado para usar email_usuario do seu modelo
+                Toast.makeText(requireContext(), "Acessando perfil de: ${aluguel.email_usuario}", Toast.LENGTH_SHORT).show()
             }
         )
         recyclerAlugueis.adapter = adapter

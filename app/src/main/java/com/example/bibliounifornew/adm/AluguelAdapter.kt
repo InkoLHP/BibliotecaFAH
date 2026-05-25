@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.data.Aluguel
+import com.example.bibliounifornew.usuario.Aluguel // Importado da pasta usuario
 import com.google.android.material.button.MaterialButton
 
 class AluguelAdapter(
@@ -37,25 +37,20 @@ class AluguelAdapter(
     override fun onBindViewHolder(holder: AluguelViewHolder, position: Int) {
         val aluguel = listaAlugueis[position]
 
-        holder.textNomeUsuario.text = aluguel.emailUsuario ?: "Usuário desconhecido"
-        holder.textTituloLivro.text = aluguel.tituloLivro ?: "Sem título"
-        holder.textAutorLivro.text = aluguel.autorLivro ?: "Autor desconhecido"
+        // Ajustado para os nomes de variáveis do seu Aluguel original
+        holder.textNomeUsuario.text = aluguel.email_usuario ?: "Usuário desconhecido"
+        holder.textTituloLivro.text = aluguel.titulo_livro ?: "Sem título"
+        holder.textAutorLivro.text = aluguel.autor_livro ?: "Autor desconhecido"
 
         // Usa o Glide para carregar a capa pela URL que está no banco
         Glide.with(holder.itemView.context)
-            .load(aluguel.capaUrl)
+            .load(aluguel.capa_url)
             .placeholder(R.drawable.o_alienista_capa)
             .into(holder.imgCapaLivro)
 
-        // Quebrando o "created_at" (2026-05-24 23:40:09...) para exibir data e hora separados
-        val dataHora = aluguel.createdAt?.split("T", " ")
-        if (dataHora != null && dataHora.size >= 2) {
-            holder.textDataAluguel.text = dataHora[0]
-            holder.textHoraAluguel.text = dataHora[1].substring(0, 5) // Pega só o HH:mm
-        } else {
-            holder.textDataAluguel.text = "Sem data"
-            holder.textHoraAluguel.visibility = View.GONE
-        }
+        // Como o modelo do usuário não possui created_at, exibimos a data de vencimento no card
+        holder.textDataAluguel.text = "Vence: ${aluguel.data_vencimento ?: "Sem data"}"
+        holder.textHoraAluguel.visibility = View.GONE
 
         // Configurando os botões
         holder.btnVerLivro.setOnClickListener { onVerLivroClick(aluguel) }
