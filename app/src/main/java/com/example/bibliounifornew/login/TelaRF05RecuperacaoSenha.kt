@@ -64,13 +64,22 @@ class TelaRF05RecuperacaoSenha : AppCompatActivity() {
                                 email = email,
                                 codigo = codigoGerado,
                                 onSuccess = {
-                                    // Como o OkHttp roda em background, voltamos para a main thread para mudar de tela
                                     runOnUiThread {
                                         btnEnviar.isEnabled = true
-                                        Toast.makeText(this@TelaRF05RecuperacaoSenha, "Código enviado com sucesso!", Toast.LENGTH_SHORT).show()
 
-                                        // 3. Abre a tela de validação do código (TelaRF06)
-                                        val intent = Intent(this@TelaRF05RecuperacaoSenha, TelaRF06ValidacaoDeCodigo::class.java)
+                                        Toast.makeText(
+                                            this@TelaRF05RecuperacaoSenha,
+                                            "Código enviado com sucesso!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        val intent = Intent(
+                                            this@TelaRF05RecuperacaoSenha,
+                                            TelaRF06ValidacaoDeCodigo::class.java
+                                        )
+
+                                        intent.putExtra("USER_EMAIL", email)
+
                                         intent.putExtra("USER_EMAIL", email)
                                         startActivity(intent)
                                     }
