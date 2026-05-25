@@ -15,12 +15,15 @@ object RetrofitClient {
         val originalUrl = originalRequest.url
         val apiKey = BuildConfig.BOOKS_API_KEY
 
+        // Verifica se a chave é válida (não vazia e não é o texto de exemplo)
         val request = if (apiKey.isNotEmpty() && apiKey != "YOUR_API_KEY_HERE") {
             val url = originalUrl.newBuilder()
                 .addQueryParameter("key", apiKey)
                 .build()
             originalRequest.newBuilder().url(url).build()
         } else {
+            // Se a chave não for válida, envia a requisição sem o parâmetro "key"
+            // Isso evita o erro 400 (Bad Request), mas pode resultar em erro 429 se a cota anônima acabar
             originalRequest
         }
 

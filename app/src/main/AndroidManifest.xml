@@ -99,6 +99,11 @@
             android:name=".usuario.TelaRF12TelaDoLivro"
             android:exported="false" />
 
+        <activity
+            android:name=".usuario.TelaRF14LeituraActivity"
+            android:exported="false" />
+
+
 
         <!-- ADM -->
         <activity

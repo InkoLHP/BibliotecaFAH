@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/placeholder" />
+                android:src="@drawable/o_alienista_capa" />
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -71,23 +71,6 @@
                     android:textColor="@color/biblio_blue"
                     android:textSize="12sp"
                     android:textStyle="bold" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAddListaDesejos"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="20dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:text="+ Lista de Desejos"
-                    android:textAllCaps="false"
-                    android:textColor="@color/biblio_blue"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:cornerRadius="24dp"
-                    app:strokeColor="@color/biblio_blue"
-                    app:strokeWidth="1.2dp" />
 
             </LinearLayout>
 
