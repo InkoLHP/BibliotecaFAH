@@ -168,7 +168,7 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
                 icone.setImageResource(R.drawable.ic_eye_open) 
             } else {
                 campoTexto.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                icone.setImageResource(R.drawable.ic_eye_open)
+                icone.setImageResource(R.drawable.ic_eye_closed)
             }
             campoTexto.setSelection(campoTexto.text.length)
         }
