@@ -27,7 +27,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize12dp"
-            tools:srcCompat="@tools:sample/backgrounds/scenic" />
+            tools:srcCompat="@drawable/placeholder" />
 
         <!-- Título do Livro -->
         <TextView
