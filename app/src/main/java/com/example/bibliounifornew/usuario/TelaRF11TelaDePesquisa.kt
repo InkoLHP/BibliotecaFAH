@@ -1,6 +1,5 @@
 package com.example.bibliounifornew.usuario
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
@@ -11,13 +10,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.Livro
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
+import com.example.bibliounifornew.model.Livro
 
 class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
@@ -37,9 +33,9 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
         recyclerLivros.layoutManager = LinearLayoutManager(requireContext())
 
-        // Inicializa o adapter vazio
-        recyclerLivros.adapter = LivroUsuarioAdapter(emptyList()) { livroClicado ->
-            abrirOpcoesLivro(livroClicado)
+        // CORRIGIDO: Inicializa o adapter vazio com o novo nome
+        recyclerLivros.adapter = LivroUsuarioAdapter(emptyList<Livro>()) { livro ->
+            abrirOpcoesLivro(livro)
         }
 
         // RF11.5 - Botão Procurar fazendo a busca real na Internet
@@ -47,38 +43,15 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
             val pesquisa = editPesquisarLivro.text.toString().trim()
 
             if (pesquisa.isEmpty()) {
-                Toast.makeText(requireContext(), "Digite um título ou autor", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Digite um título ou autor",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
-            // Chamando a internet usando Coroutine
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    // Busca dados direto do banco online do Supabase
-                    val livrosEncontrados = SupabaseConfig.client.postgrest["livros"].select {
-                        filter {
-                            or {
-                                ilike("titulo", "%$pesquisa%")
-                                ilike("autor", "%$pesquisa%")
-                            }
-                        }
-                    }.decodeList<Livro>()
-
-                    if (livrosEncontrados.isEmpty()) {
-                        Toast.makeText(requireContext(), "Nenhum livro correspondente encontrado.", Toast.LENGTH_SHORT).show()
-                        recyclerLivros.adapter = LivroUsuarioAdapter(emptyList()) { abrirOpcoesLivro(it) }
-                    } else {
-                        // RF11.6 - Renderiza os cards reais com Imagem, Nome, Autor e Data
-                        recyclerLivros.adapter = LivroUsuarioAdapter(livrosEncontrados) { livroClicado ->
-                            abrirOpcoesLivro(livroClicado)
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(requireContext(), "Erro de conexão: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
+            buscarLivros(pesquisa)
         }
 
         // RF11.2, RF11.3, RF11.4 - Abre o Pop-up de Filtros Avançados
@@ -87,50 +60,89 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
         }
     }
 
-    // RF11.2, RF11.3, RF11.4 - Exibe o BottomSheet de Filtros
-    private fun exibirPopupFiltros() {
-        val bottomSheet = BottomSheetDialog(requireContext())
-        val viewFiltro = layoutInflater.inflate(R.layout.popup_filtro_pesquisa, null)
-        bottomSheet.setContentView(viewFiltro)
+    private fun buscarLivros(pesquisa: String) {
+        // 1. Bloqueia o botão e muda o texto para o usuário não clicar de novo
+        buttonProcurar.isEnabled = false
+        buttonProcurar.text = "Buscando..."
 
-        val btnSalvar = viewFiltro.findViewById<MaterialButton>(R.id.buttonSalvarFiltro)
-        val btnLimpar = viewFiltro.findViewById<MaterialButton>(R.id.buttonLimparFiltro)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                // CHAMA A API COM A SUA CHAVE
+                val response = com.example.bibliounifornew.api.RetrofitClient
+                    .api
+                    .searchBooks(
+                        query = pesquisa,
+                        apiKey = "AIzaSyC8t_vTp_BNj82t6X1yWOX2dJkadMCT-1A" // SUBTITUA PELA SUA CHAVE REAL AQUI
+                    )
 
-        // TODO: Mapear os campos internos do seu R.layout.popup_filtro_pesquisa
-        // como os Checkboxes/Spinners de Categoria, Online/Presencial (RF11.3) e Disponibilidade (RF11.4)
+                val livrosEncontrados = response.items?.map { item ->
+                    Livro(
+                        titulo = item.volumeInfo.title ?: "Sem título",
+                        autor = item.volumeInfo.authors?.joinToString(", ") ?: "Autor desconhecido",
+                        isbn = item.volumeInfo.industryIdentifiers?.firstOrNull()?.identifier ?: "Sem ISBN",
+                        capaUrl = item.volumeInfo.imageLinks?.thumbnail?.replace("http://", "https://") ?: ""
+                    )
+                } ?: emptyList()
 
-        btnSalvar.setOnClickListener {
-            Toast.makeText(requireContext(), "Filtros aplicados!", Toast.LENGTH_SHORT).show()
-            bottomSheet.dismiss()
-            // Aqui futuramente você pode aplicar a lógica para filtrar a lista vinda do Supabase
+                // Se não encontrar nada, avisa o usuário
+                if (livrosEncontrados.isEmpty()) {
+                    Toast.makeText(requireContext(), "Nenhum livro encontrado.", Toast.LENGTH_SHORT).show()
+                }
+
+                // Atualiza o adapter usando o novo nome da classe
+                recyclerLivros.adapter = LivroUsuarioAdapter(livrosEncontrados) { livro ->
+                    abrirOpcoesLivro(livro)
+                }
+
+            } catch (e: retrofit2.HttpException) {
+                if (e.code() == 429) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Muitas buscas seguidas. Tente novamente em alguns segundos.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Erro no servidor do Google: ${e.code()}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    "Erro de conexão. Verifique sua internet.",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                // 2. IMPORTANTE: Libera o botão novamente independente se deu erro ou sucesso
+                buttonProcurar.isEnabled = true
+                buttonProcurar.text = "Procurar"
+            }
         }
-
-        btnLimpar.setOnClickListener {
-            Toast.makeText(requireContext(), "Filtros limpos!", Toast.LENGTH_SHORT).show()
-            bottomSheet.dismiss()
-        }
-
-        bottomSheet.show()
     }
 
-    // RF11.7 - Menu de opções acionado ao clicar nos três pontos
     private fun abrirOpcoesLivro(livro: Livro) {
-        val statusDisponibilidade = if (livro.disponível) "Disponível" else "Já Alugado" // RF11.4
-        val opcoes = arrayOf("Ver Detalhes ($statusDisponibilidade)", "Adicionar à Minha Livraria", "Adicionar à Lista de Desejos")
+        val titulo = livro.titulo
+        val opcoes = arrayOf(
+            "Ver detalhes",
+            "Adicionar à Minha Livraria",
+            "Adicionar à Lista de Desejos"
+        )
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle(livro.titulo)
+            .setTitle(titulo)
             .setItems(opcoes) { _, qual ->
                 when (qual) {
-                    0 -> { // Ver Detalhes
-                        val intent = Intent(requireContext(), TelaRF12TelaDoLivro::class.java)
-                        intent.putExtra("LIVRO_ID", livro.id)
-                        startActivity(intent)
-                    }
-                    1 -> Toast.makeText(requireContext(), "${livro.titulo} adicionado à Livraria!", Toast.LENGTH_SHORT).show()
-                    2 -> Toast.makeText(requireContext(), "${livro.titulo} adicionado aos Desejos!", Toast.LENGTH_SHORT).show()
+                    0 -> Toast.makeText(requireContext(), "Abrindo detalhes de: $titulo", Toast.LENGTH_SHORT).show()
+                    1 -> Toast.makeText(requireContext(), "$titulo adicionado à Livraria!", Toast.LENGTH_SHORT).show()
+                    2 -> Toast.makeText(requireContext(), "$titulo adicionado aos Desejos!", Toast.LENGTH_SHORT).show()
                 }
             }
             .show()
+    }
+
+    private fun exibirPopupFiltros() {
+        // Implementação futura dos filtros
     }
 }
