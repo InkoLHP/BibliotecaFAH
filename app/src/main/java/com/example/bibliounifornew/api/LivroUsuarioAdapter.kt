@@ -39,7 +39,7 @@ class LivroUsuarioAdapter(
 
         Glide.with(holder.itemView.context)
             .load(livro.capaUrl)
-            .placeholder(R.drawable.o_alienista_capa)
+            .placeholder(R.drawable.placeholder)
             .into(holder.imgCapaLivro)
 
 
