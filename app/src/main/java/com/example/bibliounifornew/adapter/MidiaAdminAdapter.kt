@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.adm
+package com.example.bibliounifornew.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.adm.TelaRF37EditarMidia
+import com.example.bibliounifornew.model.Midia
 import com.google.android.material.button.MaterialButton
 
 class MidiaAdminAdapter(
