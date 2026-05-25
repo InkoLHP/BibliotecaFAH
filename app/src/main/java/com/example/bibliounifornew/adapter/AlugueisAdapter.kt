@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.usuario
+package com.example.bibliounifornew.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.model.Aluguel
 
 // Adapter do Recicler View, pega a lista de alugueis e preenche os cards automaticamente.
 class AluguelAdapter(
