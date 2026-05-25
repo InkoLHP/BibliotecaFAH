@@ -1,60 +1,69 @@
 package com.example.bibliounifornew.adm
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.Aluguel
+import com.example.bibliounifornew.data.SupabaseConfig
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [Telarf36AlugueisADM.newInstance] factory method to
- * create an instance of this fragment.
- */
-class Telarf36AlugueisADM : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var recyclerAlugueis: RecyclerView
+    private lateinit var adapter: AluguelAdapter
+    private var listaAlugueis = mutableListOf<Aluguel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.telarf36_alugueis_adm, container, false)
-    }
+        recyclerAlugueis = view.findViewById(R.id.recyclerAlugueis)
+        recyclerAlugueis.layoutManager = LinearLayoutManager(requireContext())
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment telarf36_alugueis_adm.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            Telarf36AlugueisADM().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        // Inicializa o Adapter e os cliques dos botões
+        adapter = AluguelAdapter(
+            listaAlugueis = listaAlugueis,
+            onVerLivroClick = { aluguel ->
+                Toast.makeText(requireContext(), "Carregando info do livro...", Toast.LENGTH_SHORT).show()
+                // Futuramente: Navegar para RF37 Editar Livro passando o nome/autor
+            },
+            onVerUsuarioClick = { aluguel ->
+                Toast.makeText(requireContext(), "Acessando perfil de: ${aluguel.emailUsuario}", Toast.LENGTH_SHORT).show()
+                // Futuramente: Navegar para o Perfil do Usuário
             }
+        )
+        recyclerAlugueis.adapter = adapter
+
+        // Busca os dados
+        buscarAlugueisAtivos()
+    }
+
+    private fun buscarAlugueisAtivos() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val alugueisDoBanco = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["alugueis"]
+                        .select {
+                            filter { eq("devolvido", false) } // Só puxa quem NÃO devolveu
+                        }
+                        .decodeList<Aluguel>()
+                }
+
+                listaAlugueis.clear()
+                listaAlugueis.addAll(alugueisDoBanco)
+                adapter.notifyDataSetChanged()
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao buscar dados do Supabase", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
