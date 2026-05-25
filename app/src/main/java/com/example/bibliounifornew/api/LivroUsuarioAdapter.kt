@@ -42,6 +42,7 @@ class LivroUsuarioAdapter(
             .placeholder(R.drawable.o_alienista_capa)
             .into(holder.imgCapaLivro)
 
+
         holder.btnVerMais.setOnClickListener {
             onClick(livro)
         }

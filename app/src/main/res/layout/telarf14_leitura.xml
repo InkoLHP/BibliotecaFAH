@@ -181,22 +181,6 @@
                 app:elevation="4dp" />
 
             <!-- BOTÃO -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSetorLivro"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="Setor Localizado"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:backgroundTint="@color/biblio_blue"
-                app:cornerRadius="28dp"
-                app:elevation="4dp" />
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="120dp" />
 
         </LinearLayout>
 

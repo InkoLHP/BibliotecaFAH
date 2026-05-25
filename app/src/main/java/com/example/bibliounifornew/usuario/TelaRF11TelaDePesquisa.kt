@@ -1,5 +1,6 @@
 package com.example.bibliounifornew.usuario
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
@@ -61,26 +62,38 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
     }
 
     private fun buscarLivros(pesquisa: String) {
-        // 1. Bloqueia o botão e muda o texto para o usuário não clicar de novo
+        // 1. Bloqueia o botão e muda o texto
         buttonProcurar.isEnabled = false
         buttonProcurar.text = "Buscando..."
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // CHAMA A API COM A SUA CHAVE
+                // CHAMA A API (Nota: apiKey removida daqui, pois o seu Interceptor já injeta ela!)
                 val response = com.example.bibliounifornew.api.RetrofitClient
                     .api
-                    .searchBooks(
-                        query = pesquisa,
-                        apiKey = "AIzaSyC8t_vTp_BNj82t6X1yWOX2dJkadMCT-1A" // SUBTITUA PELA SUA CHAVE REAL AQUI
-                    )
+                    .searchBooks(query = pesquisa)
 
+                // Mapeamento COMPLETO para a TelaRF12 ter todos os dados
                 val livrosEncontrados = response.items?.map { item ->
+                    val info = item.volumeInfo
+
+                    // Tratamento seguro dos ISBNs
+                    val isbn13 = info.industryIdentifiers?.find { it.type == "ISBN_13" }?.identifier
+                    val isbn10 = info.industryIdentifiers?.find { it.type == "ISBN_10" }?.identifier
+                    val isbnFinal = isbn13 ?: isbn10 ?: "Sem ISBN"
+
                     Livro(
-                        titulo = item.volumeInfo.title ?: "Sem título",
-                        autor = item.volumeInfo.authors?.joinToString(", ") ?: "Autor desconhecido",
-                        isbn = item.volumeInfo.industryIdentifiers?.firstOrNull()?.identifier ?: "Sem ISBN",
-                        capaUrl = item.volumeInfo.imageLinks?.thumbnail?.replace("http://", "https://") ?: ""
+                        id = item.id, // Fundamental para os marcadores de leitura (Lido, Lendo...)
+                        titulo = info.title ?: "Sem título",
+                        autor = info.authors?.joinToString(", ") ?: "Autor desconhecido",
+                        isbn = isbnFinal,
+                        capaUrl = info.imageLinks?.thumbnail?.replace("http://", "https://") ?: "",
+                        sinopse = info.description,
+                        data_publicacao = info.publishedDate,
+                        categoria = info.categories?.firstOrNull(),
+                        formato = "Físico", // Padronizado
+                        disponivel = (0..1).random() == 1,
+                        pdfUrl = info.previewLink?.replace("http://", "https://")
                     )
                 } ?: emptyList()
 
@@ -89,33 +102,23 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
                     Toast.makeText(requireContext(), "Nenhum livro encontrado.", Toast.LENGTH_SHORT).show()
                 }
 
-                // Atualiza o adapter usando o novo nome da classe
+                // Atualiza o adapter
                 recyclerLivros.adapter = LivroUsuarioAdapter(livrosEncontrados) { livro ->
+                    // Opcional: Se quiser que o clique vá DIRETO pra tela do livro, chame a Intent aqui.
+                    // Como você tem um menu de opções, vamos manter abrindo as opções:
                     abrirOpcoesLivro(livro)
                 }
 
             } catch (e: retrofit2.HttpException) {
                 if (e.code() == 429) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Muitas buscas seguidas. Tente novamente em alguns segundos.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(requireContext(), "Muitas buscas seguidas. Tente em alguns segundos.", Toast.LENGTH_LONG).show()
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Erro no servidor do Google: ${e.code()}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(requireContext(), "Erro no servidor: ${e.code()}", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    "Erro de conexão. Verifique sua internet.",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), "Erro de conexão. Verifique sua internet.", Toast.LENGTH_LONG).show()
             } finally {
-                // 2. IMPORTANTE: Libera o botão novamente independente se deu erro ou sucesso
+                // 2. Libera o botão
                 buttonProcurar.isEnabled = true
                 buttonProcurar.text = "Procurar"
             }
@@ -124,22 +127,10 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
     private fun abrirOpcoesLivro(livro: Livro) {
         val titulo = livro.titulo
-        val opcoes = arrayOf(
-            "Ver detalhes",
-            "Adicionar à Minha Livraria",
-            "Adicionar à Lista de Desejos"
-        )
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(titulo)
-            .setItems(opcoes) { _, qual ->
-                when (qual) {
-                    0 -> Toast.makeText(requireContext(), "Abrindo detalhes de: $titulo", Toast.LENGTH_SHORT).show()
-                    1 -> Toast.makeText(requireContext(), "$titulo adicionado à Livraria!", Toast.LENGTH_SHORT).show()
-                    2 -> Toast.makeText(requireContext(), "$titulo adicionado aos Desejos!", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .show()
+        val intent = Intent(requireContext(), TelaRF12TelaDoLivro::class.java)
+        intent.putExtra("livro", livro) // Manda o livro clicado
+        startActivity(intent)
     }
 
     private fun exibirPopupFiltros() {
