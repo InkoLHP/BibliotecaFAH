@@ -8,16 +8,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.model.Livro
 import com.google.android.material.button.MaterialButton
 
-class LivroUsuriousAdapter(
+class LivroUsuarioAdapter(
     private val livros: List<Livro>,
     private val onClick: (Livro) -> Unit
-) : RecyclerView.Adapter<LivroUsuriousAdapter.LivroViewHolder>() {
+) : RecyclerView.Adapter<LivroUsuarioAdapter.LivroViewHolder>() {
 
-    class LivroViewHolder(itemView: View) :
-        RecyclerView.ViewHolder(itemView) {
-
+    class LivroViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imgCapaLivro: ImageView = itemView.findViewById(R.id.imgCapaLivro)
         val textTituloLivro: TextView = itemView.findViewById(R.id.textTituloLivro)
         val textAutorLivro: TextView = itemView.findViewById(R.id.textAutorLivro)
@@ -25,19 +24,13 @@ class LivroUsuriousAdapter(
         val btnVerMais: MaterialButton = itemView.findViewById(R.id.btnVerMais)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): LivroViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LivroViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_livro_usuario, parent, false)
         return LivroViewHolder(view)
     }
 
-    override fun onBindViewHolder(
-        holder: LivroViewHolder,
-        position: Int
-    ) {
+    override fun onBindViewHolder(holder: LivroViewHolder, position: Int) {
         val livro = livros[position]
 
         holder.textTituloLivro.text = livro.titulo

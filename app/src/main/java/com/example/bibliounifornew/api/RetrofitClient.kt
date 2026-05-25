@@ -1,20 +1,46 @@
 package com.example.bibliounifornew.api
 
-/*import retrofit2.Retrofit
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import com.example.bibliounifornew.BuildConfig
+import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    // O endereço oficial da biblioteca do Google
     private const val BASE_URL = "https://www.googleapis.com/books/v1/"
 
-    // A antena que o seu app vai usar para fazer as pesquisas
+    private val authInterceptor = Interceptor { chain ->
+        val originalRequest = chain.request()
+        val originalUrl = originalRequest.url
+        val apiKey = BuildConfig.BOOKS_API_KEY
+
+        // Verifica se a chave é válida (não vazia e não é o texto de exemplo)
+        val request = if (apiKey.isNotEmpty() && apiKey != "YOUR_API_KEY_HERE") {
+            val url = originalUrl.newBuilder()
+                .addQueryParameter("key", apiKey)
+                .build()
+            originalRequest.newBuilder().url(url).build()
+        } else {
+            // Se a chave não for válida, envia a requisição sem o parâmetro "key"
+            // Isso evita o erro 400 (Bad Request), mas pode resultar em erro 429 se a cota anônima acabar
+            originalRequest
+        }
+
+        chain.proceed(request)
+    }
+
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(authInterceptor)
+        .build()
+
     val api: BooksApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create()) // Traduz os dados do Google para o Kotlin
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
-           .create(BooksApi::class.java)
+            .create(BooksApi::class.java)
     }
 }
-*/
+
