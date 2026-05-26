@@ -89,7 +89,6 @@
             android:paddingTop="24dp"
             android:paddingBottom="40dp">
 
-            <!-- TÍTULO -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -99,173 +98,11 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="24dp" />
 
-            <!-- CARD LIVRO 1 -->
-            <com.google.android.material.card.MaterialCardView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerAlugados"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="@color/white">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
-
-                    <!-- CAPA -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardCapa1"
-                        android:layout_width="80dp"
-                        android:layout_height="110dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-                        <ImageView
-                            android:id="@+id/imageLivro1"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/vidas_secas_capa" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- INFO -->
-                    <TextView
-                        android:id="@+id/textTituloLivro1"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="@string/label_vidas_secas"
-                        android:textColor="@color/biblio_blue"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/cardCapa1"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textAutorLivro1"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/autor_graciliano"
-                        android:textColor="#415E5E"
-                        android:textSize="14sp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="@id/textTituloLivro1"
-                        app:layout_constraintTop_toBottomOf="@id/textTituloLivro1" />
-
-                    <TextView
-                        android:id="@+id/textDataLabel1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="@string/label_validade_aluguel"
-                        android:textColor="#415E5E"
-                        android:textSize="12sp"
-                        app:layout_constraintStart_toStartOf="@id/textTituloLivro1"
-                        app:layout_constraintTop_toBottomOf="@id/textAutorLivro1" />
-
-                    <TextView
-                        android:id="@+id/textDataLivro1"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/data_exemplo_1"
-                        android:textColor="#415E5E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="@id/textTituloLivro1"
-                        app:layout_constraintTop_toBottomOf="@id/textDataLabel1" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- CARD LIVRO 2 -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="@color/white">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
-
-                    <!-- CAPA -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardCapa2"
-                        android:layout_width="80dp"
-                        android:layout_height="110dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-                        <ImageView
-                            android:id="@+id/imageLivro2"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/o_alienista_capa" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- INFO -->
-                    <TextView
-                        android:id="@+id/textTituloLivro2"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="@string/titulo_ceifador"
-                        android:textColor="@color/biblio_blue"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/cardCapa2"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/textAutorLivro2"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/autor_ceifador"
-                        android:textColor="#415E5E"
-                        android:textSize="14sp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="@id/textTituloLivro2"
-                        app:layout_constraintTop_toBottomOf="@id/textTituloLivro2" />
-
-                    <TextView
-                        android:id="@+id/textDataLabel2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="@string/label_validade_aluguel"
-                        android:textColor="#415E5E"
-                        android:textSize="12sp"
-                        app:layout_constraintStart_toStartOf="@id/textTituloLivro2"
-                        app:layout_constraintTop_toBottomOf="@id/textAutorLivro2" />
-
-                    <TextView
-                        android:id="@+id/textDataLivro2"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/data_exemplo_3"
-                        android:textColor="#415E5E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="@id/textTituloLivro2"
-                        app:layout_constraintTop_toBottomOf="@id/textDataLabel2" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
+                tools:listitem="@layout/item_aluguel_adm" />
 
         </LinearLayout>
 
