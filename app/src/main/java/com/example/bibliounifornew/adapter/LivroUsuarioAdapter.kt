@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.bibliounifornew.R
 import com.google.android.material.button.MaterialButton
+import com.example.bibliounifornew.model.Livro
 
 class LivroUsuriousAdapter(
     private val livros: List<Livro>,
