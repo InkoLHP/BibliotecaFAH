@@ -23,6 +23,7 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.content.edit
 
 class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
 
@@ -34,19 +35,14 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
 
     private val selecionarImagem =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-
             if (uri != null && view != null) {
-
                 imagemSelecionadaUri = uri
+                view?.findViewById<ImageView>(R.id.imagePerfilUsuario)?.setImageURI(uri)
 
-                view?.findViewById<ImageView>(R.id.imagePerfilUsuario)
-                    ?.setImageURI(uri)
+                val sharedPref = requireContext().getSharedPreferences("user_session", android.content.Context.MODE_PRIVATE)
+                sharedPref.edit().putString("USER_FOTO", uri.toString()).apply()
 
-                Toast.makeText(
-                    requireContext(),
-                    "Foto atualizada!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Foto atualizada!", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -177,6 +173,17 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
 
         btnSalvarAlteracoes.setOnClickListener {
 
+            val sharedPref = requireContext().getSharedPreferences("user_session", android.content.Context.MODE_PRIVATE)
+            val fotoSalva = sharedPref.getString("USER_FOTO", null)
+
+            if (fotoSalva != null) {
+                try {
+                    imagePerfilUsuario.setImageURI(Uri.parse(fotoSalva))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
             salvarNoBanco("nome", editNome.text.toString().trim())
 
             salvarNoBanco("usuario", editUsuario.text.toString().trim())
@@ -270,17 +277,20 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
                 }
 
                 when (coluna) {
-
-                    "nome" -> objetoUsuarioAtual?.nome = novoValor
-
+                    "nome" -> {
+                        objetoUsuarioAtual?.nome = novoValor
+                        requireContext().getSharedPreferences("user_session", android.content.Context.MODE_PRIVATE)
+                            .edit { putString("USER_NOME", novoValor) }
+                    }
                     "usuario" -> objetoUsuarioAtual?.usuario = novoValor
-
                     "bio" -> objetoUsuarioAtual?.bio = novoValor
-
                     "email" -> {
                         objetoUsuarioAtual?.email = novoValor
                         emailUsuarioLogado = novoValor
                         textEmailTop.text = novoValor
+                        // 🌟 Atualiza o e-mail na sessão global
+                        requireContext().getSharedPreferences("user_session", android.content.Context.MODE_PRIVATE)
+                            .edit { putString("USER_EMAIL", novoValor) }
                     }
                 }
 
