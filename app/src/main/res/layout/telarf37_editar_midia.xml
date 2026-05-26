@@ -6,15 +6,14 @@
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
 
-    <!-- HEADER -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerDetalhesLivro"
         android:layout_width="match_parent"
-        android:layout_height="240dp"
+        android:layout_height="wrap_content"
+        android:paddingBottom="24dp"
         android:background="@color/biblio_detalhes"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- FUNDO -->
         <View
             android:layout_width="260dp"
             android:layout_height="260dp"
@@ -26,15 +25,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- CAPA -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardCapa"
             android:layout_width="110dp"
             android:layout_height="160dp"
             android:layout_marginStart="32dp"
+            android:layout_marginTop="40dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -46,14 +44,13 @@
                 android:src="@drawable/o_alienista_capa" />
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- INFOS -->
         <LinearLayout
+            android:id="@+id/layoutInfos"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="32dp"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="@id/cardCapa"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/cardCapa"
             app:layout_constraintTop_toTopOf="@id/cardCapa">
@@ -79,9 +76,26 @@
 
         </LinearLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonApagarMidia"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:backgroundTint="#D65252"
+            android:text="Apagar Mídia"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/cardCapa"
+            app:layout_constraintTop_toBottomOf="@id/layoutInfos" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- SCROLL -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -94,8 +108,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="32dp">
-
-            <!-- SOBRE -->
 
             <TextView
                 android:layout_width="wrap_content"
@@ -116,10 +128,10 @@
                 android:textColor="#415E5E"
                 android:textSize="17sp" />
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
                 android:orientation="horizontal">
 
@@ -137,10 +149,8 @@
                     android:text="Ficção Psicológica"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -161,10 +171,8 @@
                     android:text="Português"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -185,10 +193,8 @@
                     android:text="Intrínseca"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -209,10 +215,8 @@
                     android:text="15.24 x 0.51 x 22.86 cm"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -233,10 +237,8 @@
                     android:text="856356093X"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -257,10 +259,8 @@
                     android:text="978-8563560933"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -281,10 +281,8 @@
                     android:text="8580572266"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -305,12 +303,8 @@
                     android:text="18 dezembro 2019"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
-
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -331,10 +325,8 @@
                     android:text="80"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
-            <!-- LINHA -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -354,12 +346,9 @@
                     android:text="75H.102B"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
-
             </LinearLayout>
 
         </LinearLayout>
-
-
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.Adapter.AluguelAdapter
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.adapter.AluguelAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.Aluguel
 import com.example.bibliounifornew.model.Notificacao

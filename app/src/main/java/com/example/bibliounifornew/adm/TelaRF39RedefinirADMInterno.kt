@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.data.User
+import com.example.bibliounifornew.model.User
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import io.github.jan.supabase.postgrest.postgrest
@@ -168,7 +168,7 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
                 icone.setImageResource(R.drawable.ic_eye_open) 
             } else {
                 campoTexto.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                icone.setImageResource(R.drawable.ic_eye_open)
+                icone.setImageResource(R.drawable.ic_eye_closed)
             }
             campoTexto.setSelection(campoTexto.text.length)
         }

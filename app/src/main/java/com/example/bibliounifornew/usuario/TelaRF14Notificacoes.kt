@@ -20,7 +20,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
+class TelaRF14Notificacoes :
+    Fragment(R.layout.telarf14_notificacoes) {
+
+    private lateinit var recycler: RecyclerView
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?
+    ) {
 
     private lateinit var recyclerNotificacoes: RecyclerView
     private lateinit var textNomeNotif: TextView

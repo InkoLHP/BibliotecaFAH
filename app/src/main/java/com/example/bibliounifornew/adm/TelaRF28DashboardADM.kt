@@ -16,7 +16,6 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
     private lateinit var buttonCrudAdm: MaterialButton
     private lateinit var buttonVerAlugueis: MaterialButton
     private lateinit var buttonVerAtrasos: MaterialButton
-    private lateinit var buttonVerCadastros: MaterialButton
     private lateinit var buttonVerSolicitacoes: MaterialButton
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,7 +35,6 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
             "buttonCrudAdm" to R.id.buttonCrudAdm,
             "buttonVerAlugueis" to R.id.buttonVerAlugueis,
             "buttonVerAtrasos" to R.id.buttonVerAtrasos,
-            "buttonVerCadastros" to R.id.buttonVerCadastros,
             "buttonVerSolicitacoes" to R.id.buttonVerSolicitacoes
         )
 
@@ -52,7 +50,6 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
             buttonCrudAdm = view.findViewById(R.id.buttonCrudAdm)!!
             buttonVerAlugueis = view.findViewById(R.id.buttonVerAlugueis)!!
             buttonVerAtrasos = view.findViewById(R.id.buttonVerAtrasos)!!
-            buttonVerCadastros = view.findViewById(R.id.buttonVerCadastros)!!
             buttonVerSolicitacoes = view.findViewById(R.id.buttonVerSolicitacoes)!!
 
             setupListeners(emailAdm)
@@ -96,11 +93,6 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
         // RF28.6 - Livros Atrasados / Financeiro (Botão RF34)
         buttonVerAtrasos.setOnClickListener {
             bottomNav.selectedItemId = R.id.nav_financeiro
-        }
-
-        // RF28.4 - Confirmação de Cadastro (Botão RF35 - Se houver, caso contrário mandamos para usuários)
-        buttonVerCadastros.setOnClickListener {
-            bottomNav.selectedItemId = R.id.nav_gerenciamento_usuarios
         }
 
         // RF28.7 - Solicitações dos Usuários (Botão RF31)
