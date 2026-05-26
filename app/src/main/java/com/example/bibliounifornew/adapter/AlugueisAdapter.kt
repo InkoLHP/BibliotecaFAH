@@ -8,8 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.model.Aluguel // 🌟 Alinhado para usar o pacote correto do seu Model
 import com.google.android.material.button.MaterialButton
-import com.example.bibliounifornew.model.*
 
 class AluguelAdapter(
     private val alugueis: List<Aluguel>,
