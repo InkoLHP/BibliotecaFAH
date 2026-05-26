@@ -3,6 +3,7 @@ package com.example.bibliounifornew.adm
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback // 👇 IMPORTANTE
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,20 +28,26 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
         recyclerAlugueis = view.findViewById(R.id.recyclerAlugueis)
         recyclerAlugueis.layoutManager = LinearLayoutManager(requireContext())
 
-        // Inicializa o Adapter e os cliques dos botões
         adapter = AluguelAdapter(
             listaAlugueis = listaAlugueis,
-            onVerLivroClick = { aluguel ->
-                Toast.makeText(requireContext(), "Carregando info do livro...", Toast.LENGTH_SHORT).show()
-            },
-            onVerUsuarioClick = { aluguel ->
-                // Ajustado para usar email_usuario do seu modelo
-                Toast.makeText(requireContext(), "Acessando perfil de: ${aluguel.email_usuario}", Toast.LENGTH_SHORT).show()
-            }
+            onVerLivroClick = { Toast.makeText(requireContext(), "Carregando info do livro...", Toast.LENGTH_SHORT).show() },
+            onVerUsuarioClick = { aluguel -> Toast.makeText(requireContext(), "Acessando perfil de: ${aluguel.email_usuario}", Toast.LENGTH_SHORT).show() }
         )
         recyclerAlugueis.adapter = adapter
 
-        // Busca os dados
+        // 👇 NOVO: Intercepta o botão de voltar do celular de forma segura nesta tela também
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (parentFragmentManager.backStackEntryCount > 0) {
+                    parentFragmentManager.popBackStack()
+                } else {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.frameLayout, TelaRF28DashboardADM())
+                        .commit()
+                }
+            }
+        })
+
         buscarAlugueisAtivos()
     }
 
@@ -49,9 +56,7 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
             try {
                 val alugueisDoBanco = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["alugueis"]
-                        .select {
-                            filter { eq("devolvido", false) } // Só puxa quem NÃO devolveu
-                        }
+                        .select { filter { eq("devolvido", false) } }
                         .decodeList<Aluguel>()
                 }
 
