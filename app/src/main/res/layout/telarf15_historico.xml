@@ -110,16 +110,19 @@
 
     <!-- LISTA (Standard Padding 32dp) -->
     <androidx.core.widget.NestedScrollView
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerHistorico"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingHorizontal="32dp"
-        android:paddingTop="32dp"
-        android:paddingBottom="100dp"
-        android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/cardPesquisaHistorico"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerHistorico"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="32dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="100dp"
+            android:clipToPadding="false" />
 
     </androidx.core.widget.NestedScrollView>
 
