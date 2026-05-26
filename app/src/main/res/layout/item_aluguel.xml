@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -14,8 +13,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp">
-
-        <!-- ESQUERDA -->
 
         <LinearLayout
             android:layout_width="120dp"
@@ -51,8 +48,6 @@
                 android:gravity="center"/>
         </LinearLayout>
 
-        <!-- DIREITA -->
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -60,12 +55,13 @@
             android:paddingStart="18dp">
 
             <TextView
+                android:id="@+id/textRotuloVencimento"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Validade do aluguel:"
                 android:textStyle="bold"
                 android:textColor="#000000"
-                android:textSize="17sp"/>
+                android:textSize="16sp"/>
 
             <TextView
                 android:id="@+id/textDataVencimento"
@@ -73,16 +69,17 @@
                 android:layout_height="wrap_content"
                 android:text="10 de agosto"
                 android:textColor="#666666"
-                android:textSize="15sp"
-                android:layout_marginBottom="20dp"/>
+                android:textSize="14sp"
+                android:layout_marginBottom="12dp"/>
 
             <TextView
+                android:id="@+id/textRotuloDias"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Dias para o vencimento:"
                 android:textStyle="bold"
                 android:textColor="#000000"
-                android:textSize="17sp"/>
+                android:textSize="16sp"/>
 
             <TextView
                 android:id="@+id/textDiasRestantes"
@@ -90,7 +87,18 @@
                 android:layout_height="wrap_content"
                 android:text="5 dias"
                 android:textColor="#666666"
-                android:textSize="15sp"/>
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAcaoStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cancelar Aluguel"
+                android:textSize="13sp"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/biblio_red"
+                android:textColor="#FFFFFF"/>
 
         </LinearLayout>
 

@@ -1,6 +1,7 @@
 package com.example.bibliounifornew.usuario
 
 import android.content.Intent
+import android.net.Uri // 🌟 Importante para ler o caminho da imagem
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,11 +30,16 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         val sharedPref = requireActivity().getSharedPreferences("user_session", AppCompatActivity.MODE_PRIVATE)
 
         val nomeUsuario = sharedPref.getString("USER_NOME", "Usuário")
-
-        textNomeUsuario.text = nomeUsuario
-
-
         textNomeUsuario.text = nomeUsuario ?: "Usuário"
+
+        val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
+        if (!fotoSalvaUrl.isNullOrEmpty()) {
+            try {
+                profileImage?.setImageURI(Uri.parse(fotoSalvaUrl))
+            } catch (e: Exception) {
+                e.printStackTrace() // Evita crash caso a foto original suma do celular
+            }
+        }
 
         // MAPEAMENTO DOS BOTÕES PRINCIPAIS
         val btnPesquisa = view.findViewById<MaterialButton>(R.id.btnPesquisa)
@@ -47,7 +53,6 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
         // AÇÕES DOS BOTÕES (Navegação)
-
         btnConfig.setOnClickListener {
             val emailUsuario = sharedPref.getString("USER_EMAIL", null)
             val fragment = TelaRF09Configuracao().apply {
@@ -89,7 +94,6 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
 
     private fun irParaFragment(fragment: Fragment) {
         requireActivity().supportFragmentManager.beginTransaction()
-            // CORREÇÃO: Ajustado para o ID correto que está no XML da sua Activity principal (frameLayout)
             .replace(R.id.frameLayout, fragment)
             .addToBackStack(null)
             .commit()
@@ -106,17 +110,12 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         val btnConfirmarSair = dialogView.findViewById<MaterialButton>(R.id.btnConfirmarSair)
 
         btnConfirmarSair?.setOnClickListener {
-
             val sharedPref = requireActivity().getSharedPreferences("user_session", AppCompatActivity.MODE_PRIVATE)
-
             sharedPref.edit().clear().apply()
-
             alertDialog.dismiss()
 
             val intent = Intent(requireContext(), TelaRF03LoginAluno::class.java)
-
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-
             startActivity(intent)
         }
 

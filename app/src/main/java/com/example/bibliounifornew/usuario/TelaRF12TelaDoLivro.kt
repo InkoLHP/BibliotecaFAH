@@ -1,9 +1,12 @@
 package com.example.bibliounifornew.usuario
 
+import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
@@ -12,18 +15,26 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.model.Aluguel
 import com.example.bibliounifornew.model.Livro
+import com.example.bibliounifornew.model.Notificacao
+import com.example.bibliounifornew.model.Solicitacao
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
+import com.example.bibliounifornew.data.SupabaseConfig
+import io.github.jan.supabase.postgrest.from
 
 class TelaRF12TelaDoLivro : AppCompatActivity() {
 
     private lateinit var progressBar: ProgressBar
-
-    // Variáveis para controlar a regra do estoque
     private var isDisponivel: Boolean = false
     private var quantidadeEstoque: Int = 0
 
@@ -34,12 +45,12 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
         progressBar = findViewById(R.id.progressBarDetalhes)
 
-        // Usando o seu modelo de dados Livro vindo da Intent
         val livro = intent.getSerializableExtra("livro") as? Livro
 
         if (livro != null) {
             mostrarLivro(livro)
-            configurarEstoqueEAluguel()
+            configurarEstoqueEAluguel(livro)
+            configurarBotaoSolicitar(livro)
             configurarMarcadoresDeLeitura(livro)
         } else {
             Toast.makeText(this, "Livro não encontrado", Toast.LENGTH_SHORT).show()
@@ -60,46 +71,38 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
     }
 
     private fun mostrarLivro(livro: Livro) {
-        // 1. Dados principais (Mapeamento Direto do seu Modelo)
         findViewById<TextView>(R.id.textTituloLivro).text = livro.titulo
         findViewById<TextView>(R.id.textAutorLivro).text = livro.autor
         findViewById<TextView>(R.id.textSobreLivro).text = livro.sinopse ?: "Sinopse não disponível."
 
-        // 2. Carregamento da Capa usando Coil (mantendo seu padrão)
         findViewById<ImageView>(R.id.imageLivroDetalhes).load(livro.capaUrl) {
             crossfade(true)
-            placeholder(R.drawable.osda)
-            error(R.drawable.osda)
+            placeholder(R.drawable.placeholder)
+            error(R.drawable.placeholder)
         }
 
-        // 3. Mapeando atributos reais presentes no seu Model 'Livro'
         findViewById<TextView>(R.id.textGeneroLivro).text = livro.categoria ?: "N/I"
         findViewById<TextView>(R.id.textDataLivro).text = livro.data_publicacao ?: "N/I"
         findViewById<TextView>(R.id.textIsbnLivro).text = livro.isbn
 
-        // 4. Tratamento dos campos que o layout XML exige, mas não estão no Model.
-        // Definimos padrões inteligentes para preencher a UI e evitar erros de compilação.
         findViewById<TextView>(R.id.textIdiomaLivro).text = "N/I"
         findViewById<TextView>(R.id.textEditoraLivro).text = "N/I"
         findViewById<TextView>(R.id.textDimensaoLivro).text = "N/I"
         findViewById<TextView>(R.id.textPaginasLivro).text = "N/I"
 
-        // Verificação dinâmica baseada no campo 'formato' que você já possui no modelo
         val eDigital = livro.formato?.contains("pdf", ignoreCase = true) == true ||
                 livro.formato?.contains("epub", ignoreCase = true) == true
         findViewById<TextView>(R.id.textPdfDisponivel).text = if (eDigital) "Sim" else "Não"
     }
 
-    private fun configurarEstoqueEAluguel() {
+    private fun configurarEstoqueEAluguel(livro: Livro) {
         val textDisponibilidade = findViewById<TextView>(R.id.textDisponibilidade)
         val textQuantidadeEstoque = findViewById<TextView>(R.id.textQuantidadeEstoque)
         val buttonAlugar = findViewById<Button>(R.id.buttonAlugar)
 
-        // Regra de Negócio: 75% de chance de estar disponível
         isDisponivel = Random.nextDouble() < 0.75
         quantidadeEstoque = if (isDisponivel) Random.nextInt(1, 6) else 0
 
-        // Atualiza a UI com os dados gerados
         if (isDisponivel && quantidadeEstoque > 0) {
             textDisponibilidade.text = "Sim"
             textDisponibilidade.setTextColor(Color.parseColor("#415E5E"))
@@ -110,8 +113,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             textQuantidadeEstoque.text = "0"
         }
 
-        // Evento de clique do botão Alugar
         buttonAlugar.setOnClickListener {
+            // 🌟 TRAVA DE SEGURANÇA: Só mexe no estoque e aluga se estiver realmente disponível e acima de 0
             if (isDisponivel && quantidadeEstoque > 0) {
                 quantidadeEstoque--
                 textQuantidadeEstoque.text = quantidadeEstoque.toString()
@@ -122,15 +125,130 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                     textDisponibilidade.setTextColor(Color.RED)
                 }
 
-                Toast.makeText(this, "Livro alugado com sucesso! 🎉", Toast.LENGTH_SHORT).show()
+                val sharedPref = getSharedPreferences("user_session", Context.MODE_PRIVATE)
+                val emailReal = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+                val formatoData = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+                val calendario = java.util.Calendar.getInstance()
+                calendario.add(java.util.Calendar.DAY_OF_YEAR, 7)
+                val dataVencimento = formatoData.format(calendario.time)
+
+                val novoAluguel = Aluguel(
+                    email_usuario = emailReal,
+                    titulo_livro = livro.titulo ?: "Sem título",
+                    autor_livro = livro.autor ?: "Desconhecido",
+                    capa_url = livro.capaUrl,
+                    data_vencimento = dataVencimento,
+                    dias_restantes = 7,
+                    devolvido = false
+                )
+
+                val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
+                    .format(java.util.Date())
+
+                val novaNotificacao = Notificacao(
+                    email_usuario = emailReal,
+                    titulo = "Aluguel Confirmado! 📚",
+                    mensagem = "Você alugou '${livro.titulo}'. Vencimento: $dataVencimento.",
+                    visualizada = false,
+                    created_at = dataHoraAtual
+                )
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        SupabaseConfig.client.from("alugueis").insert(novoAluguel)
+                        SupabaseConfig.client.from("notificacoes").insert(novaNotificacao)
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@TelaRF12TelaDoLivro, "Aluguel salvo no banco! 🎉", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@TelaRF12TelaDoLivro, "ERRO NO BANCO: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+
+                dispararNotificacaoLocal("Aluguel Confirmado! 📚", "O livro '${livro.titulo}' foi reservado. Vencimento: $dataVencimento.")
+
             } else {
-                Toast.makeText(
-                    this,
-                    "Desculpe, este livro não está disponível no estoque no momento.",
-                    Toast.LENGTH_LONG
-                ).show()
+                // Se o livro não estiver disponível, o botão não faz nada no estoque e mostra essa mensagem
+                Toast.makeText(this, "Desculpe, este livro não está disponível no estoque no momento.", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun configurarBotaoSolicitar(livro: Livro) {
+        val buttonSolicitar = findViewById<Button>(R.id.buttonSolicitarLivro)
+
+        buttonSolicitar.setOnClickListener {
+            // 🌟 CRIANDO O MENU POP-UP: 3 opções conforme o solicitado
+            val opcoes = arrayOf(
+                "Solicitar Livro Físico",
+                "Solicitar PDF / Versão Digital",
+                "Solicitar Audiobook"
+            )
+
+            AlertDialog.Builder(this)
+                .setTitle("Escolha o tipo de solicitação")
+                .setItems(opcoes) { _, itemSelecionado ->
+                    when (itemSelecionado) {
+                        0 -> enviarSolicitacaoReal(livro, "LIVRO_FISICO", "do livro físico")
+                        1 -> enviarSolicitacaoReal(livro, "PDF_DIGITAL", "do PDF / Versão Digital")
+                        2 -> {
+                            // 🌟 Opção de Audiobook avisa que está indisponível e não mexe no banco
+                            Toast.makeText(this, "A solicitação de Audiobook está indisponível no momento.", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
+        }
+    }
+
+    // 🌟 FUNÇÃO AUXILIAR: Para processar o envio correto e dinâmico das solicitações no banco
+    private fun enviarSolicitacaoReal(livro: Livro, tipoSolicitacao: String, textoMensagem: String) {
+        val sharedPref = getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val emailReal = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+        val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        val novaSolicitacao = Solicitacao(
+            titulo = livro.titulo ?: "Sem título",
+            autor = livro.autor ?: "Desconhecido",
+            email_usuario = emailReal, // Mantido email_usuario firme e forte!
+            tipo_solicitacao = tipoSolicitacao,
+            capa_url = livro.capaUrl,
+            status = "PENDENTE"
+        )
+
+        val novaNotificacao = Notificacao(
+            email_usuario = emailReal, // Mantido email_usuario firme e forte!
+            titulo = "Solicitação Enviada ⏳",
+            mensagem = "Sua solicitação $textoMensagem para o livro '${livro.titulo}' foi enviada ao administrador.",
+            visualizada = false,
+            created_at = dataHoraAtual
+        )
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                SupabaseConfig.client.from("solicitacoes").insert(novaSolicitacao)
+                SupabaseConfig.client.from("notificacoes").insert(novaNotificacao)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@TelaRF12TelaDoLivro, "Solicitação enviada com sucesso! ⏳", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@TelaRF12TelaDoLivro, "Erro ao salvar Solicitação: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        dispararNotificacaoLocal("Solicitação Enviada", "Sua mensagem sobre '${livro.titulo}' está aguardando aprovação.")
     }
 
     private fun configurarMarcadoresDeLeitura(livro: Livro) {
@@ -138,16 +256,12 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         val buttonLendo = findViewById<MaterialButton>(R.id.buttonLendo)
         val buttonLido = findViewById<MaterialButton>(R.id.buttonLido)
 
-        // Usamos SharedPreferences para salvar o status localmente.
-        // Usar o titulo ou um id do livro garante que cada um tenha seu próprio registro.
-        val sharedPrefs = getSharedPreferences("BiblioUniforPrefs", Context.MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences("BiblioUniforPrefs", MODE_PRIVATE)
         val livroIdentificador = livro.id ?: livro.titulo ?: "desconhecido"
         val statusSalvo = sharedPrefs.getString("status_$livroIdentificador", "NAO_LIDO")
 
-        // Aplica o visual correto baseado no que estava salvo
         atualizarVisualBotoesLeitura(statusSalvo, buttonNaoLido, buttonLendo, buttonLido)
 
-        // Listeners para atualizar o estado ao clicar
         buttonNaoLido.setOnClickListener {
             sharedPrefs.edit().putString("status_$livroIdentificador", "NAO_LIDO").apply()
             atualizarVisualBotoesLeitura("NAO_LIDO", buttonNaoLido, buttonLendo, buttonLido)
@@ -173,20 +287,39 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         btnLendo: MaterialButton,
         btnLido: MaterialButton
     ) {
-        // Cores convertidas para ColorStateList (necessário para MaterialButton)
         val corSelecionado = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.biblio_blue))
-        val corPadrao = ColorStateList.valueOf(Color.parseColor("#80415E5E")) // Cinza semi-transparente para o desmarcado
+        val corPadrao = ColorStateList.valueOf(Color.parseColor("#80415E5E"))
 
-        // Reseta todos os botões para a cor padrão (apagados)
         btnNaoLido.backgroundTintList = corPadrao
         btnLendo.backgroundTintList = corPadrao
         btnLido.backgroundTintList = corPadrao
 
-        // Acende apenas o botão do status atual do livro
         when (status) {
             "NAO_LIDO" -> btnNaoLido.backgroundTintList = corSelecionado
             "LENDO" -> btnLendo.backgroundTintList = corSelecionado
             "LIDO" -> btnLido.backgroundTintList = corSelecionado
         }
+    }
+
+    private fun dispararNotificacaoLocal(titulo: String, message: String) {
+        val channelId = "canal_biblioteca"
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val canal =
+                NotificationChannel(channelId, "Notificações BiblioUnifor", NotificationManager.IMPORTANCE_HIGH)
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(canal)
+        }
+
+        val construtor = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.placeholder)
+            .setContentTitle(titulo)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(Random.nextInt(), construtor.build())
     }
 }

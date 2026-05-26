@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.usuario
+package com.example.bibliounifornew.Adapter
 
 import android.view.LayoutInflater
 import android.view.View
