@@ -14,21 +14,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.Adapter.NotificacaoAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.Notificacao
+import com.example.bibliounifornew.model.* // Import adicionado para reconhecer a classe Notificacao
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TelaRF14Notificacoes :
-    Fragment(R.layout.telarf14_notificacoes) {
-
-    private lateinit var recycler: RecyclerView
-
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?
-    ) {
+class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
 
     private lateinit var recyclerNotificacoes: RecyclerView
     private lateinit var textNomeNotif: TextView
@@ -37,7 +29,7 @@ class TelaRF14Notificacoes :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Mapeamento correto dos componentes do layout (sem duplicações)
+        // Mapeamento correto dos componentes do layout
         recyclerNotificacoes = view.findViewById(R.id.recyclerNotificacoes)
         textNomeNotif = view.findViewById(R.id.textNomeNotif)
         imagePerfilNotif = view.findViewById(R.id.imagePerfilNotif)

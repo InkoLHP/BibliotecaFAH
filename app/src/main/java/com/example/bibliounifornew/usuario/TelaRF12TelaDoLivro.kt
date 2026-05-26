@@ -20,10 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Aluguel
 import com.example.bibliounifornew.model.Livro
-import com.example.bibliounifornew.model.Notificacao
-import com.example.bibliounifornew.model.Solicitacao
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,6 +28,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 import com.example.bibliounifornew.data.SupabaseConfig
 import io.github.jan.supabase.postgrest.from
+import com.example.bibliounifornew.model.*
 
 class TelaRF12TelaDoLivro : AppCompatActivity() {
 

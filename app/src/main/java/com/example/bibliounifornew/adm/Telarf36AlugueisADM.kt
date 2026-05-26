@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.Aluguel
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.bibliounifornew.model.*
 
 class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
 

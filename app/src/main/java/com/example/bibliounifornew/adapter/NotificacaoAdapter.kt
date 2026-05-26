@@ -7,9 +7,9 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Notificacao
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.bibliounifornew.model.*
 
 class NotificacaoAdapter(
     private val listaNotif: List<Notificacao>,

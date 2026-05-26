@@ -10,7 +10,7 @@ data class Aluguel(
     val autor_livro: String,
     val capa_url: String? = null,
     val data_vencimento: String,
-    val dias_restantes: Int,
+    val dias_restantes: Int? = null, // Usando Int? para evitar o erro de mismatch
     val devolvido: Boolean = false,
     val oculto_historico: Boolean = false
 ) : java.io.Serializable

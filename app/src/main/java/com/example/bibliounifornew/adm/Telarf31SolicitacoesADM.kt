@@ -12,11 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.SolicitacaoAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.Solicitacao
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.bibliounifornew.model.*
 
 class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
 

@@ -4,12 +4,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
-    var nome: String,
-    var usuario: String,
-    var email: String,
-    val senha: String,
-    val tipo: String,               // Aqui você vai salvar "usuario" ou "adm"
-    val credencial: String? = null,  // Pode ser nulo se o tipo for comum
-    val foto: String? = null,        // Começa nulo como você definiu
-    var bio: String? = null
+    var id: Int? = null,
+    var nome: String = "",       // Valor padrão evita crash se vier nulo do banco
+    var email: String = "",      // Valor padrão
+    var usuario: String = "",    // Valor padrão
+    var senha: String = "",      // Valor padrão
+    var bio: String? = null,
+    var foto: String? = null,
+    var tipo: String? = null,
+    var credencial: String? = null,
+    var created_at: String? = null // Adicionado para receber a coluna automática do Supabase
 )

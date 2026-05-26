@@ -10,8 +10,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Solicitacao
 import com.google.android.material.button.MaterialButton
+import com.example.bibliounifornew.model.*
 
 class SolicitacaoAdapter(
     private val lista: MutableList<Solicitacao>

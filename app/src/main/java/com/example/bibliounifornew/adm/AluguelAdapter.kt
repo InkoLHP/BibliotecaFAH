@@ -8,8 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Aluguel
 import com.google.android.material.button.MaterialButton
+import com.example.bibliounifornew.model.*
 
 class AluguelAdapter(
     private val listaAlugueis: List<Aluguel>,

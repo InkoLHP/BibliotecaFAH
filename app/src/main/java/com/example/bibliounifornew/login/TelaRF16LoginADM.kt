@@ -14,11 +14,11 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adm.AdmMainActivity // IMPORTAÇÃO CORRETA DA ACTIVITY MÃE
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.User
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.bibliounifornew.model.*
 
 class TelaRF16LoginADM : AppCompatActivity() {
 

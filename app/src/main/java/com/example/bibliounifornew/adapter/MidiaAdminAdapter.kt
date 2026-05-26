@@ -7,39 +7,28 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.adm.Midia
 import com.example.bibliounifornew.adm.TelaRF37EditarMidia
 import com.google.android.material.button.MaterialButton
+import com.example.bibliounifornew.model.* // Agora ele vai pegar o Midia correto daqui automaticamente
 
 class MidiaAdminAdapter(
     private val listaMidias: List<Midia>
 ) : RecyclerView.Adapter<MidiaAdminAdapter.MidiaViewHolder>() {
 
     class MidiaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        val textTituloLivro: TextView =
-            itemView.findViewById(R.id.textTituloLivro)
-
-        val textAutorLivro: TextView =
-            itemView.findViewById(R.id.textAutorLivro)
-
-        val textIsbnLivro: TextView =
-            itemView.findViewById(R.id.textIsbnLivro)
-
-        val btnEditarInformacoes: MaterialButton =
-            itemView.findViewById(R.id.btnEditarInformacoes)
+        val textTituloLivro: TextView = itemView.findViewById(R.id.textTituloLivro)
+        val textAutorLivro: TextView = itemView.findViewById(R.id.textAutorLivro)
+        val textIsbnLivro: TextView = itemView.findViewById(R.id.textIsbnLivro)
+        val btnEditarInformacoes: MaterialButton = itemView.findViewById(R.id.btnEditarInformacoes)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MidiaViewHolder {
-
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.card_livro_adm, parent, false)
-
         return MidiaViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: MidiaViewHolder, position: Int) {
-
         val midia = listaMidias[position]
 
         holder.textTituloLivro.text = midia.titulo
@@ -47,14 +36,8 @@ class MidiaAdminAdapter(
         holder.textIsbnLivro.text = "ISBN: ${midia.isbn}"
 
         holder.btnEditarInformacoes.setOnClickListener {
-
             val context = holder.itemView.context
-
-            val intent = Intent(
-                context,
-                TelaRF37EditarMidia::class.java
-            )
-
+            val intent = Intent(context, TelaRF37EditarMidia::class.java)
             context.startActivity(intent)
         }
     }

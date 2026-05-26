@@ -14,13 +14,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.Adapter.HistoricoAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.Aluguel
-import com.example.bibliounifornew.model.Solicitacao
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.bibliounifornew.model.*
 
 class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
 
