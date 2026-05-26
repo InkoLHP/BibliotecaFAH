@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/main_detalhes_container"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_detalhes_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
@@ -13,16 +13,18 @@
         android:layout_width="match_parent"
         android:layout_height="240dp"
         android:background="@color/biblio_detalhes"
-        app:layout_constraintTop_toTopOf="parent"> <View
-        android:layout_width="260dp"
-        android:layout_height="260dp"
-        android:layout_marginStart="-130dp"
-        android:layout_marginTop="-130dp"
-        android:alpha="0.16"
-        android:background="@drawable/bg_circle"
-        android:backgroundTint="@color/white"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <View
+            android:layout_width="260dp"
+            android:layout_height="260dp"
+            android:layout_marginStart="-130dp"
+            android:layout_marginTop="-130dp"
+            android:alpha="0.16"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardCapa"
@@ -169,7 +171,7 @@
                     android:layout_height="wrap_content" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonLendo"
+                    android:id="@+id/buttonSolicitarLivro"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -179,8 +181,7 @@
                     android:textSize="14sp"
                     android:textStyle="bold"
                     app:backgroundTint="@color/biblio_blue"
-                    app:cornerRadius="28dp"
-                    tools:ignore="DuplicateIds" />
+                    app:cornerRadius="28dp" />
 
                 <Space
                     android:layout_width="8dp"
@@ -271,6 +272,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:layout_marginBottom="12dp"
                 android:orientation="horizontal">
 
@@ -439,7 +441,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="32dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -461,7 +463,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
     </ScrollView>
 
     <ProgressBar
@@ -469,7 +470,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:indeterminateTint="@color/biblio_blue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

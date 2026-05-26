@@ -13,16 +13,15 @@ object RetrofitClient {
     private val authInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
         val originalUrl = originalRequest.url
-        val apiKey = BuildConfig.BOOKS_API_KEY
 
-        val request = if (apiKey.isNotEmpty() && apiKey != "YOUR_API_KEY_HERE") {
-            val url = originalUrl.newBuilder()
-                .addQueryParameter("key", apiKey)
-                .build()
-            originalRequest.newBuilder().url(url).build()
-        } else {
-            originalRequest
-        }
+        // Colocamos a sua chave real direto aqui na variável
+        val apiKey = "AIzaSyC8t_vTp_BNj82t6X1yWOX2dJkadMCT-1A"
+
+        val url = originalUrl.newBuilder()
+            .addQueryParameter("key", apiKey)
+            .build()
+
+        val request = originalRequest.newBuilder().url(url).build()
 
         chain.proceed(request)
     }

@@ -2,11 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://tools.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
 
-    <!-- HEADER (Padronizado Premium) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerHistorico"
         android:layout_width="match_parent"
@@ -14,7 +14,6 @@
         android:background="@color/biblio_detalhes"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- CÍRCULO DECORATIVO PREMIUM -->
         <View
             android:layout_width="260dp"
             android:layout_height="260dp"
@@ -26,7 +25,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- FOTO PERFIL -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardFotoPerfilHistorico"
             android:layout_width="110dp"
@@ -48,7 +46,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- EMAIL -->
         <TextView
             android:id="@+id/textEmailHistorico"
             android:layout_width="wrap_content"
@@ -64,7 +61,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- PESQUISA (Pill Standard 56dp) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardPesquisaHistorico"
         android:layout_width="0dp"
@@ -108,22 +104,16 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- LISTA (Standard Padding 32dp) -->
-    <androidx.core.widget.NestedScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerHistorico"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:paddingHorizontal="32dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/cardPesquisaHistorico"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerHistorico"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="32dp"
-            android:paddingTop="32dp"
-            android:paddingBottom="100dp"
-            android:clipToPadding="false" />
-
-    </androidx.core.widget.NestedScrollView>
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_historico_aluguel" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
