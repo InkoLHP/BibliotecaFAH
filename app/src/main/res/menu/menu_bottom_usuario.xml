@@ -8,9 +8,9 @@
         android:icon="@drawable/ic_status"/>
 
     <item
-        android:id="@+id/nav_pesquisa"
-        android:title="Pesquisa"
-        android:icon="@drawable/ic_pesquisa"/>
+        android:id="@+id/nav_lista_desejos"
+        android:title="Lista de Desejos"
+        android:icon="@drawable/ic_lista_desejos"/>
 
     <item
         android:id="@+id/nav_dashboard_usuario"

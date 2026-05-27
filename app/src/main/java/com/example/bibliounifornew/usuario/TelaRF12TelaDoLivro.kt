@@ -30,13 +30,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 import com.example.bibliounifornew.data.SupabaseConfig
-import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 
 class TelaRF12TelaDoLivro : AppCompatActivity() {
 
     private lateinit var progressBar: ProgressBar
     private var isDisponivel: Boolean = false
     private var quantidadeEstoque: Int = 0
+    private var processandoClique: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +46,12 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
         progressBar = findViewById(R.id.progressBarDetalhes)
 
-        val livro = intent.getSerializableExtra("livro") as? Livro
+        val livro = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra("livro", Livro::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra("livro") as? Livro
+        }
 
         if (livro != null) {
             mostrarLivro(livro)
@@ -90,8 +96,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         findViewById<TextView>(R.id.textDimensaoLivro).text = "N/I"
         findViewById<TextView>(R.id.textPaginasLivro).text = "N/I"
 
-        val eDigital = livro.formato?.contains("pdf", ignoreCase = true) == true ||
-                livro.formato?.contains("epub", ignoreCase = true) == true
+        val eDigital = livro.formato.contains("pdf", ignoreCase = true) ||
+                livro.formato.contains("epub", ignoreCase = true)
         findViewById<TextView>(R.id.textPdfDisponivel).text = if (eDigital) "Sim" else "Não"
     }
 
@@ -105,7 +111,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
         if (isDisponivel && quantidadeEstoque > 0) {
             textDisponibilidade.text = "Sim"
-            textDisponibilidade.setTextColor(Color.parseColor("#415E5E"))
+            textDisponibilidade.setTextColor(ContextCompat.getColor(this, R.color.biblio_blue))
             textQuantidadeEstoque.text = quantidadeEstoque.toString()
         } else {
             textDisponibilidade.text = "Não Disponível"
@@ -114,8 +120,11 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         }
 
         buttonAlugar.setOnClickListener {
-            // 🌟 TRAVA DE SEGURANÇA: Só mexe no estoque e aluga se estiver realmente disponível e acima de 0
-            if (isDisponivel && quantidadeEstoque > 0) {
+            if (processandoClique) return@setOnClickListener
+
+            if (isDisponivel && (quantidadeEstoque > 0)) {
+                processandoClique = true
+
                 quantidadeEstoque--
                 textQuantidadeEstoque.text = quantidadeEstoque.toString()
 
@@ -125,8 +134,14 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                     textDisponibilidade.setTextColor(Color.RED)
                 }
 
-                val sharedPref = getSharedPreferences("user_session", Context.MODE_PRIVATE)
-                val emailReal = sharedPref.getString("USER_EMAIL", "") ?: ""
+                val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+                val emailReal = sharedPref.getString("USER_EMAIL", "")?.lowercase()?.trim() ?: ""
+
+                if (emailReal.isEmpty()) {
+                    Toast.makeText(this, "Faça login para alugar", Toast.LENGTH_SHORT).show()
+                    processandoClique = false
+                    return@setOnClickListener
+                }
 
                 val formatoData = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
                 val calendario = java.util.Calendar.getInstance()
@@ -134,13 +149,15 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                 val dataVencimento = formatoData.format(calendario.time)
 
                 val novoAluguel = Aluguel(
+                    id = null,
                     email_usuario = emailReal,
-                    titulo_livro = livro.titulo ?: "Sem título",
-                    autor_livro = livro.autor ?: "Desconhecido",
+                    titulo_livro = livro.titulo,
+                    autor_livro = livro.autor,
                     capa_url = livro.capaUrl,
                     data_vencimento = dataVencimento,
-                    dias_restantes = 7,
-                    devolvido = false
+                    dias_restantes = 7L,
+                    devolvido = false,
+                    tipo = "ALUGUEL"
                 )
 
                 val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
@@ -156,8 +173,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
-                        SupabaseConfig.client.from("alugueis").insert(novoAluguel)
-                        SupabaseConfig.client.from("notificacoes").insert(novaNotificacao)
+                        SupabaseConfig.client.postgrest["alugueis"].insert(novoAluguel)
+                        SupabaseConfig.client.postgrest["notificacoes"].insert(novaNotificacao)
 
                         withContext(Dispatchers.Main) {
                             Toast.makeText(this@TelaRF12TelaDoLivro, "Aluguel salvo no banco! 🎉", Toast.LENGTH_SHORT).show()
@@ -165,15 +182,16 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                     } catch (e: Exception) {
                         e.printStackTrace()
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@TelaRF12TelaDoLivro, "ERRO NO BANCO: ${e.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this@TelaRF12TelaDoLivro, "Erro ao salvar aluguel: ${e.message}", Toast.LENGTH_LONG).show()
                         }
+                    } finally {
+                        processandoClique = false
                     }
                 }
 
                 dispararNotificacaoLocal("Aluguel Confirmado! 📚", "O livro '${livro.titulo}' foi reservado. Vencimento: $dataVencimento.")
 
             } else {
-                // Se o livro não estiver disponível, o botão não faz nada no estoque e mostra essa mensagem
                 Toast.makeText(this, "Desculpe, este livro não está disponível no estoque no momento.", Toast.LENGTH_LONG).show()
             }
         }
@@ -183,7 +201,6 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         val buttonSolicitar = findViewById<Button>(R.id.buttonSolicitarLivro)
 
         buttonSolicitar.setOnClickListener {
-            // 🌟 CRIANDO O MENU POP-UP: 3 opções conforme o solicitado
             val opcoes = arrayOf(
                 "Solicitar Livro Físico",
                 "Solicitar PDF / Versão Digital",
@@ -196,10 +213,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                     when (itemSelecionado) {
                         0 -> enviarSolicitacaoReal(livro, "LIVRO_FISICO", "do livro físico")
                         1 -> enviarSolicitacaoReal(livro, "PDF_DIGITAL", "do PDF / Versão Digital")
-                        2 -> {
-                            // 🌟 Opção de Audiobook avisa que está indisponível e não mexe no banco
-                            Toast.makeText(this, "A solicitação de Audiobook está indisponível no momento.", Toast.LENGTH_LONG).show()
-                        }
+                        2 -> enviarSolicitacaoReal(livro, "AUDIO_BOOK", "do Audiobook")
                     }
                 }
                 .setNegativeButton("Cancelar", null)
@@ -207,25 +221,34 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         }
     }
 
-    // 🌟 FUNÇÃO AUXILIAR: Para processar o envio correto e dinâmico das solicitações no banco
     private fun enviarSolicitacaoReal(livro: Livro, tipoSolicitacao: String, textoMensagem: String) {
-        val sharedPref = getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        val emailReal = sharedPref.getString("USER_EMAIL", "") ?: ""
+        if (processandoClique) return
+        processandoClique = true
+
+        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+        val emailReal = sharedPref.getString("USER_EMAIL", "")?.lowercase()?.trim() ?: ""
+
+        if (emailReal.isEmpty()) {
+            Toast.makeText(this, "Faça login para solicitar", Toast.LENGTH_SHORT).show()
+            processandoClique = false
+            return
+        }
 
         val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
             .format(java.util.Date())
 
         val novaSolicitacao = Solicitacao(
-            titulo = livro.titulo ?: "Sem título",
-            autor = livro.autor ?: "Desconhecido",
-            email_usuario = emailReal, // Mantido email_usuario firme e forte!
+            id = null,
+            titulo = livro.titulo,
+            autor = livro.autor,
+            email_usuario = emailReal,
             tipo_solicitacao = tipoSolicitacao,
             capa_url = livro.capaUrl,
             status = "PENDENTE"
         )
 
         val novaNotificacao = Notificacao(
-            email_usuario = emailReal, // Mantido email_usuario firme e forte!
+            email_usuario = emailReal,
             titulo = "Solicitação Enviada ⏳",
             mensagem = "Sua solicitação $textoMensagem para o livro '${livro.titulo}' foi enviada ao administrador.",
             visualizada = false,
@@ -234,8 +257,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                SupabaseConfig.client.from("solicitacoes").insert(novaSolicitacao)
-                SupabaseConfig.client.from("notificacoes").insert(novaNotificacao)
+                SupabaseConfig.client.postgrest["solicitacoes"].insert(novaSolicitacao)
+                SupabaseConfig.client.postgrest["notificacoes"].insert(novaNotificacao)
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@TelaRF12TelaDoLivro, "Solicitação enviada com sucesso! ⏳", Toast.LENGTH_LONG).show()
@@ -245,6 +268,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@TelaRF12TelaDoLivro, "Erro ao salvar Solicitação: ${e.message}", Toast.LENGTH_LONG).show()
                 }
+            } finally {
+                processandoClique = false
             }
         }
 
@@ -256,8 +281,9 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         val buttonLendo = findViewById<MaterialButton>(R.id.buttonLendo)
         val buttonLido = findViewById<MaterialButton>(R.id.buttonLido)
 
-        val sharedPrefs = getSharedPreferences("BiblioUniforPrefs", MODE_PRIVATE)
-        val livroIdentificador = livro.id ?: livro.titulo ?: "desconhecido"
+        val sharedPrefs = getSharedPreferences("user_session", MODE_PRIVATE)
+
+        val livroIdentificador = livro.id ?: "0"
         val statusSalvo = sharedPrefs.getString("status_$livroIdentificador", "NAO_LIDO")
 
         atualizarVisualBotoesLeitura(statusSalvo, buttonNaoLido, buttonLendo, buttonLido)
@@ -303,7 +329,6 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
     private fun dispararNotificacaoLocal(titulo: String, message: String) {
         val channelId = "canal_biblioteca"
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val canal =

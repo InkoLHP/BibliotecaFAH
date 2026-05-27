@@ -4,11 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Solicitacao(
-    val id: Int? = null,
-    val titulo: String,
-    val autor: String,
-    val email_usuario: String,
-    val tipo_solicitacao: String,
-    val capa_url: String?,
-    val status: String
+    val id: Long? = null,
+    val titulo: String = "",
+    val autor: String = "",
+    val email_usuario: String = "",
+    val tipo_solicitacao: String = "",
+    val capa_url: String? = null,
+    val status: String = ""
 )
