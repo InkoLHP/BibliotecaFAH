@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.login.TelaRF01BemVindo
@@ -37,7 +38,11 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null && view != null) {
                 imagemSelecionadaUri = uri
-                view?.findViewById<ImageView>(R.id.imagePerfilUsuario)?.setImageURI(uri)
+                view?.findViewById<ImageView>(R.id.imagePerfilUsuario)?.load(uri) {
+                    crossfade(true)
+                    placeholder(R.drawable.user_placeholder)
+                    error(R.drawable.user_placeholder)
+                }
 
                 val sharedPref = requireContext().getSharedPreferences("user_session", android.content.Context.MODE_PRIVATE)
                 sharedPref.edit().putString("USER_FOTO", uri.toString()).apply()
@@ -177,10 +182,10 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
             val fotoSalva = sharedPref.getString("USER_FOTO", null)
 
             if (fotoSalva != null) {
-                try {
-                    imagePerfilUsuario.setImageURI(Uri.parse(fotoSalva))
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                imagePerfilUsuario.load(fotoSalva) {
+                    crossfade(true)
+                    placeholder(R.drawable.user_placeholder)
+                    error(R.drawable.user_placeholder)
                 }
             }
 

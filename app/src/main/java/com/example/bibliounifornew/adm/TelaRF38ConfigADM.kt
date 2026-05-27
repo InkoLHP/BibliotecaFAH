@@ -44,7 +44,12 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
 
                 imagemSelecionadaUri = uri
 
-                imagePerfilUsuario.setImageURI(uri)
+                imagePerfilUsuario.load(uri) {
+                    crossfade(true)
+                    placeholder(R.drawable.user_placeholder)
+                    error(R.drawable.user_placeholder)
+                    transformations(CircleCropTransformation())
+                }
             }
         }
 

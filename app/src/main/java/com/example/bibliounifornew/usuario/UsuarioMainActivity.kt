@@ -15,6 +15,7 @@ class UsuarioMainActivity : AppCompatActivity() {
 
         val nomeUsuario = intent.getStringExtra("USER_NOME")
         val emailUsuario = intent.getStringExtra("USER_EMAIL")
+        val fotoUsuario = intent.getStringExtra("USER_FOTO")
 
         val bottomNavigationView =
             findViewById<BottomNavigationView>(
@@ -28,6 +29,7 @@ class UsuarioMainActivity : AppCompatActivity() {
             val bundle = Bundle()
             bundle.putString("USER_NOME", nomeUsuario)
             bundle.putString("USER_EMAIL", emailUsuario)
+            bundle.putString("USER_FOTO", fotoUsuario)
 
             dashboardFragment.arguments = bundle
 

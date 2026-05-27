@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.adapter.LivroUsuarioAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
@@ -49,7 +50,11 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
         val profileImage = view.findViewById<ImageView>(R.id.imagePerfilBusca)
         val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
         if (!fotoSalvaUrl.isNullOrEmpty() && profileImage != null) {
-            try { profileImage.setImageURI(Uri.parse(fotoSalvaUrl)) } catch (e: Exception) { e.printStackTrace() }
+            profileImage.load(fotoSalvaUrl) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+            }
         }
 
         recyclerLivros.layoutManager = LinearLayoutManager(requireContext())

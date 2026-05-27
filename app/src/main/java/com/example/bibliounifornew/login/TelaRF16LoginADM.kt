@@ -89,7 +89,8 @@ class TelaRF16LoginADM : AppCompatActivity() {
                                 editor.putString("USER_NOME", contaAdm.nome)
                                 editor.putString("USER_EMAIL", contaAdm.email)
                                 editor.putString("USER_TIPO", contaAdm.tipo)
-                                editor.putString("USER_SENHA", textoSenha) // ⬅️ LINHA NOVA AQUI
+                                editor.putString("USER_FOTO", contaAdm.foto)
+                                editor.putString("USER_SENHA", textoSenha)
                                 editor.apply()
 
                                 Toast.makeText(

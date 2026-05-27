@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.DesejosAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
@@ -56,11 +57,10 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
         textEmailDesejos.text = emailUsuario
 
         if (!fotoSalvaUrl.isNullOrEmpty()) {
-            try {
-                // Se estiver usando URI local (Galeria)
-                imagePerfilDesejos.setImageURI(Uri.parse(fotoSalvaUrl))
-            } catch (e: Exception) {
-                e.printStackTrace()
+            imagePerfilDesejos.load(fotoSalvaUrl) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
             }
         }
 

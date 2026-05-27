@@ -73,10 +73,17 @@ class TelaRF03LoginAluno : AppCompatActivity() {
 
                         if (contaEstudante != null) {
                             val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
-
-                            sharedPref.edit().putString("USER_NOME", contaEstudante.nome).putString("USER_EMAIL", contaEstudante.email).apply()
+                            sharedPref.edit()
+                                .putString("USER_NOME", contaEstudante.nome)
+                                .putString("USER_EMAIL", contaEstudante.email)
+                                .putString("USER_FOTO", contaEstudante.foto) // ⬅️ SALVANDO A FOTO AGORA
+                                .putString("USER_TIPO", "usuario")
+                                .apply()
 
                             val intent = Intent(this@TelaRF03LoginAluno, UsuarioMainActivity::class.java)
+                            intent.putExtra("USER_NOME", contaEstudante.nome)
+                            intent.putExtra("USER_EMAIL", contaEstudante.email)
+                            intent.putExtra("USER_FOTO", contaEstudante.foto) // ⬅️ PASSANDO NO INTENT TAMBÉM
 
                             startActivity(intent)
                             finish()
