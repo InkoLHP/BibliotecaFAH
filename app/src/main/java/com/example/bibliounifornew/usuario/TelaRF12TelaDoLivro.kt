@@ -165,7 +165,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
                 val novaNotificacao = Notificacao(
                     email_usuario = emailReal,
-                    titulo = "Aluguel Confirmado! 📚",
+                    titulo = "Aluguel Confirmado!",
                     mensagem = "Você alugou '${livro.titulo}'. Vencimento: $dataVencimento.",
                     visualizada = false,
                     created_at = dataHoraAtual
@@ -177,7 +177,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                         SupabaseConfig.client.postgrest["notificacoes"].insert(novaNotificacao)
 
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@TelaRF12TelaDoLivro, "Aluguel salvo no banco! 🎉", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@TelaRF12TelaDoLivro, "Aluguel salvo no banco!", Toast.LENGTH_SHORT).show()
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -189,7 +189,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                     }
                 }
 
-                dispararNotificacaoLocal("Aluguel Confirmado! 📚", "O livro '${livro.titulo}' foi reservado. Vencimento: $dataVencimento.")
+                dispararNotificacaoLocal("Aluguel Confirmado!", "O livro '${livro.titulo}' foi reservado. Vencimento: $dataVencimento.")
 
             } else {
                 Toast.makeText(this, "Desculpe, este livro não está disponível no estoque no momento.", Toast.LENGTH_LONG).show()
@@ -249,7 +249,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
         val novaNotificacao = Notificacao(
             email_usuario = emailReal,
-            titulo = "Solicitação Enviada ⏳",
+            titulo = "Solicitação Enviada",
             mensagem = "Sua solicitação $textoMensagem para o livro '${livro.titulo}' foi enviada ao administrador.",
             visualizada = false,
             created_at = dataHoraAtual
@@ -261,7 +261,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                 SupabaseConfig.client.postgrest["notificacoes"].insert(novaNotificacao)
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@TelaRF12TelaDoLivro, "Solicitação enviada com sucesso! ⏳", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@TelaRF12TelaDoLivro, "Solicitação enviada com sucesso!", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -303,7 +303,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         buttonLido.setOnClickListener {
             sharedPrefs.edit().putString("status_$livroIdentificador", "LIDO").apply()
             atualizarVisualBotoesLeitura("LIDO", buttonNaoLido, buttonLendo, buttonLido)
-            Toast.makeText(this, "Marcado como: Lido! 📚", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Marcado como: Lido!", Toast.LENGTH_SHORT).show()
         }
     }
 
