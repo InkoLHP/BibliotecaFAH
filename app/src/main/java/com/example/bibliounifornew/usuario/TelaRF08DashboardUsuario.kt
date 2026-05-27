@@ -1,11 +1,11 @@
 package com.example.bibliounifornew.usuario
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -61,6 +61,7 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
             }
         }
 
+        // Mapeamento dos botões
         val btnPesquisa = view.findViewById<MaterialButton>(R.id.btnPesquisa)
         val btnHistorico = view.findViewById<MaterialButton>(R.id.btnHistorico)
         val btnSair = view.findViewById<MaterialButton>(R.id.btnSairConta)
@@ -79,6 +80,7 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
         }
 
         btnPesquisa?.setOnClickListener {
+            irParaFragment(TelaRF11TelaDePesquisa())
         }
 
 

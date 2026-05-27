@@ -30,7 +30,7 @@ class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
     private var emailUsuario: String = ""
     private var listaOriginal: List<LivrariaItem> = emptyList()
 
-    // 🛡️ Variável de controle para evitar cliques simultâneos ao deletar itens
+    // Variável de controle para evitar cliques simultâneos ao deletar itens
     private var processandoClique: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

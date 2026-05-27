@@ -227,7 +227,7 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
 
         val notificacao = Notificacao(
             email_usuario = emailUsuario,
-            titulo = "Reserva Cancelada ❌",
+            titulo = "Reserva Cancelada",
             mensagem = "Sua reserva do livro '$tituloSeguro' foi cancelada.",
             visualizada = false,
             created_at = dataHoraAtual
