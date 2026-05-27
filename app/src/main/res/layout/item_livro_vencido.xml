@@ -18,7 +18,6 @@
         android:layout_height="wrap_content"
         android:padding="20dp">
 
-        <!-- Capa do Livro Moderna (Bordas arredondadas de 12dp via Style corrigido) -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgBookCover"
             android:layout_width="90dp"
@@ -29,7 +28,6 @@
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize12dp"
             tools:srcCompat="@drawable/placeholder" />
 
-        <!-- Título do Livro -->
         <TextView
             android:id="@+id/txtBookTitle"
             android:layout_width="0dp"
@@ -44,7 +42,6 @@
             app:layout_constraintStart_toEndOf="@id/imgBookCover"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Botão Mais Opções -->
         <ImageView
             android:id="@+id/imgMoreOptions"
             android:layout_width="28dp"
@@ -54,9 +51,8 @@
             android:padding="2dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/biblio_blue" />
+            app:tint="@color/black" />
 
-        <!-- Autor / Data -->
         <TextView
             android:id="@+id/txtBookAuthor"
             android:layout_width="0dp"
@@ -71,7 +67,6 @@
             app:layout_constraintStart_toEndOf="@id/imgBookCover"
             app:layout_constraintTop_toBottomOf="@id/txtBookTitle" />
 
-        <!-- Foto de Perfil do Usuário Arredondada (100% Circular via Style corrigido) -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgProfileSmall"
             android:layout_width="40dp"
@@ -84,7 +79,6 @@
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
             tools:srcCompat="@tools:sample/avatars" />
 
-        <!-- Nome do Usuário -->
         <TextView
             android:id="@+id/txtUserName"
             android:layout_width="0dp"
@@ -93,20 +87,20 @@
             android:text="Ronaldo Alves"
             android:textColor="#333333"
             android:textSize="14sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@id/txtDuration"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imgProfileSmall"
             app:layout_constraintTop_toTopOf="@id/imgProfileSmall" />
 
-        <!-- Tempo de atraso -->
         <TextView
             android:id="@+id/txtDuration"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:text="20 Dias"
-            android:textColor="@color/biblio_blue"
-            android:textSize="13sp"
+            android:textColor="@color/black"
+            android:textSize="14sp"
             android:fontFamily="sans-serif"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/imgProfileSmall"
@@ -114,7 +108,6 @@
             app:layout_constraintStart_toEndOf="@id/imgProfileSmall"
             app:layout_constraintTop_toBottomOf="@id/txtUserName" />
 
-        <!-- Separador Visual Embutido -->
         <View
             android:id="@+id/divider"
             android:layout_width="0dp"
@@ -125,19 +118,34 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/imgBookCover" />
 
-        <!-- Valor da Multa Destacado -->
         <TextView
             android:id="@+id/txtFine"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
             android:text="Multa auto: R$20,00"
-            android:textColor="@color/biblio_blue"
-            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRenovarAluguel"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:text="Renovar Aluguel"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/biblio_blue"
+            app:layout_constraintTop_toBottomOf="@id/txtFine"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

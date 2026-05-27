@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
 
-    <!-- HEADER PREMIUM (240dp height) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerDashboardAdm"
         android:layout_width="match_parent"
@@ -14,7 +13,6 @@
         android:background="@color/biblio_detalhes"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- CÍRCULO DECORATIVO -->
         <View
             android:layout_width="220dp"
             android:layout_height="220dp"
@@ -26,7 +24,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- CONFIG ICON -->
         <ImageView
             android:id="@+id/iconConfigAdm"
             android:layout_width="32dp"
@@ -38,7 +35,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/white" />
 
-        <!-- FOTO PERFIL (Material Circle) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardFotoAdm"
             android:layout_width="82dp"
@@ -59,7 +55,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- TEXTOS HEADER -->
         <TextView
             android:id="@+id/textBemVindoAdm"
             android:layout_width="wrap_content"
@@ -89,7 +84,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- CONTEÚDO SCROLLABLE -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -106,7 +100,6 @@
             android:paddingTop="24dp"
             android:paddingBottom="32dp">
 
-            <!-- CARD 1: ESTATÍSTICAS RÁPIDAS -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -142,10 +135,11 @@
                                 android:textStyle="bold" />
 
                             <TextView
+                                android:id="@+id/txtTotalUsuarios"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="5.785"
+                                android:text="..."
                                 android:textColor="@color/biblio_blue"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
@@ -166,10 +160,11 @@
                                 android:textStyle="bold" />
 
                             <TextView
+                                android:id="@+id/txtTotalAlugueis"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="342"
+                                android:text="..."
                                 android:textColor="@color/biblio_blue"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
@@ -192,7 +187,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- CARD 2: ANÁLISE -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -231,13 +225,14 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Março 2026"
+                                android:text="Aluguéis Ativos"
                                 android:textColor="#415E5E"
                                 android:textSize="16sp" />
                             <TextView
+                                android:id="@+id/txtAlugueisAtivos"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="342"
+                                android:text="..."
                                 android:textColor="@color/black"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -252,13 +247,14 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Fevereiro 2026"
+                                android:text="Livros Devolvidos"
                                 android:textColor="#415E5E"
                                 android:textSize="16sp" />
                             <TextView
+                                android:id="@+id/txtAlugueisDevolvidos"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="294"
+                                android:text="..."
                                 android:textColor="@color/black"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -273,13 +269,14 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Janeiro 2026"
+                                android:text="Total no Histórico"
                                 android:textColor="#415E5E"
                                 android:textSize="16sp" />
                             <TextView
+                                android:id="@+id/txtTotalHistorico"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="648"
+                                android:text="..."
                                 android:textColor="@color/black"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -302,7 +299,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- CARD 3: ATRASOS -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -338,16 +334,18 @@
                             android:orientation="horizontal"
                             android:paddingVertical="4dp">
                             <TextView
+                                android:id="@+id/txtAtrasoNome1"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="João Bobo"
+                                android:text="Sem registros"
                                 android:textColor="#415E5E"
                                 android:textSize="16sp" />
                             <TextView
+                                android:id="@+id/txtAtrasoDias1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="15 dias"
+                                android:text="--"
                                 android:textColor="@color/biblio_red"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -359,16 +357,18 @@
                             android:orientation="horizontal"
                             android:paddingVertical="4dp">
                             <TextView
+                                android:id="@+id/txtAtrasoNome2"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Roberta Sá"
+                                android:text="Sem registros"
                                 android:textColor="#415E5E"
                                 android:textSize="16sp" />
                             <TextView
+                                android:id="@+id/txtAtrasoDias2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="3 dias"
+                                android:text="--"
                                 android:textColor="@color/biblio_red"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -391,8 +391,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-
-            <!-- CARD 5: SOLICITAÇÕES -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -427,17 +425,19 @@
                             android:orientation="horizontal"
                             android:paddingVertical="4dp">
                             <TextView
+                                android:id="@+id/txtSolicitacaoNome1"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="O Jardim das Ilusões"
+                                android:text="Nenhuma solicitação"
                                 android:textColor="#415E5E"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
                             <TextView
+                                android:id="@+id/txtSolicitacaoTipo1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="PDF"
+                                android:text="--"
                                 android:textColor="@color/biblio_blue"
                                 android:textSize="13sp"
                                 android:textStyle="bold" />
@@ -449,39 +449,19 @@
                             android:orientation="horizontal"
                             android:paddingVertical="4dp">
                             <TextView
+                                android:id="@+id/txtSolicitacaoNome2"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Vozes do Deserto"
+                                android:text="Nenhuma solicitação"
                                 android:textColor="#415E5E"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
                             <TextView
+                                android:id="@+id/txtSolicitacaoTipo2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Braille"
-                                android:textColor="@color/biblio_blue"
-                                android:textSize="13sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingVertical="4dp">
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Um Homem Chamado Ove"
-                                android:textColor="#415E5E"
-                                android:textSize="15sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Compra"
+                                android:text="--"
                                 android:textColor="@color/biblio_blue"
                                 android:textSize="13sp"
                                 android:textStyle="bold" />
@@ -505,7 +485,5 @@
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

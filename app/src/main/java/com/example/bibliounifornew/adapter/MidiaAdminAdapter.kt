@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.adm.Midia
 import com.example.bibliounifornew.adm.TelaRF37EditarMidia
 import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.model.* // Agora ele vai pegar o Midia correto daqui automaticamente
+import com.example.bibliounifornew.model.Midia
 
 class MidiaAdminAdapter(
     private val listaMidias: List<Midia>

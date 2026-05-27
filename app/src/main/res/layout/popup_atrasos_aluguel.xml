@@ -20,12 +20,12 @@
         android:layout_marginBottom="24dp"/>
 
     <TextView
-        android:id="@+id/textDetalheAtraso"
+        android:id="@+id/textResultadoAtrasos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Atraso do Livro “O Ceifador”\nMulta: R$5"
+        android:text="Calculando..."
         android:textColor="@color/black"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="center"
         android:lineSpacingExtra="8dp" />

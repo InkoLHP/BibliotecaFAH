@@ -85,18 +85,13 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
+            android:id="@+id/containerLivrosVencidos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="20dp"
             android:paddingBottom="32dp">
-
-            <!-- Inclusão e Preview do Layout Separado do Livro -->
-            <include layout="@layout/item_livro_vencido" />
-
-            <!-- Nota: Se você estiver usando RecyclerView dinâmico no código,
-                 basta apagar a tag <include/> acima e inserir o seu <androidx.recyclerview.widget.RecyclerView> aqui! -->
 
         </LinearLayout>
     </ScrollView>

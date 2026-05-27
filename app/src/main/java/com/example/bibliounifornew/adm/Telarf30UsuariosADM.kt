@@ -50,7 +50,7 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
         textEmailUsuario.text = email
         Glide.with(this).load(fotoUrl).placeholder(R.drawable.user_placeholder).into(imageUsuario)
 
-        // Mudança 1: Ir para a tela de solicitações global
+        // 1. NAVEGAÇÃO: TELA DE SOLICITAÇÕES
         buttonSolicitacoes.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.frameLayout, Telarf31SolicitacoesADM())
@@ -58,14 +58,14 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                 .commit()
         }
 
-        // Mudança 2: Abre a tela de alugados PASSANDO os dados necessários do usuário
+        // 2. NAVEGAÇÃO: TELA COMPLETA DE LIVROS ALUGADOS
         buttonLivrosAlugados.setOnClickListener {
             val fragmentAlugados = Telarf30UsuarioAlugadosADM().apply {
                 arguments = Bundle().apply {
                     putString("nome", nome)
                     putString("email", email)
                     putString("foto", fotoUrl)
-                    putBoolean("apenasAtrasos", false) // Mostrar tudo
+                    putBoolean("apenasAtrasos", false) // Manda a instrução para listar TUDO
                 }
             }
             parentFragmentManager.beginTransaction()
@@ -74,23 +74,71 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                 .commit()
         }
 
-        // Mudança 2.5: Abre a tela de alugados mostrando APENAS os atrasos dele
+        // 3. POP-UP INTELIGENTE: ATRASOS COM CÁLCULO DE MULTA
         buttonAtrasos.setOnClickListener {
-            val fragmentAtrasos = Telarf30UsuarioAlugadosADM().apply {
-                arguments = Bundle().apply {
-                    putString("nome", nome)
-                    putString("email", email)
-                    putString("foto", fotoUrl)
-                    putBoolean("apenasAtrasos", true) // Filtro de atrasos ligado!
+            val dialog = Dialog(requireContext())
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            dialog.setContentView(R.layout.popup_atrasos_aluguel)
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            val btnFechar = dialog.findViewById<MaterialButton>(R.id.buttonFecharAtrasos)
+            val textResultado = dialog.findViewById<TextView>(R.id.textResultadoAtrasos)
+
+            if (textResultado != null) {
+                textResultado.text = "Calculando multas no sistema..."
+            }
+
+            dialog.show()
+
+            // Busca no banco os livros do usuário para calcular a multa
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val todosAlugueis = withContext(Dispatchers.IO) {
+                        SupabaseConfig.client.from("alugueis")
+                            .select {
+                                filter {
+                                    eq("email_usuario", email)
+                                }
+                            }
+                            .decodeList<com.example.bibliounifornew.model.Aluguel>()
+                    }
+
+                    // Filtra apenas os atrasados e não devolvidos
+                    val atrasados = todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && !it.devolvido }
+
+                    if (atrasados.isEmpty()) {
+                        textResultado?.text = "Tudo em dia!\n\n$nome não possui livros atrasados e não tem multas pendentes."
+                    } else {
+                        var totalMulta = 0.0
+                        val valorMultaPorDia = 2.00 // R$ 2,00 por dia
+                        val relatorio = java.lang.StringBuilder()
+
+                        relatorio.append("Livros em atraso:\n\n")
+
+                        atrasados.forEach { livro ->
+                            val diasDeAtraso = kotlin.math.abs(livro.dias_restantes!!)
+                            val multaDoLivro = diasDeAtraso * valorMultaPorDia
+                            totalMulta += multaDoLivro
+
+                            val titulo = livro.titulo_livro
+                            relatorio.append("• $titulo\n   Atraso: $diasDeAtraso dias | Multa: R$ ${String.format("%.2f", multaDoLivro)}\n\n")
+                        }
+
+                        relatorio.append("💰 MULTA TOTAL A COBRAR: R$ ${String.format("%.2f", totalMulta)}")
+
+                        textResultado?.text = relatorio.toString()
+                    }
+
+                } catch (e: Exception) {
+                    textResultado?.text = "Erro ao buscar dados do servidor."
+                    e.printStackTrace()
                 }
             }
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, fragmentAtrasos)
-                .addToBackStack(null)
-                .commit()
+
+            btnFechar?.setOnClickListener { dialog.dismiss() }
         }
 
-        // POP-UP: MUDAR PERMISSÃO
+        // 4. POP-UP: MUDAR PERMISSÃO
         buttonPermissao.setOnClickListener {
             val dialog = Dialog(requireContext())
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -109,7 +157,7 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
             dialog.show()
         }
 
-        // Mudança 3: POP-UP REMOVER CONTA (Valida com a senha do ADM logado e apaga do Supabase)
+        // 5. POP-UP: REMOVER CONTA (Valida senha do ADM e apaga do Supabase)
         buttonExcluirConta.setOnClickListener {
             val dialog = Dialog(requireContext())
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -121,9 +169,8 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
             val textErro = dialog.findViewById<TextView>(R.id.textErroSenhaPopup)
             val btnConfirmar = dialog.findViewById<MaterialButton>(R.id.buttonConfirmarApagarConta)
 
-            // 🔑 Busca a senha do ADM logado na sessão do app
             val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
-            val senhaDoAdmLogado = sharedPref.getString("USER_SENHA", "") // Modifique o termo "USER_SENHA" caso tenha salvo com outra chave no login
+            val senhaDoAdmLogado = sharedPref.getString("USER_SENHA", "")
 
             var senhaVisivel = false
 
@@ -145,19 +192,16 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                 if (senhaDigitada == senhaDoAdmLogado && senhaDoAdmLogado.isNotEmpty()) {
                     textErro.visibility = View.GONE
 
-                    // Conecta no Supabase e deleta o usuário baseado no e-mail dele
                     viewLifecycleOwner.lifecycleScope.launch {
                         try {
                             withContext(Dispatchers.IO) {
                                 SupabaseConfig.client.from("users").delete {
-                                    filter {
-                                        eq("email", email)
-                                    }
+                                    filter { eq("email", email) }
                                 }
                             }
                             Toast.makeText(requireContext(), "Conta de $nome excluída definitivamente.", Toast.LENGTH_LONG).show()
                             dialog.dismiss()
-                            parentFragmentManager.popBackStack() // Volta para a lista de gerenciamento
+                            parentFragmentManager.popBackStack()
                         } catch (e: Exception) {
                             Toast.makeText(requireContext(), "Erro ao deletar do banco: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
