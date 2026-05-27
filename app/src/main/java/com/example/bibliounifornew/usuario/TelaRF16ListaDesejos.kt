@@ -2,8 +2,11 @@ package com.example.bibliounifornew.usuario
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -23,27 +26,49 @@ import kotlinx.coroutines.withContext
 class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
 
     private lateinit var recyclerDesejos: RecyclerView
+
+    // 🎨 Componentes do Header (Informações de Login)
+    private lateinit var textEmailDesejos: TextView
+    private lateinit var imagePerfilDesejos: ImageView
+
     private var emailUsuario: String = ""
     private var listaItens: MutableList<DesejoItem> = mutableListOf()
     private lateinit var adapterDesejos: DesejosAdapter
 
-    // 🛡️ Variável de controle para travar cliques simultâneos nesta tela também!
     private var processandoClique: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Lendo do arquivo correto e unificado
-        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        emailUsuario = sharedPref.getString("USER_EMAIL", "") ?: ""
-
+        // 1. Referenciar os componentes do XML
         recyclerDesejos = view.findViewById(R.id.recyclerListaDesejos)
+        textEmailDesejos = view.findViewById(R.id.txtEmailUsuarioDesejos) // Verifique esse ID no seu XML
+        imagePerfilDesejos = view.findViewById(R.id.imageUsuarioDesejos) // Verifique esse ID no seu XML
+
         recyclerDesejos.layoutManager = LinearLayoutManager(requireContext())
 
+        // 2. Lendo do arquivo unificado "user_session"
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        emailUsuario = sharedPref.getString("USER_EMAIL", "") ?: ""
+        val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
+
+        // 3. Setar as informações no Header
+        textEmailDesejos.text = emailUsuario
+
+        if (!fotoSalvaUrl.isNullOrEmpty()) {
+            try {
+                // Se estiver usando URI local (Galeria)
+                imagePerfilDesejos.setImageURI(Uri.parse(fotoSalvaUrl))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // 4. Carregar os dados do banco
         if (emailUsuario.isNotEmpty()) {
             carregarListaDesejos()
         } else {
-            Toast.makeText(requireContext(), "Usuário não identificado. Faça login novamente.", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Usuário não identificado.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -61,27 +86,26 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
 
                 listaItens = resultado.toMutableList()
 
-                if (listaItens.isEmpty()) {
-                    Toast.makeText(requireContext(), "Sua lista de desejos está vazia! 🛒", Toast.LENGTH_SHORT).show()
-                }
-
                 adapterDesejos = DesejosAdapter(
                     itens = listaItens,
                     onCapaClick = { item -> abrirDetalhesDoLivro(item) },
                     onRemoverClick = { item -> removerDosDesejos(item) },
                     onLivrariaClick = { item -> moverParaLivraria(item) },
-                    onAlugarClick = { item -> alugarLivro(item) } // 🌟 Protegido lá embaixo
+                    onAlugarClick = { item -> alugarLivro(item) }
                 )
                 recyclerDesejos.adapter = adapterDesejos
 
+                if (listaItens.isEmpty()) {
+                    Toast.makeText(requireContext(), "Sua lista de desejos está vazia!", Toast.LENGTH_SHORT).show()
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao carregar lista de desejos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Erro ao carregar lista", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // 🗑️ AÇÃO: DELETAR DA LISTA DE DESEJOS (PROTEGIDA)
     private fun removerDosDesejos(item: DesejoItem) {
         if (processandoClique) return
         processandoClique = true
@@ -98,12 +122,11 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Erro ao remover", Toast.LENGTH_SHORT).show()
             } finally {
-                processandoClique = false // 🔓 Libera
+                processandoClique = false
             }
         }
     }
 
-    // 📚 AÇÃO: MOVER PARA LIVRARIA (PROTEGIDA)
     private fun moverParaLivraria(item: DesejoItem) {
         if (processandoClique) return
         processandoClique = true
@@ -127,37 +150,26 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
                     }
                 }
 
-                Toast.makeText(requireContext(), "Movido para a Minha Livraria! 📚", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Movido para a Minha Livraria!", Toast.LENGTH_SHORT).show()
                 carregarListaDesejos()
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Erro ao mover livro", Toast.LENGTH_SHORT).show()
             } finally {
-                processandoClique = false // 🔓 Libera
+                processandoClique = false
             }
         }
     }
 
-    // 🔑 AÇÃO: ALUGAR LIVRO (PROTEGIDA)
     private fun alugarLivro(item: DesejoItem) {
-        // 🛑 Se o usuário clicar enquanto processa o aluguel anterior, ignora!
         if (processandoClique) return
         processandoClique = true
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Simulando o tempo de processamento de rede/banco
-                withContext(Dispatchers.IO) {
-                    // Aqui entrará seu código futuro do Supabase para alugar
-                    // Ex: SupabaseConfig.client.postgrest["alugueis"].insert(...)
-                }
-
-                Toast.makeText(requireContext(), "Processando aluguel de: ${item.titulo}", Toast.LENGTH_SHORT).show()
-
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Erro ao processar aluguel", Toast.LENGTH_SHORT).show()
+                // Lógica de aluguel futura aqui
+                Toast.makeText(requireContext(), "Solicitando aluguel de: ${item.titulo}", Toast.LENGTH_SHORT).show()
             } finally {
-                // 🔓 Libera a tela para o usuário interagir com outros livros após o término
                 processandoClique = false
             }
         }
