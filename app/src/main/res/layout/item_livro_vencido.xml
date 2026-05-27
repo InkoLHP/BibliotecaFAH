@@ -88,7 +88,6 @@
             android:textColor="#333333"
             android:textSize="14sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@id/txtDuration"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imgProfileSmall"
             app:layout_constraintTop_toTopOf="@id/imgProfileSmall" />
@@ -98,12 +97,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
             android:text="20 Dias"
             android:textColor="@color/black"
             android:textSize="14sp"
             android:fontFamily="sans-serif"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@id/imgProfileSmall"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imgProfileSmall"
             app:layout_constraintTop_toBottomOf="@id/txtUserName" />

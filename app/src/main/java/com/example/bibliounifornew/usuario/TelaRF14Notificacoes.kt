@@ -1,7 +1,6 @@
 package com.example.bibliounifornew.usuario
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -11,8 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
-import coil.load
 import coil.load
 import com.example.bibliounifornew.adapter.NotificacaoAdapter
 import com.example.bibliounifornew.R
@@ -74,7 +71,7 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
                 }
 
                 recyclerNotificacoes.adapter = NotificacaoAdapter(notificacoesDoBanco) { notifClicada ->
-                    removerNotificacaoDoBanco(notifClicada, email)
+                    marcarComoLidaNoBanco(notifClicada, email)
                 }
 
             } catch (e: Exception) {
@@ -84,22 +81,27 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
         }
     }
 
-    private fun removerNotificacaoDoBanco(notificacao: Notificacao, email: String) {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+    private fun marcarComoLidaNoBanco(notificacao: Notificacao, email: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
+                    // 🚀 Agora em vez de deletar, atualizamos o status para "visualizada = true"
                     SupabaseConfig.client.postgrest["notificacoes"]
-                        .delete {
+                        .update(
+                            update = {
+                                set("visualizada", true)
+                            }
+                        ) {
                             filter {
                                 eq("id", notificacao.id ?: 0)
                             }
                         }
                 }
                 Toast.makeText(requireContext(), "Notificação marcada como lida!", Toast.LENGTH_SHORT).show()
-                carregarNotificacoes(email)
+                carregarNotificacoes(email) 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao remover notificação", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Erro ao atualizar notificação", Toast.LENGTH_SHORT).show()
             }
         }
     }

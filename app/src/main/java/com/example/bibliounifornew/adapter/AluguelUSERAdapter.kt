@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.adapter
+package com.example.bibliounifornew.adapter // ✅ Pacote em minúsculo e correto
 
 import android.view.LayoutInflater
 import android.view.View
@@ -11,10 +11,10 @@ import com.example.bibliounifornew.R
 import com.example.bibliounifornew.model.Aluguel
 import com.google.android.material.button.MaterialButton
 
-class AluguelAdapter(
+class AluguelUSERAdapter(
     private val alugueis: List<Aluguel>,
     private val onCancelarClick: (Aluguel, Boolean) -> Unit
-) : RecyclerView.Adapter<AluguelAdapter.AluguelViewHolder>() {
+) : RecyclerView.Adapter<AluguelUSERAdapter.AluguelViewHolder>() {
 
     class AluguelViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imagemLivro: ImageView = itemView.findViewById(R.id.imageLivro)
@@ -37,6 +37,7 @@ class AluguelAdapter(
 
         holder.textTitulo.text = aluguel.titulo_livro ?: "Sem título"
         holder.textAutor.text = aluguel.autor_livro ?: "Autor desconhecido"
+
         holder.imagemLivro.load(aluguel.capa_url) {
             crossfade(true)
             placeholder(R.drawable.placeholder)
@@ -45,6 +46,7 @@ class AluguelAdapter(
 
         val stringVencimento = aluguel.data_vencimento ?: ""
 
+        // Lógica inteligente para identificar o modelo "Emprestado" de solicitações
         if (stringVencimento.startsWith("Status:")) {
             val statusReal = stringVencimento.replace("Status:", "").trim()
             val tipoSolicitacao = if (aluguel.dias_restantes == 1L) "PDF / Digital" else "Livro Físico"

@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback // 👇 IMPORTANTE
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +22,9 @@ class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
 
     private var recyclerSolicitacoes: RecyclerView? = null
 
+    private lateinit var solicitacaoAdapter: SolicitacaoAdapter
+    private val listaInternaSolicitacoes = mutableListOf<Solicitacao>()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -34,14 +37,15 @@ class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
 
         recyclerSolicitacoes?.layoutManager = LinearLayoutManager(requireContext())
 
-        // 👇 NOVO: Intercepta o botão de voltar do celular de forma segura
+        solicitacaoAdapter = SolicitacaoAdapter(listaInternaSolicitacoes)
+        recyclerSolicitacoes?.adapter = solicitacaoAdapter
+
+        // Intercepta o botão de voltar do celular de forma segura
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // Se houver telas no histórico, volta normalmente
                 if (parentFragmentManager.backStackEntryCount > 0) {
                     parentFragmentManager.popBackStack()
                 } else {
-                    // Se abriu pelo menu inferior (sem histórico), força a volta para o Dashboard
                     parentFragmentManager.beginTransaction()
                         .replace(R.id.frameLayout, TelaRF28DashboardADM())
                         .commit()
@@ -55,13 +59,17 @@ class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
     private fun carregarSolicitacoes() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val lista = withContext(Dispatchers.IO) {
+                val listaDoBanco = withContext(Dispatchers.IO) {
                     SupabaseConfig.client
                         .from("solicitacoes")
                         .select()
                         .decodeList<Solicitacao>()
                 }
-                recyclerSolicitacoes?.adapter = SolicitacaoAdapter(lista.toMutableList())
+
+                listaInternaSolicitacoes.clear()
+                listaInternaSolicitacoes.addAll(listaDoBanco)
+                solicitacaoAdapter.notifyDataSetChanged()
+
             } catch (e: Exception) {
                 Log.e("SOLICITACOES_ADM", "Erro ao carregar dados: ${e.message}")
                 Toast.makeText(requireContext(), "Erro ao conectar com o servidor.", Toast.LENGTH_SHORT).show()

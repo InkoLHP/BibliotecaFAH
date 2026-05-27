@@ -6,9 +6,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.*
+import com.example.bibliounifornew.model.User
 
 class UsuarioAdapter(
     private val lista: List<User>,
@@ -30,14 +31,21 @@ class UsuarioAdapter(
         val usuario = lista[position]
         holder.nome.text = usuario.nome
 
-        Glide.with(holder.itemView.context)
-            .load(usuario.foto)
-            .placeholder(R.drawable.user_placeholder)
-            .into(holder.foto)
+        holder.foto.load(usuario.foto) {
+            crossfade(true)
+            placeholder(R.drawable.user_placeholder)
+            error(R.drawable.user_placeholder)
+            transformations(CircleCropTransformation())
+        }
 
-        val clique = View.OnClickListener { onUsuarioClick(usuario) }
-        holder.nome.setOnClickListener(clique)
-        holder.btnVer.setOnClickListener(clique)
+        holder.itemView.setOnClickListener {
+            onUsuarioClick(usuario)
+        }
+
+        // Mantém o clique no botão por garantia visual
+        holder.btnVer.setOnClickListener {
+            onUsuarioClick(usuario)
+        }
     }
 
     override fun getItemCount() = lista.size

@@ -33,7 +33,9 @@ class Telarf29GerenciamentoUsuariosADM : Fragment(R.layout.telarf29_gerenciament
                 if (parentFragmentManager.backStackEntryCount > 0) {
                     parentFragmentManager.popBackStack()
                 } else {
-                    parentFragmentManager.popBackStack()
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.frameLayout, TelaRF28DashboardADM())
+                        .commit()
                 }
             }
         })
@@ -47,14 +49,14 @@ class Telarf29GerenciamentoUsuariosADM : Fragment(R.layout.telarf29_gerenciament
                 // Busca os dados na thread de IO para não travar a interface
                 val usuarios = withContext(Dispatchers.IO) {
                     SupabaseConfig.client
-                        .from("users") // ✅ CORRIGIDO: Nome exato da tabela no Supabase
+                        .from("users") // ✅ Nome exato da tabela no Supabase
                         .select()
                         .decodeList<User>()
                 }
 
                 recyclerUsuarios.adapter = UsuarioAdapter(usuarios) { usuarioSelecionado ->
-                    // Envia os dados encapsulados para a Tela 30
-                    val fragmentDestino = Telarf30UsuariosADM().apply {
+                    // 🌟 CORRIGIDO: Apontando para o nome correto da classe: Telarf30UsuarioAlugadosADM
+                    val fragmentDestino = Telarf30UsuarioAlugadosADM().apply {
                         arguments = Bundle().apply {
                             putString("nome", usuarioSelecionado.nome)
                             putString("email", usuarioSelecionado.email)
@@ -71,7 +73,6 @@ class Telarf29GerenciamentoUsuariosADM : Fragment(R.layout.telarf29_gerenciament
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Pega a mensagem real do erro que o Supabase/Kotlin retornou
                 val mensagemReal = e.message ?: "Erro desconhecido"
                 Toast.makeText(requireContext(), "Erro DB: $mensagemReal", Toast.LENGTH_LONG).show()
             }

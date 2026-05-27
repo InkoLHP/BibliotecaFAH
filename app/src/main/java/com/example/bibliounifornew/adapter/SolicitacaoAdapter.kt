@@ -2,6 +2,7 @@ package com.example.bibliounifornew.adapter
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.adm.Telarf30UsuarioAlugadosADM
 import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.model.*
 
@@ -77,6 +80,11 @@ class SolicitacaoAdapter(
         holder.textTipoSolicitacao.text =
             "Solicitação: ${item.tipo_solicitacao}"
 
+        holder.imageCapaLivro.load(item.capa_url) {
+            placeholder(R.drawable.placeholder)
+            error(R.drawable.placeholder)
+        }
+
         // =========================
         // BOTÃO PDF
         // =========================
@@ -130,12 +138,25 @@ class SolicitacaoAdapter(
         // =========================
 
         holder.buttonVerSolicitacoesUsuario.setOnClickListener {
+            val contexto = holder.itemView.context
 
-            Toast.makeText(
-                holder.itemView.context,
-                "Abrir histórico do usuário",
-                Toast.LENGTH_SHORT
-            ).show()
+            // Cria o fragmento de destino
+            val fragment = Telarf30UsuarioAlugadosADM().apply {
+                arguments = Bundle().apply {
+                    putString("email", item.email_usuario)
+                    putString("nome", item.nome_usuario)
+                    putString("foto", item.foto_usuario)
+                    putBoolean("apenasAtrasos", false)
+                }
+            }
+
+            // Gerencia a transição de telas (Fragments)
+            if (contexto is androidx.fragment.app.FragmentActivity) {
+                contexto.supportFragmentManager.beginTransaction()
+                    .replace(R.id.frameLayout, fragment) // Certifique-se de que o ID do container principal do seu app é frameLayout
+                    .addToBackStack(null)
+                    .commit()
+            }
         }
 
         // =========================

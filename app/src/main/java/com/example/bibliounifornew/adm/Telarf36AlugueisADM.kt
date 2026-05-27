@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.bibliounifornew.adapter.AluguelADMAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import io.github.jan.supabase.postgrest.postgrest
@@ -19,7 +20,7 @@ import com.example.bibliounifornew.model.*
 class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
 
     private lateinit var recyclerAlugueis: RecyclerView
-    private lateinit var adapter: AluguelAdapter
+    private lateinit var adapter: AluguelADMAdapter
     private var listaAlugueis = mutableListOf<Aluguel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -29,16 +30,13 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
         recyclerAlugueis.layoutManager = LinearLayoutManager(requireContext())
 
         // Configuração do Adapter com as ações reais de clique
-        adapter = AluguelAdapter(
+        adapter = AluguelADMAdapter(
             listaAlugueis = listaAlugueis,
             onVerLivroClick = { aluguel ->
                 // 1. Criamos o Fragment de Edição de Mídia
                 val fragment = TelaRF37EditarMidia().apply {
                     arguments = Bundle().apply {
-                        // Enviamos as strings que identificam o livro para a próxima tela buscar no banco
                         putString("LIVRO_TITULO", aluguel.titulo_livro)
-                        // Dica: Se o seu model 'Aluguel' possuir id do livro, passe aqui também!
-                        // putInt("LIVRO_ID", aluguel.id_livro)
                     }
                 }
 
@@ -49,11 +47,10 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
                     .commit()
             },
             onVerUsuarioClick = { aluguel ->
-                // 1. Criamos o Fragment de Gerenciamento de Usuários
-                val fragment = Telarf30UsuariosADM().apply {
+                val fragment = Telarf30UsuarioAlugadosADM().apply {
                     arguments = Bundle().apply {
-                        // Passamos o e-mail do usuário logado naquele aluguel
-                        putString("USER_EMAIL", aluguel.email_usuario)
+                        putString("email", aluguel.email_usuario)
+                        putString("nome", "Estudante") // Nome padrão caso precise
                     }
                 }
 

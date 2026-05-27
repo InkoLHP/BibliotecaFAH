@@ -5,11 +5,13 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
+import com.example.bibliounifornew.adapter.AluguelADMAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.Aluguel
@@ -46,12 +48,27 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
         textEmail.text = emailUsuario ?: "Sem e-mail"
 
         if (!fotoUsuario.isNullOrEmpty()) {
-            Glide.with(this).load(fotoUsuario).into(imagemFoto)
+            imagemFoto.load(fotoUsuario) {
+                placeholder(R.drawable.placeholder)
+                error(R.drawable.placeholder)
+            }
         }
 
         // 3. Configura o RecyclerView
         recyclerAlugados = view.findViewById(R.id.recyclerAlugados)
         recyclerAlugados.layoutManager = LinearLayoutManager(requireContext())
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (parentFragmentManager.backStackEntryCount > 0) {
+                    parentFragmentManager.popBackStack()
+                } else {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.frameLayout, Telarf29GerenciamentoUsuariosADM())
+                        .commit()
+                }
+            }
+        })
 
         // 4. Inicia a busca
         if (emailUsuario != null) {
@@ -62,7 +79,6 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
     }
 
     private fun carregarAlugueisDoUsuario(email: String) {
-        // Lendo se o ADM clicou no botão de ver tudo ou de ver apenas atrasos
         val apenasAtrasos = arguments?.getBoolean("apenasAtrasos") ?: false
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -78,17 +94,29 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
                         .decodeList<Aluguel>()
                 }
 
-                // Se a flag estiver ativa, filtramos apenas o que está com dias negativos e não foi devolvido
                 val listaExibida = if (apenasAtrasos) {
                     todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && it.devolvido == false }
                 } else {
                     todosAlugueis
                 }
 
-                recyclerAlugados.adapter = AluguelAdapter(
+                recyclerAlugados.adapter = AluguelADMAdapter(
                     listaAlugueis = listaExibida,
-                    onVerLivroClick = { aluguel -> },
-                    onVerUsuarioClick = { aluguel -> }
+                    onVerLivroClick = { aluguel ->
+                        // Ação ao clicar para ver detalhes/editar mídia
+                        val fragment = TelaRF37EditarMidia().apply {
+                            arguments = Bundle().apply {
+                                putString("LIVRO_TITULO", aluguel.titulo_livro)
+                            }
+                        }
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.frameLayout, fragment)
+                            .addToBackStack(null)
+                            .commit()
+                    },
+                    onVerUsuarioClick = { aluguel ->
+                        // Já está na tela do usuário, pode ignorar ou exibir um Toast informativo
+                    }
                 )
 
             } catch (e: Exception) {

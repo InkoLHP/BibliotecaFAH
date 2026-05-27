@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.adm
+package com.example.bibliounifornew.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,8 +6,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.adm.LivroCadastrado
 import com.google.android.material.button.MaterialButton
 
 class LivrosAdmAdapter(
@@ -19,14 +20,13 @@ class LivrosAdmAdapter(
         val titulo: TextView = view.findViewById(R.id.textTituloLivro)
         val autor: TextView = view.findViewById(R.id.textAutorLivro)
         val isbn: TextView = view.findViewById(R.id.textIsbnLivro)
-        val imgCapa: ImageView = view.findViewById(R.id.imgCapaLivro) // Mapeamos a foto da capa
+        val imgCapa: ImageView = view.findViewById(R.id.imgCapaLivro)
         val btnEditar: MaterialButton = view.findViewById(R.id.btnEditarInformacoes)
     }
 
-    // CORRIGIDO: Agora infla o card_livro_adm corretamente
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LivroViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.card_livro_adm, parent, false) // <-- AQUI ESTÁ A CORREÇÃO
+            .inflate(R.layout.card_livro_adm, parent, false)
         return LivroViewHolder(view)
     }
 
@@ -37,15 +37,11 @@ class LivrosAdmAdapter(
         holder.autor.text = livro.autor ?: "Autor desconhecido"
         holder.isbn.text = "ISBN: ${livro.isbn ?: "N/A"}"
 
-        // MÁGICA DO GLIDE: Baixa o link da internet e joga na ImageView do Card
-        if (!livro.capaUrl.isNullOrEmpty()) {
-            Glide.with(holder.itemView.context)
-                .load(livro.capaUrl)
-                .placeholder(R.drawable.user_placeholder) // Imagem provisória enquanto baixa
-                .error(R.drawable.user_placeholder)       // Imagem caso o link quebre
-                .into(holder.imgCapa)
-        } else {
-            holder.imgCapa.setImageResource(R.drawable.user_placeholder) // Caso não tenha link nenhum
+        // 🚀 Padronizado: Agora usa Coil em vez de Glide
+        holder.imgCapa.load(livro.capaUrl) {
+            crossfade(true)
+            placeholder(R.drawable.placeholder)
+            error(R.drawable.placeholder)
         }
 
         holder.btnEditar.setOnClickListener {

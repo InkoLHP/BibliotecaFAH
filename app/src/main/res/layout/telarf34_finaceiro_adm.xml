@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
 
-    <!-- HEADER (Padronizado com a tela de Verificar Mídia) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerFinanceiro"
         android:layout_width="match_parent"
@@ -15,7 +14,6 @@
         android:background="@color/biblio_detalhes"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- CÍRCULOS DECORATIVOS -->
         <View
             android:layout_width="230dp"
             android:layout_height="230dp"
@@ -38,7 +36,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- FOTO PERFIL -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardFotoADM"
             android:layout_width="100dp"
@@ -59,7 +56,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- TÍTULO ÚNICO -->
         <TextView
             android:id="@+id/textTituloTela"
             android:layout_width="wrap_content"
@@ -75,25 +71,15 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- CONTEÚDO ROLÁVEL -->
-    <ScrollView
-        android:id="@+id/scrollFinanceiro"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerLivrosVencidos"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
+        android:paddingTop="10dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/headerFinanceiro"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <LinearLayout
-            android:id="@+id/containerLivrosVencidos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="32dp">
-
-        </LinearLayout>
-    </ScrollView>
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_livro_vencido" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
