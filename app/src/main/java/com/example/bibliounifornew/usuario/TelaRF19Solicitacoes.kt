@@ -44,7 +44,7 @@ class TelaRF19Solicitacoes : Fragment(R.layout.telarf19_solicitacoes) {
                 val novaSolicitacao = Solicitacao(
                     titulo = titulo,
                     autor = autor,
-                    usuario_nome = "Usuário Atual", // Mais pra frente você puxa o nome do usuário logado
+                    email_usuario = "usuario@email.com", // Puxar e-mail do usuário logado futuramente
                     tipo_solicitacao = tipo,
                     status = "Pendente"
                 )

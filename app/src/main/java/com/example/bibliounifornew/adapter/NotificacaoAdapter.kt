@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.Adapter
+package com.example.bibliounifornew.adapter
 
 import android.view.LayoutInflater
 import android.view.View

@@ -68,8 +68,8 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
                 // --- CARD 1 & CARD 2: CÁLCULOS DE METRICAS ---
                 val totalUsers = todosUsuarios.size
                 val totalRentals = todosAlugueis.size
-                val ativos = todosAlugueis.count { !it.devolvido }
-                val devolvidos = todosAlugueis.count { it.devolvido }
+                val ativos = todosAlugueis.count { it.devolvido == false }
+                val devolvidos = todosAlugueis.count { it.devolvido == true }
 
                 // Atualizando os textos na UI
                 view.findViewById<TextView>(R.id.txtTotalUsuarios).text = totalUsers.toString()
@@ -80,7 +80,7 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
 
                 // --- CARD 3: ATRASOS CRÍTICOS (Filtra quem tem dias_restantes negativo) ---
                 val alugueisAtrasados = todosAlugueis.filter {
-                    !it.devolvido && it.dias_restantes != null && it.dias_restantes < 0
+                    it.devolvido == false && it.dias_restantes != null && it.dias_restantes < 0
                 }.sortedBy { it.dias_restantes } // Traz o maior atraso primeiro
 
                 if (alugueisAtrasados.isNotEmpty()) {

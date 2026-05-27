@@ -80,7 +80,7 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
 
                 // Se a flag estiver ativa, filtramos apenas o que está com dias negativos e não foi devolvido
                 val listaExibida = if (apenasAtrasos) {
-                    todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && !it.devolvido }
+                    todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && it.devolvido == false }
                 } else {
                     todosAlugueis
                 }

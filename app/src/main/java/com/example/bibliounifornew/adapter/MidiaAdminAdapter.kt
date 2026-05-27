@@ -1,4 +1,4 @@
-package com.example.bibliounifornew.Adapter
+package com.example.bibliounifornew.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.adm.Midia
 import com.example.bibliounifornew.adm.TelaRF37EditarMidia
 import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.model.* // Agora ele vai pegar o Midia correto daqui automaticamente

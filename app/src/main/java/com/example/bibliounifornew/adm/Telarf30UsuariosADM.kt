@@ -125,7 +125,7 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                             .decodeList<com.example.bibliounifornew.model.Aluguel>()
                     }
 
-                    val atrasados = todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && !it.devolvido }
+                    val atrasados = todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && it.devolvido == false }
 
                     if (atrasados.isEmpty()) {
                         textResultado?.text = "Tudo em dia!\n\n$nome não possui livros atrasados e não tem multas pendentes."

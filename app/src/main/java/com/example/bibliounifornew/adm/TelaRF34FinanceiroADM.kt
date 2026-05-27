@@ -56,7 +56,7 @@ class TelaRF34FinanceiroADM : Fragment(R.layout.telarf34_finaceiro_adm) {
                     val atrasadoPorData = calcularDiasAtraso(aluguel.data_vencimento) > 0
                     val atrasadoPorDiasManuais = aluguel.dias_restantes != null && aluguel.dias_restantes < 0
 
-                    !aluguel.devolvido && (atrasadoPorData || atrasadoPorDiasManuais)
+                    aluguel.devolvido == false && (atrasadoPorData || atrasadoPorDiasManuais)
                 }
 
                 if (alugueisVencidos.isEmpty()) {
@@ -79,7 +79,7 @@ class TelaRF34FinanceiroADM : Fragment(R.layout.telarf34_finaceiro_adm) {
                         // Define os dias de atraso priorizando a data, mas usando o número negativo se a data falhar
                         var diasAtraso = calcularDiasAtraso(aluguel.data_vencimento)
                         if (diasAtraso == 0 && aluguel.dias_restantes != null && aluguel.dias_restantes < 0) {
-                            diasAtraso = kotlin.math.abs(aluguel.dias_restantes)
+                            diasAtraso = kotlin.math.abs(aluguel.dias_restantes).toInt()
                         }
 
                         val valorMulta = diasAtraso * VALOR_MULTA_DIA
