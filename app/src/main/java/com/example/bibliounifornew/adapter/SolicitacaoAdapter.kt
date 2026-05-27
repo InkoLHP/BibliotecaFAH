@@ -72,7 +72,7 @@ class SolicitacaoAdapter(
 
         holder.textAutorLivro.text = item.autor
 
-        holder.textUsuario.text = item.usuario_nome
+        holder.textUsuario.text = item.email_usuario
 
         holder.textTipoSolicitacao.text =
             "Solicitação: ${item.tipo_solicitacao}"

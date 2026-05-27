@@ -8,16 +8,22 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.bibliounifornew.Adapter.LivroUsuarioAdapter
+import com.example.bibliounifornew.adapter.LivroUsuarioAdapter
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.launch
 import com.example.bibliounifornew.model.Livro
+import com.example.bibliounifornew.model.LivrariaItem
+import com.example.bibliounifornew.model.DesejoItem
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
@@ -25,55 +31,39 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
     private lateinit var editPesquisarLivro: EditText
     private lateinit var buttonProcurar: MaterialButton
     private lateinit var iconFiltro: ImageView
+    private var emailUsuario: String = ""
+    private var processandoClique: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // MAPEAMENTO (RF11.1)
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        emailUsuario = sharedPref.getString("USER_EMAIL", "") ?: ""
+
         recyclerLivros = view.findViewById(R.id.recyclerLivros)
         editPesquisarLivro = view.findViewById(R.id.editPesquisarLivro)
         buttonProcurar = view.findViewById(R.id.buttonProcurar)
         iconFiltro = view.findViewById(R.id.iconFiltro)
 
+        // Foto de Perfil
         val profileImage = view.findViewById<ImageView>(R.id.imagePerfilBusca)
-        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
-
         if (!fotoSalvaUrl.isNullOrEmpty() && profileImage != null) {
-            try {
-                profileImage.setImageURI(Uri.parse(fotoSalvaUrl))
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            try { profileImage.setImageURI(Uri.parse(fotoSalvaUrl)) } catch (e: Exception) { e.printStackTrace() }
         }
 
         recyclerLivros.layoutManager = LinearLayoutManager(requireContext())
 
-        // CORRIGIDO: Inicializa o adapter vazio com o novo nome
-        recyclerLivros.adapter = LivroUsuarioAdapter(emptyList<Livro>()) { livro ->
-            abrirOpcoesLivro(livro)
-        }
-
-        // RF11.5 - Botão Procurar fazendo a busca real na Internet
         buttonProcurar.setOnClickListener {
             val pesquisa = editPesquisarLivro.text.toString().trim()
-
             if (pesquisa.isEmpty()) {
-                Toast.makeText(
-                    requireContext(),
-                    "Digite um título ou autor",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Digite um título ou autor", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             buscarLivros(pesquisa)
         }
 
-        // RF11.2, RF11.3, RF11.4 - Abre o Pop-up de Filtros Avançados
-        iconFiltro.setOnClickListener {
-            exibirPopupFiltros()
-        }
+        iconFiltro.setOnClickListener { exibirPopupFiltros() }
     }
 
     private fun buscarLivros(pesquisa: String) {
@@ -88,16 +78,11 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
                 val livrosEncontrados = response.items?.map { item ->
                     val info = item.volumeInfo
-
-                    val isbn13 = info.industryIdentifiers?.find { it.type == "ISBN_13" }?.identifier
-                    val isbn10 = info.industryIdentifiers?.find { it.type == "ISBN_10" }?.identifier
-                    val isbnFinal = isbn13 ?: isbn10 ?: "Sem ISBN"
-
                     Livro(
-                        id = item.id,
+                        id = item.id.hashCode(),
                         titulo = info.title ?: "Sem título",
                         autor = info.authors?.joinToString(", ") ?: "Autor desconhecido",
-                        isbn = isbnFinal,
+                        isbn = info.industryIdentifiers?.firstOrNull()?.identifier ?: "Sem ISBN",
                         capaUrl = info.imageLinks?.thumbnail?.replace("http://", "https://") ?: "",
                         sinopse = info.description,
                         data_publicacao = info.publishedDate,
@@ -108,27 +93,77 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
                     )
                 } ?: emptyList()
 
-                if (livrosEncontrados.isEmpty()) {
-                    Toast.makeText(requireContext(), "Nenhum livro encontrado.", Toast.LENGTH_SHORT).show()
-                }
-
-                recyclerLivros.adapter = LivroUsuarioAdapter(livrosEncontrados) { livro ->
-                    abrirOpcoesLivro(livro)
-                }
-
-            } catch (e: retrofit2.HttpException) {
-                if (e.code() == 429) {
-                    Toast.makeText(requireContext(), "Muitas buscas seguidas. Tente em alguns segundos.", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(requireContext(), "Erro no servidor: ${e.code()}", Toast.LENGTH_LONG).show()
-                }
+                recyclerLivros.adapter = LivroUsuarioAdapter(
+                    livros = livrosEncontrados,
+                    onVerMaisClick = { livro -> abrirOpcoesLivro(livro) },
+                    onAddListaDesejosClick = { livro -> adicionarAListaDesejos(livro) },
+                    onAddMinhaLivrariaClick = { livro -> adicionarAMinhaLivraria(livro) }
+                )
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Erro de conexão. Verifique sua internet.", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Erro na busca", Toast.LENGTH_SHORT).show()
             } finally {
                 buttonProcurar.isEnabled = true
                 buttonProcurar.text = "Procurar"
             }
         }
+    }
+
+    private fun exibirPopupFiltros() {
+        val popup = PopupMenu(requireContext(), iconFiltro)
+
+        // --- SUBMENU FICÇÃO (Nomes em PT) ---
+        val fics = popup.menu.addSubMenu("Ficção")
+        fics.add("Ficção Geral")
+        fics.add("Fantasia")
+        fics.add("Ficção Científica")
+        fics.add("Romance")
+        fics.add("Terror")
+        fics.add("Aventura")
+        fics.add("Distopia")
+
+        // --- SUBMENU NÃO FICÇÃO (Nomes em PT) ---
+        val nonFics = popup.menu.addSubMenu("Não Ficção")
+        nonFics.add("Biografia")
+        nonFics.add("Autoajuda")
+        nonFics.add("Negócios e Economia")
+        nonFics.add("História")
+        nonFics.add("Filosofia")
+        nonFics.add("Ciências")
+        nonFics.add("Saúde e Bem-estar")
+        nonFics.add("Religião e Espiritualidade")
+
+        popup.setOnMenuItemClickListener { item ->
+            if (item.hasSubMenu()) return@setOnMenuItemClickListener false
+
+            // MAPEAMENTO: Nome em PT -> Termo em EN para a API
+            val categoriaEN = when (item.title.toString()) {
+                "Ficção Geral" -> "Fiction"
+                "Fantasia" -> "Fantasy"
+                "Ficção Científica" -> "Science Fiction"
+                "Romance" -> "Romance"
+                "Terror" -> "Horror"
+                "Aventura" -> "Adventure"
+                "Distopia" -> "Dystopian"
+                "Biografia" -> "Biography"
+                "Autoajuda" -> "Self-Help"
+                "Negócios e Economia" -> "Business"
+                "História" -> "History"
+                "Filosofia" -> "Philosophy"
+                "Ciências" -> "Science"
+                "Saúde e Bem-estar" -> "Health"
+                "Religião e Espiritualidade" -> "Religion"
+                else -> item.title.toString()
+            }
+
+            val termoBusca = editPesquisarLivro.text.toString().trim()
+            if (termoBusca.isEmpty()) {
+                buscarLivros("subject:\"$categoriaEN\"")
+            } else {
+                buscarLivros("$termoBusca+subject:\"$categoriaEN\"")
+            }
+            true
+        }
+        popup.show()
     }
 
     private fun abrirOpcoesLivro(livro: Livro) {
@@ -137,7 +172,31 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
         startActivity(intent)
     }
 
-    private fun exibirPopupFiltros() {
-        // Implementação futura dos filtros
+    private fun adicionarAMinhaLivraria(livro: Livro) {
+        if (emailUsuario.isEmpty()) return
+        if (processandoClique) return
+        processandoClique = true
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val item = LivrariaItem(null, emailUsuario, livro.id, livro.titulo, livro.autor, livro.capaUrl, livro.categoria)
+                withContext(Dispatchers.IO) { SupabaseConfig.client.postgrest["minha_livraria"].insert(item) }
+                Toast.makeText(requireContext(), "Adicionado! 📚", Toast.LENGTH_SHORT).show()
+            } finally { processandoClique = false }
+        }
+    }
+
+    private fun adicionarAListaDesejos(livro: Livro) {
+        if (emailUsuario.isEmpty()) return
+        if (processandoClique) return
+        processandoClique = true
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val item = DesejoItem(null, emailUsuario, livro.id, livro.titulo, livro.autor, livro.capaUrl, livro.categoria, true)
+                withContext(Dispatchers.IO) { SupabaseConfig.client.postgrest["lista_desejos"].insert(item) }
+                val prefs = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+                prefs.edit().putString("status_${livro.id}", "NAO_LIDO").apply()
+                Toast.makeText(requireContext(), "Salvo! ⏱️", Toast.LENGTH_SHORT).show()
+            } finally { processandoClique = false }
+        }
     }
 }

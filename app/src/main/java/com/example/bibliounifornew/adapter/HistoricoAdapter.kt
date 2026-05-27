@@ -1,6 +1,5 @@
-package com.example.bibliounifornew.Adapter
+package com.example.bibliounifornew.adapter
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,30 +35,32 @@ class HistoricoAdapter(
         val aluguel = listaAlugueis[position]
         val context = holder.itemView.context
 
-        holder.txtTitulo.text = aluguel.titulo_livro
-        holder.txtAutor.text = aluguel.autor_livro
+        // CORREÇÃO: Usando operador Elvis (?:) para garantir que não passe null para o TextView
+        holder.txtTitulo.text = aluguel.titulo_livro ?: "Título Indisponível"
+        holder.txtAutor.text = aluguel.autor_livro ?: "Autor Desconhecido"
 
-        if (aluguel.data_vencimento.startsWith("Status:")) {
+        // CORREÇÃO: Pegamos o valor da data_vencimento em uma variável segura
+        val vencimentoSeguro = aluguel.data_vencimento ?: ""
+
+        if (vencimentoSeguro.startsWith("Status:")) {
             // É UMA SOLICITAÇÃO!
-            val statusReal = aluguel.data_vencimento.replace("Status:", "").trim()
+            val statusReal = vencimentoSeguro.replace("Status:", "").trim()
 
             holder.txtStatus.text = "Solicitação: $statusReal"
-            // Puxa a cor vermelha/alerta do seu arquivo colors.xml de forma segura
             holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.biblio_red))
         } else {
             // É UM ALUGUEL REAL!
-            holder.txtStatus.text = "Alugado por: ${aluguel.email_usuario} | Vence em: ${aluguel.data_vencimento}"
-            // Puxa a cor azul padrão do seu arquivo colors.xml
+            val emailSeguro = aluguel.email_usuario ?: "Usuário"
+            holder.txtStatus.text = "Alugado por: $emailSeguro | Vence em: $vencimentoSeguro"
             holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.biblio_blue))
         }
 
-        // Carrega a capa do livro usando Glide
-        if (!aluguel.capa_url.isNullOrEmpty()) {
-            Glide.with(context)
-                .load(aluguel.capa_url)
-                .placeholder(R.drawable.placeholder)
-                .into(holder.imgCapa)
-        }
+        // Carrega a capa do livro usando Glide de forma segura
+        Glide.with(context)
+            .load(aluguel.capa_url)
+            .placeholder(R.drawable.osda) // Certifique-se que o nome do drawable está correto
+            .error(R.drawable.osda)
+            .into(holder.imgCapa)
 
         holder.btnRemover.setOnClickListener {
             onRemoverClick(aluguel)

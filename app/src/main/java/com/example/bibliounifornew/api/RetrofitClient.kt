@@ -13,15 +13,18 @@ object RetrofitClient {
     private val authInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
         val originalUrl = originalRequest.url
+        val apiKey = BuildConfig.BOOKS_API_KEY
 
-        // Colocamos a sua chave real direto aqui na variável
-        val apiKey = "AIzaSyC8t_vTp_BNj82t6X1yWOX2dJkadMCT-1A"
-
-        val url = originalUrl.newBuilder()
-            .addQueryParameter("key", apiKey)
-            .build()
-
-        val request = originalRequest.newBuilder().url(url).build()
+        // Verifica se a chave é válida (não vazia e não é o texto de exemplo)
+        val request = if (apiKey.isNotEmpty() && apiKey != "YOUR_API_KEY_HERE") {
+            val url = originalUrl.newBuilder()
+                .addQueryParameter("key", apiKey)
+                .build()
+            originalRequest.newBuilder().url(url).build()
+        } else {
+            // Se a chave não for válida, envia a requisição sem o parâmetro "key"
+            originalRequest
+        }
 
         chain.proceed(request)
     }
@@ -39,4 +42,3 @@ object RetrofitClient {
             .create(BooksApi::class.java)
     }
 }
-

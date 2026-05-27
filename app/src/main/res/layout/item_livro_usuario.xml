@@ -76,7 +76,7 @@
                     android:id="@+id/btnAddListaDesejos"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="30dp"
                     android:layout_marginTop="20dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
@@ -87,6 +87,23 @@
                     android:textStyle="bold"
                     app:cornerRadius="24dp"
                     app:strokeColor="@color/biblio_blue"
+                    app:strokeWidth="1.2dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddMinhaLivraria"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="20dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="+ Minha Livraria"
+                    android:textAllCaps="false"
+                    android:textColor="@color/biblio_dark"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="24dp"
+                    app:strokeColor="@color/biblio_dark"
                     app:strokeWidth="1.2dp" />
 
             </LinearLayout>

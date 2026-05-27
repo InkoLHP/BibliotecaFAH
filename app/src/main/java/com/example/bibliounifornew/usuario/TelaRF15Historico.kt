@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.bibliounifornew.Adapter.HistoricoAdapter
+import com.example.bibliounifornew.adapter.HistoricoAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import io.github.jan.supabase.postgrest.postgrest
@@ -37,7 +37,8 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
         recyclerHistorico.layoutManager = LinearLayoutManager(requireContext())
 
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        val emailLogado = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+        val emailLogado = sharedPref.getString("USER_EMAIL", "")?.lowercase()?.trim() ?: ""
         val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
 
         textEmailHistorico.text = emailLogado
@@ -58,33 +59,39 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // 🌟 BUSCA PARALELA: Puxa aluguéis e solicitações ao mesmo tempo
                 val dadosUnificados = withContext(Dispatchers.IO) {
                     val buscaAlugueis = async {
-                        SupabaseConfig.client.postgrest["alugueis"]
-                            .select {
-                                filter {
-                                    eq("email_usuario", email)
-                                    neq("oculto_historico", true)
-                                }
-                            }.decodeList<Aluguel>()
+                        try {
+                            SupabaseConfig.client.postgrest["alugueis"]
+                                .select {
+                                    filter {
+                                        eq("email_usuario", email)
+                                    }
+                                }.decodeList<Aluguel>()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            emptyList<Aluguel>()
+                        }
                     }
 
                     val buscaSolicitacoes = async {
-                        SupabaseConfig.client.postgrest["solicitacoes"]
-                            .select {
-                                filter {
-                                    eq("email_usuario", email)
-                                    // Se tiver um campo de ocultar na solicitação futuramente, filtra aqui
-                                }
-                            }.decodeList<Solicitacao>()
+                        try {
+                            SupabaseConfig.client.postgrest["solicitacoes"]
+                                .select {
+                                    filter {
+                                        eq("email_usuario", email)
+                                    }
+                                }.decodeList<Solicitacao>()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            emptyList<Solicitacao>()
+                        }
                     }
 
-                    val listaAlugueis = buscaAlugueis.await()
+                    // CORREÇÃO: Usando '== true' para tratar Boolean? e '?: ""' para String?
+                    val listaAlugueis = buscaAlugueis.await().filter { it.oculto_historico != true }
                     val listaSolicitacoes = buscaSolicitacoes.await()
 
-                    // Converte as solicitações em um formato que o seu HistoricoAdapter entenda como "Card"
-                    // sem alterar a estrutura visual existente.
                     val itensConvertidos = listaSolicitacoes.map { sol ->
                         Aluguel(
                             id = sol.id,
@@ -93,20 +100,21 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
                             autor_livro = sol.autor,
                             capa_url = sol.capa_url,
                             data_vencimento = "Status: ${sol.status}",
-                            dias_restantes = 0,
+                            dias_restantes = 0L,
                             devolvido = false,
                             oculto_historico = false
                         )
                     }
 
-                    // Junta as duas listas e ordena tudo junto pelo ID (Mais recentes no topo)
-                    (listaAlugueis + itensConvertidos).sortedByDescending { it.id }
+                    (listaAlugueis + itensConvertidos).sortedByDescending { it.id ?: 0L }
                 }
 
-                // Adapta o clique de remoção padrão para identificar se veio de aluguel ou solicitação
                 recyclerHistorico.adapter = HistoricoAdapter(dadosUnificados) { itemClicado ->
-                    if (itemClicado.data_vencimento.startsWith("Status:")) {
-                        removerSolicitacaoDoHistorico(itemClicado.id ?: 0, email)
+                    // CORREÇÃO: Pegando o valor de forma segura para usar o startsWith
+                    val vencimentoSeguro = itemClicado.data_vencimento ?: ""
+
+                    if (vencimentoSeguro.startsWith("Status:")) {
+                        removerSolicitacaoDoHistorico(itemClicado.id ?: 0L, email)
                     } else {
                         removerAluguelDoBanco(itemClicado, email)
                     }
@@ -114,7 +122,7 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao carregar dados unificados", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Erro Histórico: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -125,7 +133,7 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
                 withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["alugueis"]
                         .update({ set("oculto_historico", true) }) {
-                            filter { eq("id", aluguel.id ?: 0) }
+                            filter { eq("id", aluguel.id ?: 0L) }
                         }
                 }
                 Toast.makeText(requireContext(), "Item ocultado do histórico", Toast.LENGTH_SHORT).show()
@@ -136,11 +144,10 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
         }
     }
 
-    private fun removerSolicitacaoDoHistorico(idSolicitacao: Int, email: String) {
+    private fun removerSolicitacaoDoHistorico(idSolicitacao: Long, email: String) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
                 withContext(Dispatchers.IO) {
-                    // Aqui você pode dar um delete real na solicitação se quiser sumir com ela de vez
                     SupabaseConfig.client.postgrest["solicitacoes"]
                         .delete {
                             filter { eq("id", idSolicitacao) }
