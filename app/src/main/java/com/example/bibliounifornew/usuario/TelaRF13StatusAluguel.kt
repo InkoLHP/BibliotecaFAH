@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.bibliounifornew.Adapter.AluguelAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.AluguelAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
@@ -21,6 +20,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
 
@@ -37,59 +39,81 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
 
         recyclerAlugueis.layoutManager = LinearLayoutManager(requireContext())
 
-        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        emailUsuario = sharedPref.getString("USER_EMAIL", "") ?: ""
+        val sharedPref = requireActivity().getSharedPreferences(
+            "user_session",
+            Context.MODE_PRIVATE
+        )
+
+        emailUsuario = sharedPref.getString("USER_EMAIL", "")
+            ?.trim()
+            ?.lowercase()
+            ?: ""
 
         carregarStatusUnificado()
     }
 
     private fun carregarStatusUnificado() {
-        if (emailUsuario.isEmpty()) return
+        if (emailUsuario.isEmpty()) {
+            textNenhumLivro.visibility = View.VISIBLE
+            textNenhumLivro.text = "Usuário não identificado."
+            return
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // 🌟 BUSCA UNIFICADA PARALELA: Aluguéis ativos + Solicitações
                 val listaCompleta = withContext(Dispatchers.IO) {
+
                     val buscaAlugueis = async {
-                        SupabaseConfig.client.postgrest["alugueis"]
-                            .select {
-                                filter {
-                                    eq("email_usuario", emailUsuario)
-                                    // Apenas aluguéis que ainda não foram marcados como devolvidos
-                                    eq("devolvido", false)
+                        try {
+                            SupabaseConfig.client
+                                .postgrest["alugueis"]
+                                .select {
+                                    filter {
+                                        eq("email_usuario", emailUsuario)
+                                    }
                                 }
-                            }.decodeList<Aluguel>()
+                                .decodeList<Aluguel>()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            emptyList<Aluguel>()
+                        }
                     }
 
                     val buscaSolicitacoes = async {
-                        SupabaseConfig.client.postgrest["solicitacoes"]
-                            .select {
-                                filter {
-                                    eq("email_usuario", emailUsuario)
+                        try {
+                            SupabaseConfig.client
+                                .postgrest["solicitacoes"]
+                                .select {
+                                    filter {
+                                        eq("email_usuario", emailUsuario)
+                                    }
                                 }
-                            }.decodeList<Solicitacao>()
+                                .decodeList<Solicitacao>()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            emptyList<Solicitacao>()
+                        }
                     }
 
                     val alugueisAtivos = buscaAlugueis.await()
                     val solicitacoesAbertas = buscaSolicitacoes.await()
 
-                    // Converte as solicitações para a estrutura do card dinâmico do AluguelAdapter
                     val solicitacoesConvertidas = solicitacoesAbertas.map { sol ->
                         Aluguel(
-                            id = sol.id,
+                            id = sol.id ?: 0L,
                             email_usuario = sol.email_usuario,
                             titulo_livro = sol.titulo,
                             autor_livro = sol.autor,
                             capa_url = sol.capa_url,
-                            data_vencimento = "Status: ${sol.status}", // Injeta o gatilho "Status:" para o Adapter saber
-                            // Atalho: usamos 1 para PDF_DIGITAL e 2 para LIVRO_FISICO (ou outros) pro Adapter ajustar os textos
-                            dias_restantes = if (sol.tipo_solicitacao == "PDF_DIGITAL") 1 else 2,
-                            devolvido = false
+                            data_vencimento = "Status: ${sol.status}",
+                            dias_restantes = if (sol.tipo_solicitacao == "PDF_DIGITAL") 1L else 2L,
+                            devolvido = false,
+                            tipo = "SOLICITACAO"
                         )
                     }
 
-                    // Junta as listas colocando os IDs mais novos no topo
-                    (alugueisAtivos + solicitacoesConvertidas).sortedByDescending { it.id }
+                    (alugueisAtivos + solicitacoesConvertidas)
+                        .sortedByDescending { it.id ?: 0L }
                 }
 
                 if (listaCompleta.isEmpty()) {
@@ -100,10 +124,14 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
                     textNenhumLivro.visibility = View.GONE
                     recyclerAlugueis.visibility = View.VISIBLE
 
-                    // Configura o adapter com a nossa lógica de cliques do novo botão
                     recyclerAlugueis.adapter = AluguelAdapter(listaCompleta) { itemClicado, ehSolicitacao ->
-                        if (ehSolicitacao) {
-                            cancelarSolicitacaoReal(itemClicado.id ?: 0, itemClicado.titulo_livro)
+                        val idSeguro = itemClicado.id ?: 0L
+                        val tituloSeguro = itemClicado.titulo_livro ?: "Livro sem título"
+
+                        if (ehSolicitacao || itemClicado.tipo == "SOLICITACAO") {
+                            cancelarSolicitacaoReal(idSeguro, tituloSeguro)
+                        } else if (itemClicado.tipo == "RESERVA") {
+                            cancelarReservaReal(itemClicado)
                         } else {
                             cancelarAluguelReal(itemClicado, emailUsuario)
                         }
@@ -113,54 +141,56 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
             } catch (e: Exception) {
                 e.printStackTrace()
                 textNenhumLivro.visibility = View.VISIBLE
-                textNenhumLivro.text = "Erro ao carregar dados de status."
+                textNenhumLivro.text = "Erro ao carregar dados."
             }
         }
     }
 
     private fun cancelarAluguelReal(aluguel: Aluguel, emailUsuarioLogado: String) {
-        val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
-            .format(java.util.Date())
+        val tituloSeguro = aluguel.titulo_livro ?: "Livro"
+        val dataHoraAtual = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault()).format(Date())
 
         val notificacaoParaAdmin = Notificacao(
             email_usuario = "admin@biblioteca.com",
-            titulo = "Aluguel Cancelado 🚨",
-            mensagem = "O usuário '$emailUsuarioLogado' cancelou o aluguel do livro '${aluguel.titulo_livro}'.",
+            titulo = "Aluguel Cancelado",
+            mensagem = "O usuário '$emailUsuarioLogado' cancelou o aluguel do livro '$tituloSeguro'.",
             visualizada = false,
             created_at = dataHoraAtual
         )
 
-        // 🌟 Corrigido: Trocado GlobalScope para viewLifecycleOwner.lifecycleScope para evitar vazamentos de memória
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
                 withContext(Dispatchers.IO) {
-                    // 1. Apaga permanentemente da tabela de aluguéis
-                    SupabaseConfig.client.postgrest["alugueis"].delete {
-                        filter { eq("id", aluguel.id ?: 0) }
-                    }
-                    // 2. Insere a notificação avisando o admin
-                    SupabaseConfig.client.postgrest["notificacoes"].insert(notificacaoParaAdmin)
+                    SupabaseConfig.client
+                        .postgrest["alugueis"]
+                        .delete {
+                            filter {
+                                eq("id", aluguel.id ?: 0L)
+                            }
+                        }
+
+                    SupabaseConfig.client
+                        .postgrest["notificacoes"]
+                        .insert(notificacaoParaAdmin)
                 }
 
-                Toast.makeText(requireContext(), "Aluguel cancelado e administrador notificado! 👍", Toast.LENGTH_LONG).show()
-                // Atualiza a tela de forma limpa
+                Toast.makeText(requireContext(), "Aluguel cancelado!", Toast.LENGTH_LONG).show()
                 carregarStatusUnificado()
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao processar cancelamento", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Erro ao cancelar aluguel.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun cancelarSolicitacaoReal(idSolicitacao: Int, tituloLivro: String) {
-        val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
-            .format(java.util.Date())
+    private fun cancelarSolicitacaoReal(idSolicitacao: Long, tituloLivro: String) {
+        val dataHoraAtual = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault()).format(Date())
 
         val notificacaoParaAdmin = Notificacao(
             email_usuario = "admin@biblioteca.com",
-            titulo = "Solicitação Cancelada 🛑",
-            mensagem = "O usuário '$emailUsuario' cancelou a solicitação pendente do livro '$tituloLivro'.",
+            titulo = "Solicitação Cancelada",
+            mensagem = "O usuário '$emailUsuario' cancelou a solicitação do livro '$tituloLivro'.",
             visualizada = false,
             created_at = dataHoraAtual
         )
@@ -168,21 +198,63 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
                 withContext(Dispatchers.IO) {
-                    // 1. Remove da tabela de solicitações
-                    SupabaseConfig.client.postgrest["solicitacoes"].delete {
-                        filter { eq("id", idSolicitacao) }
-                    }
-                    // 2. Notifica o administrador
-                    SupabaseConfig.client.postgrest["notificacoes"].insert(notificacaoParaAdmin)
+                    SupabaseConfig.client
+                        .postgrest["solicitacoes"]
+                        .delete {
+                            filter {
+                                eq("id", idSolicitacao)
+                            }
+                        }
+
+                    SupabaseConfig.client
+                        .postgrest["notificacoes"]
+                        .insert(notificacaoParaAdmin)
                 }
 
-                Toast.makeText(requireContext(), "Solicitação cancelada com sucesso!", Toast.LENGTH_SHORT).show()
-                // Recarrega a listagem
+                Toast.makeText(requireContext(), "Solicitação cancelada!", Toast.LENGTH_SHORT).show()
                 carregarStatusUnificado()
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao cancelar solicitação", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Erro ao cancelar solicitação.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun cancelarReservaReal(reserva: Aluguel) {
+        val tituloSeguro = reserva.titulo_livro ?: "Livro"
+        val dataHoraAtual = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault()).format(Date())
+
+        val notificacao = Notificacao(
+            email_usuario = emailUsuario,
+            titulo = "Reserva Cancelada ❌",
+            mensagem = "Sua reserva do livro '$tituloSeguro' foi cancelada.",
+            visualizada = false,
+            created_at = dataHoraAtual
+        )
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                withContext(Dispatchers.IO) {
+                    SupabaseConfig.client
+                        .postgrest["alugueis"]
+                        .delete {
+                            filter {
+                                eq("id", reserva.id ?: 0L)
+                            }
+                        }
+
+                    SupabaseConfig.client
+                        .postgrest["notificacoes"]
+                        .insert(notificacao)
+                }
+
+                Toast.makeText(requireContext(), "Reserva cancelada!", Toast.LENGTH_SHORT).show()
+                carregarStatusUnificado()
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao cancelar reserva.", Toast.LENGTH_SHORT).show()
             }
         }
     }

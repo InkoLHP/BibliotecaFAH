@@ -3,7 +3,7 @@ package com.example.bibliounifornew.model
 import java.io.Serializable
 
 data class Livro(
-    val id: String?,
+    val id: Int,
     val titulo: String,
     val autor: String,
     val isbn: String,

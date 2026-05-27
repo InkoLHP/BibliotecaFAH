@@ -48,8 +48,8 @@ class UsuarioMainActivity : AppCompatActivity() {
                     true
                 }
 
-                R.id.nav_pesquisa -> {
-                    trocarFragment(TelaRF11TelaDePesquisa())
+                R.id.nav_lista_desejos -> {
+                    trocarFragment(TelaRF16ListaDesejos())
                     true
                 }
 

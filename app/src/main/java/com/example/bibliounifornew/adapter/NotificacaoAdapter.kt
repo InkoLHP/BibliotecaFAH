@@ -12,7 +12,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class NotificacaoAdapter(
-    private val lista: List<Notificacao>
+    private val lista: List<Notificacao>,
+    private val onLidaClick: (Notificacao) -> Unit
 ) : RecyclerView.Adapter<NotificacaoAdapter.NotificacaoViewHolder>() {
 
     inner class NotificacaoViewHolder(view: View)
@@ -44,9 +45,14 @@ class NotificacaoAdapter(
             R.id.textMensagemNotif
         ).text = item.mensagem
 
-        holder.itemView.findViewById<CheckBox>(
+        val checkBox = holder.itemView.findViewById<CheckBox>(
             R.id.checkLida
-        ).isChecked = item.visualizada
+        )
+        checkBox.isChecked = item.visualizada
+        
+        checkBox.setOnClickListener {
+            onLidaClick(item)
+        }
 
         val horario = holder.itemView.findViewById<TextView>(
             R.id.textDataNotif
