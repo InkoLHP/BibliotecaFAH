@@ -16,64 +16,77 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+// 1. O Molde agora bate exatamente com as colunas da sua tabela do Supabase
+@Serializable
+data class NovoLivro(
+    val titulo: String,
+    val autor: String,
+    val isbn: String,
+
+    @SerialName("capaUrl") // Força o Kotlin a mandar com o 'U' maiúsculo idêntico ao banco
+    val capaUrl: String,
+
+    val audiobook_url: String,
+    val exemplares: Int,
+    val paginas: Int,
+    val editora: String,
+    val disponivel_braille: Boolean
+)
 
 class Telarf33AdicionarMidiaArquivos : Fragment(R.layout.telarf33_adicionar_midia_arquivos) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Pegando os componentes da tela atual
-        val editPdf = view.findViewById<EditText>(R.id.editArquivoPdf)
+        // Vinculando os componentes do layout (XML corrigido)
         val editAudiobook = view.findViewById<EditText>(R.id.editArquivoAudiobook)
         val checkBraille = view.findViewById<CheckBox>(R.id.checkBraille)
         val btnSalvarLivro = view.findViewById<MaterialButton>(R.id.btnSalvarLivro)
 
-        // 2. Pegando os dados que vieram guardados das telas anteriores
+        // Resgatando os dados vindos das telas anteriores
         val titulo = arguments?.getString("TITULO") ?: ""
         val autor = arguments?.getString("AUTOR") ?: ""
         val isbn = arguments?.getString("ISBN") ?: ""
-        val data = arguments?.getString("DATA") ?: ""
-        val exemplares = arguments?.getString("EXEMPLARES") ?: ""
-        val paginas = arguments?.getString("PAGINAS") ?: ""
-        val categoria = arguments?.getString("CATEGORIA") ?: ""
-        val editora = arguments?.getString("EDITORA") ?: ""
         val capa = arguments?.getString("CAPA") ?: ""
-        val sinopse = arguments?.getString("SINOPSE") ?: ""
+        val editora = arguments?.getString("EDITORA") ?: ""
 
-        // 3. Quando clicar em Salvar
+        // Conversão segura para Inteiros (conforme o tipo 'integer' do seu banco)
+        val exemplares = arguments?.getString("EXEMPLARES")?.toIntOrNull() ?: 0
+        val paginas = arguments?.getString("PAGINAS")?.toIntOrNull() ?: 0
+
         btnSalvarLivro.setOnClickListener {
-            btnSalvarLivro.isEnabled = false // Desativa para evitar duplo clique
+            btnSalvarLivro.isEnabled = false
+            btnSalvarLivro.text = "Salvando..."
 
-            // Juntamos todas as 13 informações em um "mapa" para enviar pro banco
-            val dadosDoLivro = mapOf(
-                "titulo" to titulo,
-                "autor" to autor,
-                "isbn" to isbn,
-                "data_publicacao" to data,
-                "exemplares" to exemplares,
-                "paginas" to paginas,
-                "categoria" to categoria,
-                "editora" to editora,
-                "capa_url" to capa,
-                "sinopse" to sinopse,
-                "pdf_url" to editPdf.text.toString().trim(),
-                "audiobook_url" to editAudiobook.text.toString().trim(),
-                "disponivel_braille" to checkBraille.isChecked
+            // 2. Montando o objeto purificado apenas com o que o banco aceita
+            val livroParaSalvar = NovoLivro(
+                titulo = titulo,
+                autor = autor,
+                isbn = isbn,
+                capaUrl = capa,
+                audiobook_url = editAudiobook.text.toString().trim(),
+                exemplares = exemplares,
+                paginas = paginas,
+                editora = editora,
+                disponivel_braille = checkBraille.isChecked
             )
 
-            // Envia para o Supabase
+            // 3. Envio direto para o banco de dados
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        // Enviando o mapa direto para a tabela "livros"
-                        SupabaseConfig.client.postgrest["livros"].insert(dadosDoLivro)
+                        SupabaseConfig.client.postgrest["livros"].insert(livroParaSalvar)
                     }
-                    // Se deu certo, mostra o pop-up que você criou
                     mostrarPopupSucesso()
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    Toast.makeText(requireContext(), "Erro ao salvar: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "Erro ao salvar no Supabase: ${e.message}", Toast.LENGTH_LONG).show()
+                } finally {
                     btnSalvarLivro.isEnabled = true
+                    btnSalvarLivro.text = "Salvar novo livro"
                 }
             }
         }
@@ -91,7 +104,6 @@ class Telarf33AdicionarMidiaArquivos : Fragment(R.layout.telarf33_adicionar_midi
 
         btnVoltarMidias.setOnClickListener {
             dialog.dismiss()
-            // Volta para a tela inicial do seu CRUD do ADM
             parentFragmentManager.beginTransaction()
                 .replace(R.id.frameLayout, Telarf27CrudADM())
                 .commit()

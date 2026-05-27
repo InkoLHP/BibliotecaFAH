@@ -59,7 +59,7 @@
                 android:id="@+id/textTituloLivro"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="O Alienista"
+                android:text="Carregando..."
                 android:textColor="@color/white"
                 android:textSize="22sp"
                 android:textStyle="bold" />
@@ -69,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Machado de Assis"
+                android:text="..."
                 android:textColor="@color/white"
                 android:textSize="17sp"
                 android:alpha="0.8" />
@@ -124,7 +124,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:lineSpacingExtra="4dp"
-                android:text="Machado de Assis, neste livro, propõe a seguinte pergunta: quem é louco? Conheça a história do médico Simão Bacamarte, dedicado e estudioso da mente humana, que decide construir um hospício para tratar os doentes mentais na pequena cidade de Itaguaí a casa verde. Quem entra e quem fica de fora? Surpreenda-se com o final."
+                android:text="Buscando detalhes do livro..."
                 android:textColor="#415E5E"
                 android:textSize="17sp" />
 
@@ -144,9 +144,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textGeneroLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ficção Psicológica"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -166,9 +167,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textLinguaLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Português"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -188,9 +190,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textEditoraLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Intrínseca"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -210,9 +213,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textDimensaoLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="15.24 x 0.51 x 22.86 cm"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -232,9 +236,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textIsbn10Livro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="856356093X"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -254,9 +259,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textIsbn13Livro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="978-8563560933"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -276,9 +282,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textAsinLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="8580572266"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -298,9 +305,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textDataLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="18 dezembro 2019"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -320,9 +328,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textPaginasLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="80"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
@@ -341,9 +350,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/textSetorLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="75H.102B"
+                    android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>

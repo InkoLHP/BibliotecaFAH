@@ -23,8 +23,15 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
+
+    // Transformamos em variáveis da classe para que os botões usem os dados atualizados do banco
+    private var nome: String = "Usuário"
+    private var email: String = "Sem e-mail"
+    private var fotoUrl: String? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -40,15 +47,35 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
         val buttonPermissao = view.findViewById<MaterialButton>(R.id.buttonPermissao)
         val buttonExcluirConta = view.findViewById<MaterialButton>(R.id.buttonExcluirConta)
 
-        // Resgatando dados vindos do Bundle (Tela 29)
-        val nome = arguments?.getString("nome") ?: "Usuário"
-        val email = arguments?.getString("email") ?: "Sem e-mail"
-        val fotoUrl = arguments?.getString("foto")
+        // Descobre qual parâmetro de e-mail foi enviado para unificar a busca
+        val emailRecebido = arguments?.getString("USER_EMAIL") ?: arguments?.getString("email")
 
-        // Injetando dados na interface principal
-        textNomeUsuario.text = nome
-        textEmailUsuario.text = email
-        Glide.with(this).load(fotoUrl).placeholder(R.drawable.user_placeholder).into(imageUsuario)
+        if (emailRecebido != null) {
+            email = emailRecebido
+
+            // SE COUBE APENAS O EMAIL (Vindo da Tela 36 de Aluguéis)
+            if (arguments?.containsKey("USER_EMAIL") == true) {
+                textNomeUsuario.text = "Carregando..."
+                textEmailUsuario.text = email
+
+                // Busca as informações restantes (nome e foto) no banco de dados
+                buscarDadosDoUsuario(email) { nomeBanco, fotoBanco ->
+                    nome = nomeBanco
+                    fotoUrl = fotoBanco
+
+                    textNomeUsuario.text = nome
+                    Glide.with(this).load(fotoUrl).placeholder(R.drawable.user_placeholder).into(imageUsuario)
+                }
+            } else {
+                // SE JÁ VEIO TUDO COMPLETO (Fluxo tradicional da Tela 29)
+                nome = arguments?.getString("nome") ?: "Usuário"
+                fotoUrl = arguments?.getString("foto")
+
+                textNomeUsuario.text = nome
+                textEmailUsuario.text = email
+                Glide.with(this).load(fotoUrl).placeholder(R.drawable.user_placeholder).into(imageUsuario)
+            }
+        }
 
         // 1. NAVEGAÇÃO: TELA DE SOLICITAÇÕES
         buttonSolicitacoes.setOnClickListener {
@@ -65,7 +92,7 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                     putString("nome", nome)
                     putString("email", email)
                     putString("foto", fotoUrl)
-                    putBoolean("apenasAtrasos", false) // Manda a instrução para listar TUDO
+                    putBoolean("apenasAtrasos", false)
                 }
             }
             parentFragmentManager.beginTransaction()
@@ -90,27 +117,21 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
 
             dialog.show()
 
-            // Busca no banco os livros do usuário para calcular a multa
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     val todosAlugueis = withContext(Dispatchers.IO) {
                         SupabaseConfig.client.from("alugueis")
-                            .select {
-                                filter {
-                                    eq("email_usuario", email)
-                                }
-                            }
+                            .select { filter { eq("email_usuario", email) } }
                             .decodeList<com.example.bibliounifornew.model.Aluguel>()
                     }
 
-                    // Filtra apenas os atrasados e não devolvidos
                     val atrasados = todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && !it.devolvido }
 
                     if (atrasados.isEmpty()) {
                         textResultado?.text = "Tudo em dia!\n\n$nome não possui livros atrasados e não tem multas pendentes."
                     } else {
                         var totalMulta = 0.0
-                        val valorMultaPorDia = 2.00 // R$ 2,00 por dia
+                        val valorMultaPorDia = 2.00
                         val relatorio = java.lang.StringBuilder()
 
                         relatorio.append("Livros em atraso:\n\n")
@@ -125,7 +146,6 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                         }
 
                         relatorio.append("💰 MULTA TOTAL A COBRAR: R$ ${String.format("%.2f", totalMulta)}")
-
                         textResultado?.text = relatorio.toString()
                     }
 
@@ -157,7 +177,7 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
             dialog.show()
         }
 
-        // 5. POP-UP: REMOVER CONTA (Valida senha do ADM e apaga do Supabase)
+        // 5. POP-UP: REMOVER CONTA
         buttonExcluirConta.setOnClickListener {
             val dialog = Dialog(requireContext())
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -212,6 +232,36 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
             }
 
             dialog.show()
+        }
+    }
+
+    // Função auxiliar para buscar o perfil completo do usuário usando apenas o e-mail
+    private fun buscarDadosDoUsuario(emailBusca: String, onResultado: (String, String?) -> Unit) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val usuarioBanco = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.from("users")
+                        .select { filter { eq("email", emailBusca) } }
+                        .decodeSingleOrNull<JsonObject>()
+                }
+
+                if (usuarioBanco != null) {
+                    // Mapeia de forma segura independente se a coluna chama 'nome' ou 'name' no banco
+                    val nomeBanco = usuarioBanco["nome"]?.jsonPrimitive?.content
+                        ?: usuarioBanco["name"]?.jsonPrimitive?.content
+                        ?: "Usuário"
+
+                    val fotoBanco = usuarioBanco["foto"]?.jsonPrimitive?.content
+                        ?: usuarioBanco["foto_url"]?.jsonPrimitive?.content
+
+                    onResultado(nomeBanco, fotoBanco)
+                } else {
+                    onResultado("Usuário Desconhecido", null)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onResultado("Erro ao carregar", null)
+            }
         }
     }
 }

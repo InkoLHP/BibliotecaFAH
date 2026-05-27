@@ -3,7 +3,7 @@ package com.example.bibliounifornew.adm
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback // 👇 IMPORTANTE
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,14 +28,45 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
         recyclerAlugueis = view.findViewById(R.id.recyclerAlugueis)
         recyclerAlugueis.layoutManager = LinearLayoutManager(requireContext())
 
+        // Configuração do Adapter com as ações reais de clique
         adapter = AluguelAdapter(
             listaAlugueis = listaAlugueis,
-            onVerLivroClick = { Toast.makeText(requireContext(), "Carregando info do livro...", Toast.LENGTH_SHORT).show() },
-            onVerUsuarioClick = { aluguel -> Toast.makeText(requireContext(), "Acessando perfil de: ${aluguel.email_usuario}", Toast.LENGTH_SHORT).show() }
+            onVerLivroClick = { aluguel ->
+                // 1. Criamos o Fragment de Edição de Mídia
+                val fragment = TelaRF37EditarMidia().apply {
+                    arguments = Bundle().apply {
+                        // Enviamos as strings que identificam o livro para a próxima tela buscar no banco
+                        putString("LIVRO_TITULO", aluguel.titulo_livro)
+                        // Dica: Se o seu model 'Aluguel' possuir id do livro, passe aqui também!
+                        // putInt("LIVRO_ID", aluguel.id_livro)
+                    }
+                }
+
+                // 2. Transição de tela jogando o fragment na pilha de volta (BackStack)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.frameLayout, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            },
+            onVerUsuarioClick = { aluguel ->
+                // 1. Criamos o Fragment de Gerenciamento de Usuários
+                val fragment = Telarf30UsuariosADM().apply {
+                    arguments = Bundle().apply {
+                        // Passamos o e-mail do usuário logado naquele aluguel
+                        putString("USER_EMAIL", aluguel.email_usuario)
+                    }
+                }
+
+                // 2. Transição para a tela de gerenciamento de usuários
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.frameLayout, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
         )
         recyclerAlugueis.adapter = adapter
 
-        // 👇 NOVO: Intercepta o botão de voltar do celular de forma segura nesta tela também
+        // Interceptador do botão de voltar físico do aparelho
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (parentFragmentManager.backStackEntryCount > 0) {
