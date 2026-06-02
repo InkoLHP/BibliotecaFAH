@@ -16,7 +16,6 @@ import java.util.Locale
 
 class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
 
-    // Variável para armazenar o email do administrador recebido da tela anterior
     private var emailADM: String? = null
     private var countDownTimer: CountDownTimer? = null
     private val tempoTotal: Long = 120000
@@ -25,7 +24,6 @@ class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.telarf06_validacao_de_codigo)
 
-        // Captura o email que veio da tela anterior do ADM
         emailADM = intent.getStringExtra("USER_EMAIL")
 
         val editCodigo = findViewById<EditText>(R.id.editTextCodigo)
@@ -34,48 +32,53 @@ class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
         val buttonEnviarCodigo = findViewById<Button>(R.id.buttonEnviarCodigo)
         val timer = findViewById<TextView>(R.id.textTimer)
 
-        // Inicialmente o erro fica invisível
         textErro.visibility = View.GONE
 
+        // Passamos o botão de reenvio para ser controlado pelo cronômetro
         iniciarTimer(buttonReenviarCod, timer)
 
         buttonEnviarCodigo.setOnClickListener {
             val codigoDigitado = editCodigo.text.toString().trim()
 
-            // Valida contra o código dinâmico gerado no seu CodigoManager
+            // 1. Checa se o código bate com o gerado
             if (codigoDigitado.isNotEmpty() && (codigoDigitado == CodigoManager.codigoGerado)) {
-                textErro.visibility = View.GONE
 
-                // Para o timer
-                countDownTimer?.cancel()
+                if (CodigoManager.estaExpirado()) {
+                    textErro.visibility = View.VISIBLE
+                    textErro.text = "Este código expirou!"
+                    Toast.makeText(this, "Código expirado!", Toast.LENGTH_SHORT).show()
+                } else {
+                    textErro.visibility = View.GONE
+                    countDownTimer?.cancel()
 
-                val intent = Intent(this, TelaRF19RedefinirSenhaADM::class.java)
-                // 🔥 Envia o email adiante para a tela de redefinição do ADM
-                intent.putExtra("USER_EMAIL", emailADM)
-                startActivity(intent)
-                finish() 
+                    val intent = Intent(this, TelaRF19RedefinirSenhaADM::class.java)
+                    intent.putExtra("USER_EMAIL", emailADM)
+                    startActivity(intent)
+                    finish()
+                }
             } else {
-                // Código incorreto
+                // Código digitado errado
                 textErro.visibility = View.VISIBLE
                 textErro.text = "Código incorreto. Verifique seu e-mail."
             }
         }
 
+        // Deixamos a ação do clique caso ele queira reenviar de forma consciente dentro dos 2 minutos
         buttonReenviarCod.setOnClickListener {
             val novoCodigo = CodigoManager.gerarCodigo()
             val email = emailADM ?: CodigoManager.emailRecuperacao
 
-            Toast.makeText(this, "Reenviando código...", Toast.LENGTH_SHORT).show()
 
-            // Dispara o e-mail novamente
             EmailSender.enviarEmail(
                 email = email,
                 codigo = novoCodigo,
                 onSuccess = {
                     runOnUiThread {
-                        // Reinicia o timer
+                        buttonEnviarCodigo.isEnabled = true
+                        buttonEnviarCodigo.alpha = 1.0f
+                        textErro.visibility = View.GONE
+
                         iniciarTimer(buttonReenviarCod, timer)
-                        Toast.makeText(this@TelaRF18ValidaçãoCodigoADM, "Novo código enviado com sucesso!", Toast.LENGTH_SHORT).show()
                     }
                 },
                 onError = {
@@ -88,10 +91,15 @@ class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
     }
 
     private fun iniciarTimer(tvReenviar: TextView, tvTimer: TextView) {
+        // Encontra o botão de enviar e o texto de erro para manipulá-los quando o tempo acabar
+        val buttonEnviarCodigo = findViewById<Button>(R.id.buttonEnviarCodigo)
+        val textErro = findViewById<TextView>(R.id.textErroCodigo)
+
+        // Bloqueia o botão de reenvio no início do cronômetro para evitar spam
         tvReenviar.isEnabled = false
         tvReenviar.alpha = 0.5f
 
-        countDownTimer?.cancel() 
+        countDownTimer?.cancel()
 
         countDownTimer = object : CountDownTimer(tempoTotal, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -102,6 +110,13 @@ class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
 
             override fun onFinish() {
                 tvTimer.text = "00:00"
+
+                textErro.visibility = View.VISIBLE
+                textErro.text = "O código expirou!"
+
+                buttonEnviarCodigo.isEnabled = false
+                buttonEnviarCodigo.alpha = 0.5f
+
                 tvReenviar.isEnabled = true
                 tvReenviar.alpha = 1.0f
             }
@@ -110,6 +125,6 @@ class TelaRF18ValidaçãoCodigoADM : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        countDownTimer?.cancel() 
+        countDownTimer?.cancel()
     }
 }

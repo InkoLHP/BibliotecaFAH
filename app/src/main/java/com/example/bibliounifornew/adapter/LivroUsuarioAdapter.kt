@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
 import com.example.bibliounifornew.R
-import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.model.Livro
+import com.google.android.material.button.MaterialButton
 
 class LivroUsuarioAdapter(
     private val livros: List<Livro>,
@@ -23,8 +23,6 @@ class LivroUsuarioAdapter(
         val textTituloLivro: TextView = itemView.findViewById(R.id.textTituloLivro)
         val textAutorLivro: TextView = itemView.findViewById(R.id.textAutorLivro)
         val textIsbnLivro: TextView = itemView.findViewById(R.id.textIsbnLivro)
-
-        // Novos botões do XML mapeados
         val btnAddListaDesejos: MaterialButton = itemView.findViewById(R.id.btnAddListaDesejos)
         val btnAddMinhaLivraria: MaterialButton = itemView.findViewById(R.id.btnAddMinhaLivraria)
         val btnVerMais: MaterialButton = itemView.findViewById(R.id.btnVerMais)
@@ -43,28 +41,17 @@ class LivroUsuarioAdapter(
         holder.textAutorLivro.text = livro.autor ?: "Autor desconhecido"
         holder.textIsbnLivro.text = "ISBN: ${livro.isbn ?: "N/A"}"
 
-        Glide.with(holder.itemView.context)
-            .load(livro.capaUrl)
-            .placeholder(R.drawable.placeholder)
-            .error(R.drawable.placeholder)
-            .into(holder.imgCapaLivro)
-
-        // Configuração dos cliques individuais
-        holder.btnVerMais.setOnClickListener {
-            onVerMaisClick(livro)
+        // 🚀 Padronizado: Agora usa Coil em vez de Glide
+        holder.imgCapaLivro.load(livro.capaUrl) {
+            crossfade(true)
+            placeholder(R.drawable.placeholder)
+            error(R.drawable.placeholder)
         }
 
-        holder.itemView.setOnClickListener {
-            onVerMaisClick(livro)
-        }
-
-        holder.btnAddListaDesejos.setOnClickListener {
-            onAddListaDesejosClick(livro)
-        }
-
-        holder.btnAddMinhaLivraria.setOnClickListener {
-            onAddMinhaLivrariaClick(livro)
-        }
+        holder.btnVerMais.setOnClickListener { onVerMaisClick(livro) }
+        holder.itemView.setOnClickListener { onVerMaisClick(livro) }
+        holder.btnAddListaDesejos.setOnClickListener { onAddListaDesejosClick(livro) }
+        holder.btnAddMinhaLivraria.setOnClickListener { onAddMinhaLivrariaClick(livro) }
     }
 
     override fun getItemCount(): Int = livros.size

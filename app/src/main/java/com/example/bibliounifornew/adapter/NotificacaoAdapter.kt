@@ -33,10 +33,13 @@ class NotificacaoAdapter(
 
         holder.txtTitulo.text = notificacao.titulo
         holder.txtMensagem.text = notificacao.mensagem
-        holder.checkLida.isChecked = notificacao.visualizada
         holder.txtTempo.text = calcularTempoDecorrido(notificacao.created_at)
 
-        // Quando o usuário marcar o CheckBox, dispara a remoção
+        holder.checkLida.setOnCheckedChangeListener(null)
+
+        // Define o estado correto vindo do banco
+        holder.checkLida.isChecked = notificacao.visualizada
+
         holder.checkLida.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 onMarcarComoLida(notificacao)
@@ -46,7 +49,6 @@ class NotificacaoAdapter(
 
     override fun getItemCount(): Int = listaNotif.size
 
-    // Regra de Negócio: Apresentar quantas horas ou dias se passaram
     private fun calcularTempoDecorrido(dataCriacaoIso: String?): String {
         if (dataCriacaoIso.isNullOrEmpty()) return "Agora"
         return try {
