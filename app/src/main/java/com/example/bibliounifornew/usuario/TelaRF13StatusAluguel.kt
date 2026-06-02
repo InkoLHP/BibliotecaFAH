@@ -1,48 +1,69 @@
 package com.example.bibliounifornew.usuario
 
-import android.content.Context // ✅ Adicionado import para o SharedPref
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.AluguelUSERAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.Aluguel
-import com.example.bibliounifornew.model.Solicitacao
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.put
 
 class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
 
+    private lateinit var tagTabela: String
     private lateinit var recyclerStatus: RecyclerView
-    private val listaMistaExibicao = mutableListOf<Aluguel>()
-    private lateinit var userAdapter: AluguelUSERAdapter
+    private lateinit var textNenhumLivro: TextView
+    private lateinit var textNomeUsuario: TextView
+    private lateinit var imagePerfil: ImageView
 
-    // ✅ CORRIGIDO: Removido o e-mail fake "usuario@unifor.br"
+    private val listaGeralExibicao = mutableListOf<Aluguel>()
+    private lateinit var userAdapter: AluguelUSERAdapter
     private var emailUsuarioLogado: String = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ CORRIGIDO: Recupera dinamicamente a sessão real do usuário logado
-        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        emailUsuarioLogado = sharedPref.getString("USER_EMAIL", "") ?: ""
-
         recyclerStatus = view.findViewById(R.id.recyclerAlugueis)
+        textNenhumLivro = view.findViewById(R.id.textNenhumLivro)
+        textNomeUsuario = view.findViewById(R.id.textNomeUsuarioAlugados)
+        imagePerfil = view.findViewById(R.id.imagePerfilAlugados)
+
         recyclerStatus.layoutManager = LinearLayoutManager(requireContext())
 
-        userAdapter = AluguelUSERAdapter(listaMistaExibicao) { itemSelecionado, ehSolicitacao ->
-            if (ehSolicitacao) {
-                cancelarSolicitacaoNoBanco(itemSelecionado)
-            } else {
-                cancelarAluguelNoBanco(itemSelecionado)
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        emailUsuarioLogado = sharedPref.getString("USER_EMAIL", "") ?: ""
+        val nomeUsuario = sharedPref.getString("USER_NOME", "Usuário") ?: ""
+        val fotoUsuarioUrl = sharedPref.getString("USER_FOTO", null)
+
+        textNomeUsuario.text = nomeUsuario
+        if (!fotoUsuarioUrl.isNullOrEmpty()) {
+            imagePerfil.load(fotoUsuarioUrl) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+            }
+        }
+
+        userAdapter = AluguelUSERAdapter(listaGeralExibicao, "alugueis") { itemSelecionado, tabelaOrigem ->
+            when (tabelaOrigem.lowercase()) {
+                "solicitacoes" -> cancelarRegistroNoBanco(itemSelecionado, "solicitacoes", "Solicitação cancelada com sucesso!")
+                "reservas" -> cancelarRegistroNoBanco(itemSelecionado, "reservas", "Reserva cancelada com sucesso!")
+                "alugueis" -> cancelarRegistroNoBanco(itemSelecionado, "alugueis", "Aluguel encerrado com sucesso!")
             }
         }
         recyclerStatus.adapter = userAdapter
@@ -59,7 +80,6 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
             }
         })
 
-        // Só chama o banco se o e-mail não estiver vazio
         if (emailUsuarioLogado.isNotEmpty()) {
             carregarDadosDoUsuario()
         } else {
@@ -70,64 +90,145 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
     private fun carregarDadosDoUsuario() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // 1. Busca Aluguéis Ativos
                 val alugueisAtivos = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["alugueis"]
-                        .select { filter { eq("email_usuario", emailUsuarioLogado); eq("devolvido", false) } }
+                        .select {
+                            filter {
+                                eq("email_usuario", emailUsuarioLogado)
+                                eq("devolvido", false)
+                                eq("oculto_historico", false)
+                            }
+                            order(column = "id", order = Order.DESCENDING)
+                        }
                         .decodeList<Aluguel>()
-                }
+                }.map { it.apply { tagTabela = "alugueis" } }
 
-                val solicitacoesPendentes = withContext(Dispatchers.IO) {
+                // 2. Busca Solicitações Ativas
+                val solicitacoesAtivas = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["solicitacoes"]
-                        .select { filter { eq("email_usuario", emailUsuarioLogado) } }
-                        .decodeList<Solicitacao>()
+                        .select {
+                            filter {
+                                eq("email_usuario", emailUsuarioLogado)
+                                eq("status", "pendente")
+                            }
+                            order(column = "id", order = Order.DESCENDING)
+                        }
+                        .decodeList<Aluguel>()
+                }.map { it.apply { tagTabela = "solicitacoes" } }
+
+                // 3. Busca Reservas Ativas
+                val reservasAtivas = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["reservas"]
+                        .select {
+                            filter {
+                                eq("email_usuario", emailUsuarioLogado)
+                                eq("oculto_historico", false)
+                            }
+                            order(column = "id", order = Order.DESCENDING)
+                        }
+                        .decodeList<Aluguel>()
+                }.map { it.apply { tagTabela = "reservas" } }
+
+                // Une as listas mantendo a estrutura de pilha pelo ID
+                val listaMisturada = mutableListOf<Aluguel>().apply {
+                    addAll(alugueisAtivos)
+                    addAll(solicitacoesAtivas)
+                    addAll(reservasAtivas)
                 }
 
-                val solicitacoesConvertidas = solicitacoesPendentes.map { solicitacao ->
-                    Aluguel(
-                        id = solicitacao.id,
-                        email_usuario = solicitacao.email_usuario,
-                        titulo_livro = solicitacao.titulo.ifEmpty { "Sem título" },
-                        autor_livro = solicitacao.autor.ifEmpty { "Autor desconhecido" },
-                        capa_url = solicitacao.capa_url,
-                        data_vencimento = "Status: ${solicitacao.status.ifEmpty { "PENDENTE" }}",
-                        dias_restantes = if (solicitacao.tipo_solicitacao == "PDF") 1L else 0L,
-                        devolvido = false
-                    )
-                }
+                listaMisturada.sortByDescending { it.id ?: 0L }
 
-                listaMistaExibicao.clear()
-                listaMistaExibicao.addAll(alugueisAtivos)
-                listaMistaExibicao.addAll(solicitacoesConvertidas)
+                listaGeralExibicao.clear()
+                listaGeralExibicao.addAll(listaMisturada)
+
                 userAdapter.notifyDataSetChanged()
 
-                // 💡 Dica extra para debugar: avisa se o banco do usuário logado realmente não tiver nada
-                if (listaMistaExibicao.isEmpty()) {
-                    Toast.makeText(requireContext(), "Você não possui nenhuma reserva ou aluguel ativo.", Toast.LENGTH_SHORT).show()
+                if (listaGeralExibicao.isEmpty()) {
+                    textNenhumLivro.visibility = View.VISIBLE
+                    recyclerStatus.visibility = View.GONE
+                } else {
+                    textNenhumLivro.visibility = View.GONE
+                    recyclerStatus.visibility = View.VISIBLE
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao atualizar status: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Erro ao carregar dados: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    private fun cancelarSolicitacaoNoBanco(aluguel: Aluguel) {
-        val idSeguro = aluguel.id ?: return
+    private fun cancelarRegistroNoBanco(item: Aluguel, tabela: String, mensagemSucesso: String) {
+        val idSeguro = item.id ?: return
+
+        val tituloLivro = if (!item.titulo_livro.isNullOrBlank()) item.titulo_livro else (item.titulo ?: "Livro")
+
+        val timestampAtual = java.text.SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+            java.util.Locale.getDefault()
+        ).format(java.util.Date())
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["solicitacoes"].delete { filter { eq("id", idSeguro) } }
+
+                    // 1️⃣ Executa a atualização lógica baseada nas colunas reais da tabela
+                    val jsonUpdateStatus = kotlinx.serialization.json.buildJsonObject {
+                        if (tabela.lowercase() == "solicitacoes") {
+                            put("status", "cancelado")
+                        } else {
+                            put("oculto_historico", true)
+                            if (tabela.lowercase() == "alugueis") {
+                                put("devolvido", true)
+                            }
+                        }
+                    }
+
+                    SupabaseConfig.client.postgrest[tabela].update(jsonUpdateStatus) {
+                        filter { eq("id", idSeguro) }
+                    }
+
+                    val termoAcao = when(tabela.lowercase()) {
+                        "alugueis" -> "aluguel"
+                        "reservas" -> "reserva"
+                        else -> "solicitação"
+                    }
+
+                    // Limpa notificações duplicadas antigas desse livro
+                    SupabaseConfig.client.postgrest["notificacoes"].delete {
+                        filter {
+                            eq("email_usuario", emailUsuarioLogado)
+                            ilike("mensagem", "%$tituloLivro%")
+                        }
+                    }
+
+                    // 2️⃣ Envia Notificação para o Usuário
+                    val jsonNotifUsuario = kotlinx.serialization.json.buildJsonObject {
+                        put("email_usuario", emailUsuarioLogado)
+                        put("titulo", "${termoAcao.replaceFirstChar { it.uppercase() }} Cancelado")
+                        put("mensagem", "Você cancelou com sucesso o seu $termoAcao do livro: $tituloLivro.")
+                        put("created_at", timestampAtual)
+                    }
+                    SupabaseConfig.client.postgrest["notificacoes"].insert(jsonNotifUsuario)
+
+                    // 3️⃣ Envia Notificação para o Administrador
+                    val jsonNotifAdm = kotlinx.serialization.json.buildJsonObject {
+                        put("email_usuario", "adm@unifor.br")
+                        put("titulo", "Cancelamento de $termoAcao")
+                        put("mensagem", "O usuário $emailUsuarioLogado cancelou o $termoAcao do livro: $tituloLivro.")
+                        put("created_at", timestampAtual)
+                    }
+                    SupabaseConfig.client.postgrest["notificacoes"].insert(jsonNotifAdm)
                 }
-                Toast.makeText(requireContext(), "Solicitação cancelada com sucesso!", Toast.LENGTH_SHORT).show()
+
+                Toast.makeText(requireContext(), mensagemSucesso, Toast.LENGTH_SHORT).show()
                 carregarDadosDoUsuario()
+
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Erro ao cancelar solicitação", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao cancelar: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    private fun cancelarAluguelNoBanco(aluguel: Aluguel) {
-        Toast.makeText(requireContext(), "Contate a administração para devolver este livro.", Toast.LENGTH_SHORT).show()
     }
 }

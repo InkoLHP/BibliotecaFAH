@@ -26,6 +26,7 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
     private lateinit var recyclerNotificacoes: RecyclerView
     private lateinit var textNomeNotif: TextView
     private lateinit var imagePerfilNotif: ImageView
+    private var emailLogado: String = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -37,7 +38,7 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
         recyclerNotificacoes.layoutManager = LinearLayoutManager(requireContext())
 
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        val emailLogado = sharedPref.getString("USER_EMAIL", "") ?: ""
+        emailLogado = sharedPref.getString("USER_EMAIL", "") ?: ""
         val nomeLogado = sharedPref.getString("USER_NOME", "Usuário") ?: ""
         val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
 
@@ -51,12 +52,14 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
             }
         }
 
-        carregarNotificacoes(emailLogado)
+        if (emailLogado.isNotEmpty()) {
+            carregarNotificacoes(emailLogado)
+        } else {
+            Toast.makeText(requireContext(), "Erro: Usuário não identificado.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun carregarNotificacoes(email: String) {
-        if (email.isEmpty()) return
-
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val notificacoesDoBanco = withContext(Dispatchers.IO) {
@@ -74,34 +77,39 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
                     marcarComoLidaNoBanco(notifClicada, email)
                 }
 
+                // 💡 Feedback visual amigável se a caixa de entrada estiver limpa
+                if (notificacoesDoBanco.isEmpty()) {
+                    Toast.makeText(requireContext(), "Sua caixa de notificações está vazia.", Toast.LENGTH_SHORT).show()
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao carregar notificações", Toast.LENGTH_SHORT).show()
+                // Mostra o erro real em caso de falha de serialização/mapeamento de campos
+                Toast.makeText(requireContext(), "Erro ao carregar notificações: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private fun marcarComoLidaNoBanco(notificacao: Notificacao, email: String) {
+        val idNotificacao = notificacao.id ?: return
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    // 🚀 Agora em vez de deletar, atualizamos o status para "visualizada = true"
                     SupabaseConfig.client.postgrest["notificacoes"]
-                        .update(
-                            update = {
-                                set("visualizada", true)
-                            }
-                        ) {
+                        .delete {
                             filter {
-                                eq("id", notificacao.id ?: 0)
+                                eq("id", idNotificacao)
                             }
                         }
                 }
-                Toast.makeText(requireContext(), "Notificação marcada como lida!", Toast.LENGTH_SHORT).show()
-                carregarNotificacoes(email) 
+
+                Toast.makeText(requireContext(), "Notificação removida", Toast.LENGTH_SHORT).show()
+                carregarNotificacoes(email)
+
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao atualizar notificação", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Erro ao excluir notificação", Toast.LENGTH_SHORT).show()
             }
         }
     }
