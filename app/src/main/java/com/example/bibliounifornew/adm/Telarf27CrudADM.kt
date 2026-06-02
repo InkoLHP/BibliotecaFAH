@@ -19,7 +19,7 @@ class Telarf27CrudADM : Fragment(R.layout.telarf27_crud_adm) {
         // 2. Ação do Botão: Criar Mídia
         buttonCriarMidia.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, Telarf33AdicionarMidiaArquivos())
+                .replace(R.id.frameLayout, TelaRF33CadastroDeLivros())
                 .addToBackStack(null)
                 .commit()
         }

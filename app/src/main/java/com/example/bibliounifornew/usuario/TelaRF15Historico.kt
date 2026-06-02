@@ -11,16 +11,16 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.adapter.HistoricoAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.Aluguel
-import com.example.bibliounifornew.model.Solicitacao
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.bibliounifornew.model.*
 
 class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
 
@@ -45,10 +45,10 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
         textEmailHistorico.text = emailLogado
 
         if (!fotoSalvaUrl.isNullOrEmpty()) {
-            try {
-                imagePerfilHistorico.setImageURI(Uri.parse(fotoSalvaUrl))
-            } catch (e: Exception) {
-                e.printStackTrace()
+            imagePerfilHistorico.load(fotoSalvaUrl) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
             }
         }
 

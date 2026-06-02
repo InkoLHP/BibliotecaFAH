@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.model.DesejoItem
 import com.google.android.material.button.MaterialButton
@@ -42,13 +42,13 @@ class DesejosAdapter(
         holder.txtTitulo.text = item.titulo
         holder.txtAutor.text = item.autor
 
-        Glide.with(holder.itemView.context)
-            .load(item.capa_url)
-            .placeholder(R.drawable.placeholder)
-            .into(holder.imgCapa)
+        // 🚀 Padronizado: Agora usa Coil em vez de Glide
+        holder.imgCapa.load(item.capa_url) {
+            crossfade(true)
+            placeholder(R.drawable.placeholder)
+            error(R.drawable.placeholder)
+        }
 
-        // 🌟 LÓGICA DINÂMICA DE DISPONIBILIDADE
-        // Usamos um campo opcional booleano do banco ou simulado para testar
         val estaDisponivel = item.disponivel ?: true
 
         if (estaDisponivel) {
@@ -59,16 +59,14 @@ class DesejosAdapter(
             holder.btnAlugar.isEnabled = true
             holder.btnAlugar.alpha = 1.0f
         } else {
-            // Se estiver fora de estoque: aplica opacidade, ativa o selo e trava o botão alugar
             holder.imgCapa.alpha = 0.4f
             holder.txtSeloIndisponivel.visibility = View.VISIBLE
             holder.txtStatusEstoque.text = "Livro fora de estoque ❌"
             holder.txtStatusEstoque.setTextColor(Color.parseColor("#C62828"))
             holder.btnAlugar.isEnabled = false
-            holder.btnAlugar.alpha = 0.5f // Aparência cinza de desativado
+            holder.btnAlugar.alpha = 0.5f 
         }
 
-        // Configuração dos Cliques
         holder.imgCapa.setOnClickListener { onCapaClick(item) }
         holder.btnRemover.setOnClickListener { onRemoverClick(item) }
         holder.btnLivraria.setOnClickListener { onLivrariaClick(item) }

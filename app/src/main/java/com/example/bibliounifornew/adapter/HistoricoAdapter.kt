@@ -7,10 +7,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
 import com.example.bibliounifornew.R
-import com.example.bibliounifornew.model.Aluguel
 import com.google.android.material.button.MaterialButton
+import com.example.bibliounifornew.model.Aluguel
 
 class HistoricoAdapter(
     private val listaAlugueis: List<Aluguel>,
@@ -35,32 +35,26 @@ class HistoricoAdapter(
         val aluguel = listaAlugueis[position]
         val context = holder.itemView.context
 
-        // CORREÇÃO: Usando operador Elvis (?:) para garantir que não passe null para o TextView
-        holder.txtTitulo.text = aluguel.titulo_livro ?: "Título Indisponível"
-        holder.txtAutor.text = aluguel.autor_livro ?: "Autor Desconhecido"
+        holder.txtTitulo.text = aluguel.titulo_livro
+        holder.txtAutor.text = aluguel.autor_livro
 
-        // CORREÇÃO: Pegamos o valor da data_vencimento em uma variável segura
         val vencimentoSeguro = aluguel.data_vencimento ?: ""
 
         if (vencimentoSeguro.startsWith("Status:")) {
-            // É UMA SOLICITAÇÃO!
             val statusReal = vencimentoSeguro.replace("Status:", "").trim()
-
             holder.txtStatus.text = "Solicitação: $statusReal"
             holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.biblio_red))
         } else {
-            // É UM ALUGUEL REAL!
-            val emailSeguro = aluguel.email_usuario ?: "Usuário"
-            holder.txtStatus.text = "Alugado por: $emailSeguro | Vence em: $vencimentoSeguro"
+            holder.txtStatus.text = "Alugado por: ${aluguel.email_usuario} | Vence em: $vencimentoSeguro"
             holder.txtStatus.setTextColor(ContextCompat.getColor(context, R.color.biblio_blue))
         }
 
-        // Carrega a capa do livro usando Glide de forma segura
-        Glide.with(context)
-            .load(aluguel.capa_url)
-            .placeholder(R.drawable.osda) // Certifique-se que o nome do drawable está correto
-            .error(R.drawable.osda)
-            .into(holder.imgCapa)
+        // 🚀 Padronizado: Agora usa Coil em vez de Glide
+        holder.imgCapa.load(aluguel.capa_url) {
+            crossfade(true)
+            placeholder(R.drawable.osda)
+            error(R.drawable.osda)
+        }
 
         holder.btnRemover.setOnClickListener {
             onRemoverClick(aluguel)

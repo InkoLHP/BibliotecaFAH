@@ -14,11 +14,11 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adm.AdmMainActivity // IMPORTAÇÃO CORRETA DA ACTIVITY MÃE
 import com.example.bibliounifornew.data.SupabaseConfig
-import com.example.bibliounifornew.model.User
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.bibliounifornew.model.*
 
 class TelaRF16LoginADM : AppCompatActivity() {
 
@@ -83,12 +83,14 @@ class TelaRF16LoginADM : AppCompatActivity() {
                             if (contaAdm != null) {
                                 android.util.Log.d("LOGIN_DEBUG", "Login ADM Sucesso. Abrindo AdmMainActivity")
 
-                                // SALVA A SESSÃO DO ADM (Nome, E-mail e Tipo)
+                                // SALVA A SESSÃO DO ADM (Nome, E-mail, Tipo E SENHA)
                                 val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
                                 val editor = sharedPref.edit()
                                 editor.putString("USER_NOME", contaAdm.nome)
                                 editor.putString("USER_EMAIL", contaAdm.email)
                                 editor.putString("USER_TIPO", contaAdm.tipo)
+                                editor.putString("USER_FOTO", contaAdm.foto)
+                                editor.putString("USER_SENHA", textoSenha)
                                 editor.apply()
 
                                 Toast.makeText(

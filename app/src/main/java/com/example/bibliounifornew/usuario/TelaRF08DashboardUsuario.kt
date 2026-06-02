@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.adapter.DescobrirAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.login.TelaRF03LoginAluno
@@ -54,10 +55,10 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
 
         val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
         if (!fotoSalvaUrl.isNullOrEmpty()) {
-            try {
-                profileImage?.setImageURI(Uri.parse(fotoSalvaUrl))
-            } catch (e: Exception) {
-                e.printStackTrace()
+            profileImage?.load(fotoSalvaUrl) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
             }
         }
 

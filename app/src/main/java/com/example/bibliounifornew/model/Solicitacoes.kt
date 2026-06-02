@@ -10,5 +10,7 @@ data class Solicitacao(
     val email_usuario: String = "",
     val tipo_solicitacao: String = "",
     val capa_url: String? = null,
-    val status: String = ""
+    val status: String = "",
+    val foto_usuario: String? = null,
+    val nome_usuario: String? = null
 )

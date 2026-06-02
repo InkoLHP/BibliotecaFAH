@@ -1,60 +1,101 @@
 package com.example.bibliounifornew.adm
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.bibliounifornew.adapter.AluguelADMAdapter
 import com.example.bibliounifornew.R
+import com.example.bibliounifornew.data.SupabaseConfig
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.example.bibliounifornew.model.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [Telarf36AlugueisADM.newInstance] factory method to
- * create an instance of this fragment.
- */
-class Telarf36AlugueisADM : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var recyclerAlugueis: RecyclerView
+    private lateinit var adapter: AluguelADMAdapter
+    private var listaAlugueis = mutableListOf<Aluguel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.telarf36_alugueis_adm, container, false)
-    }
+        recyclerAlugueis = view.findViewById(R.id.recyclerAlugueis)
+        recyclerAlugueis.layoutManager = LinearLayoutManager(requireContext())
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment telarf36_alugueis_adm.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            Telarf36AlugueisADM().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        // Configuração do Adapter com as ações reais de clique
+        adapter = AluguelADMAdapter(
+            listaAlugueis = listaAlugueis,
+            onVerLivroClick = { aluguel ->
+                // 1. Criamos o Fragment de Edição de Mídia
+                val fragment = TelaRF37EditarMidia().apply {
+                    arguments = Bundle().apply {
+                        putString("LIVRO_TITULO", aluguel.titulo_livro)
+                    }
+                }
+
+                // 2. Transição de tela jogando o fragment na pilha de volta (BackStack)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.frameLayout, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            },
+            onVerUsuarioClick = { aluguel ->
+                val fragment = Telarf30UsuarioAlugadosADM().apply {
+                    arguments = Bundle().apply {
+                        putString("email", aluguel.email_usuario)
+                        putString("nome", "Estudante") // Nome padrão caso precise
+                    }
+                }
+
+                // 2. Transição para a tela de gerenciamento de usuários
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.frameLayout, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        )
+        recyclerAlugueis.adapter = adapter
+
+        // Interceptador do botão de voltar físico do aparelho
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (parentFragmentManager.backStackEntryCount > 0) {
+                    parentFragmentManager.popBackStack()
+                } else {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.frameLayout, TelaRF28DashboardADM())
+                        .commit()
                 }
             }
+        })
+
+        buscarAlugueisAtivos()
+    }
+
+    private fun buscarAlugueisAtivos() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val alugueisDoBanco = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["alugueis"]
+                        .select { filter { eq("devolvido", false) } }
+                        .decodeList<Aluguel>()
+                }
+
+                listaAlugueis.clear()
+                listaAlugueis.addAll(alugueisDoBanco)
+                adapter.notifyDataSetChanged()
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao buscar dados do Supabase", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

@@ -43,20 +43,25 @@ class TelaRF06ValidacaoDeCodigo : AppCompatActivity() {
         buttonEnviarCodigo.setOnClickListener {
             val codigoDigitado = editCodigo.text.toString().trim()
 
-            // Valida contra o código dinâmico gerado no seu CodigoManager
             if (codigoDigitado.isNotEmpty() && codigoDigitado == CodigoManager.codigoGerado) {
-                textErro.visibility = View.GONE
 
-                // Para o timer para economizar memória do celular
-                countDownTimer?.cancel()
+                if (CodigoManager.estaExpirado()) {
+                    textErro.visibility = View.VISIBLE
+                    textErro.text = "Este código expirou! Clique em Reenviar Código."
+                } else {
+                    textErro.visibility = View.GONE
 
-                // Avança para a tela de redefinição de senha
-                val intent = Intent(this, TelaRF07RedefinirSenha::class.java)
-                intent.putExtra("USER_EMAIL", emailUsuario)
-                startActivity(intent)
-                finish()
+                    countDownTimer?.cancel()
+
+                    // Avança para a tela de redefinição de senha
+                    val intent = Intent(this, TelaRF07RedefinirSenha::class.java)
+                    intent.putExtra("USER_EMAIL", emailUsuario)
+                    startActivity(intent)
+                    finish()
+                }
+
             } else {
-                // Código incorreto
+                // Código incorreto por digitação errada
                 textErro.visibility = View.VISIBLE
                 textErro.text = "Código incorreto. Verifique seu e-mail."
             }
