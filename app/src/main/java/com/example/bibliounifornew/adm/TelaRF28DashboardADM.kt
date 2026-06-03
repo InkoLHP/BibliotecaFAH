@@ -103,12 +103,32 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
                     if (listaSolicitacoes.isNotEmpty()) {
                         val s1 = listaSolicitacoes[0]
                         view.findViewById<TextView>(R.id.txtSolicitacaoNome1).text = s1["titulo"]?.jsonPrimitive?.content ?: "Solicitação S/N"
-                        view.findViewById<TextView>(R.id.txtSolicitacaoTipo1).text = s1["tipo"]?.jsonPrimitive?.content ?: "Padrão"
+                        view.findViewById<TextView>(R.id.txtSolicitacaoNome1).text =
+                            s1["titulo"]?.jsonPrimitive?.content ?: "Solicitação S/N"
+
+                        val tipoFormatado1 = when (s1["tipo_solicitacao"]?.jsonPrimitive?.content) {
+                            "LIVRO_FISICO" -> "Livro Físico"
+                            "PDF_DIGITAL" -> "PDF Digital"
+                            "AUDIO_BOOK" -> "Audiobook"
+                            else -> "Outro"
+                        }
+
+                        view.findViewById<TextView>(R.id.txtSolicitacaoTipo1).text = tipoFormatado1
 
                         if (listaSolicitacoes.size > 1) {
                             val s2 = listaSolicitacoes[1]
                             view.findViewById<TextView>(R.id.txtSolicitacaoNome2).text = s2["titulo"]?.jsonPrimitive?.content ?: "Solicitação S/N"
-                            view.findViewById<TextView>(R.id.txtSolicitacaoTipo2).text = s2["tipo"]?.jsonPrimitive?.content ?: "Padrão"
+                            view.findViewById<TextView>(R.id.txtSolicitacaoNome2).text =
+                                s2["titulo"]?.jsonPrimitive?.content ?: "Solicitação S/N"
+
+                            val tipoFormatado2 = when (s2["tipo_solicitacao"]?.jsonPrimitive?.content) {
+                                "LIVRO_FISICO" -> "Livro Físico"
+                                "PDF_DIGITAL" -> "PDF Digital"
+                                "AUDIO_BOOK" -> "Audiobook"
+                                else -> "Outro"
+                            }
+
+                            view.findViewById<TextView>(R.id.txtSolicitacaoTipo2).text = tipoFormatado2
                         }
                     }
                 } catch (e: Exception) {

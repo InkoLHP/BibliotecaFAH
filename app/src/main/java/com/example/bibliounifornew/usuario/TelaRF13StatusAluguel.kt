@@ -110,7 +110,7 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
                         .select {
                             filter {
                                 eq("email_usuario", emailUsuarioLogado)
-                                eq("status", "pendente")
+                                eq("status", "PENDENTE")
                             }
                             order(column = "id", order = Order.DESCENDING)
                         }
@@ -195,6 +195,16 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
                         else -> "solicitação"
                     }
 
+                    val pronome = when(tabela.lowercase()) {
+                        "alugueis" -> "o seu"
+                        else -> "a sua"
+                    }
+
+                    val statusCancelamento = when(tabela.lowercase()) {
+                        "alugueis" -> "Cancelado"
+                        else -> "Cancelada"
+                    }
+
                     // Limpa notificações duplicadas antigas desse livro
                     SupabaseConfig.client.postgrest["notificacoes"].delete {
                         filter {
@@ -206,8 +216,17 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
                     // 2️⃣ Envia Notificação para o Usuário
                     val jsonNotifUsuario = kotlinx.serialization.json.buildJsonObject {
                         put("email_usuario", emailUsuarioLogado)
-                        put("titulo", "${termoAcao.replaceFirstChar { it.uppercase() }} Cancelado")
-                        put("mensagem", "Você cancelou com sucesso o seu $termoAcao do livro: $tituloLivro.")
+
+                        put(
+                            "titulo",
+                            "${termoAcao.replaceFirstChar { it.uppercase() }} $statusCancelamento"
+                        )
+
+                        put(
+                            "mensagem",
+                            "Você cancelou com sucesso $pronome $termoAcao do livro: $tituloLivro."
+                        )
+
                         put("created_at", timestampAtual)
                     }
                     SupabaseConfig.client.postgrest["notificacoes"].insert(jsonNotifUsuario)
