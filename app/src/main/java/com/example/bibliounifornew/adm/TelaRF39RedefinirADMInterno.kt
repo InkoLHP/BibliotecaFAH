@@ -1,5 +1,6 @@
 package com.example.bibliounifornew.adm
 
+import android.content.Context
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.google.android.material.button.MaterialButton
@@ -29,6 +31,20 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
 
         // Captura o e-mail passado via argumentos
         emailAdm = arguments?.getString("USER_EMAIL")
+
+        // 🌟 NOVO: Recuperando a foto do ADM salva na sessão (SharedPreferences)
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val urlFoto = sharedPref.getString("USER_FOTO", null)
+
+        // 🌟 NOVO: Mapeando a ImageView e carregando com o Coil
+        val imagePerfilADM = view.findViewById<ImageView>(R.id.imagePerfilADM)
+        if (!urlFoto.isNullOrEmpty()) {
+            imagePerfilADM.load(urlFoto) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+            }
+        }
 
         // MAPEAMENTO DOS ELEMENTOS
         val textEmailADM = view.findViewById<TextView>(R.id.textEmailADM)
@@ -77,7 +93,7 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
                 valido = false
             }
 
-            if (!valido) return@setOnClickListener 
+            if (!valido) return@setOnClickListener
 
             // Validação de Força da Senha (Mínimo 8 chars, 1 Número, 1 Maiúscula)
             val regexForcaSenha = Regex("^(?=.*[A-Z])(?=.*[0-9]).{8,}\$")
@@ -165,7 +181,7 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
             senhaVisivel = !senhaVisivel
             if (senhaVisivel) {
                 campoTexto.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                icone.setImageResource(R.drawable.ic_eye_open) 
+                icone.setImageResource(R.drawable.ic_eye_open)
             } else {
                 campoTexto.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 icone.setImageResource(R.drawable.ic_eye_closed)

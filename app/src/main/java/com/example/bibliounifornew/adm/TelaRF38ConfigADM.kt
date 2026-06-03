@@ -20,12 +20,13 @@ import coil.transform.CircleCropTransformation
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.login.TelaRF02Intermediaria
+import com.example.bibliounifornew.model.User
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.example.bibliounifornew.model.*
 
 class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
 
@@ -35,16 +36,16 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
     private lateinit var editNomeAdm: EditText
     private lateinit var editUsuarioAdm: EditText
     private lateinit var imagePerfilUsuario: ImageView
+    private lateinit var btnSalvarADM: MaterialButton // Declarado globalmente para podermos mudar o texto dele
 
-    // 🌟 NOVO: Adicionado botão global para controle de clique repetido
     private var processandoSalvamento = false
-
     private var imagemSelecionadaUri: Uri? = null
 
+    // Launcher para abrir a galeria
     private val selecionarImagem =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
-                imagemSelecionadaUri = uri
+                imagemSelecionadaUri = uri // Guarda a imagem escolhida
                 imagePerfilUsuario.load(uri) {
                     crossfade(true)
                     placeholder(R.drawable.user_placeholder)
@@ -57,21 +58,19 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val sharedPref = requireActivity().getSharedPreferences(
-            "user_session",
-            Context.MODE_PRIVATE
-        )
-
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val emailAdm = sharedPref.getString("USER_EMAIL", "") ?: ""
 
-        // VIEWS
+        // INICIALIZANDO COMPONENTES VISUAIS
         olhoADMconfig = view.findViewById(R.id.iconOlhoSenhaAtual)
         editSenhaADMconfig = view.findViewById(R.id.editSenhaAtual)
         textUsuarioHeader = view.findViewById(R.id.textUsuario)
         editNomeAdm = view.findViewById(R.id.editNomeAdm)
         editUsuarioAdm = view.findViewById(R.id.editUsuarioAdm)
         imagePerfilUsuario = view.findViewById(R.id.imagePerfilUsuario)
+        btnSalvarADM = view.findViewById(R.id.btnSalvarADM)
 
+        // Clique na foto para abrir a galeria
         imagePerfilUsuario.setOnClickListener {
             selecionarImagem.launch("image/*")
         }
@@ -79,13 +78,12 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
         textUsuarioHeader.text = emailAdm
         editNomeAdm.setText(sharedPref.getString("USER_NOME", ""))
 
+        // Busca dados iniciais
         carregarDadosADM(emailAdm)
 
         // BOTÕES
         val btnRedefinirSenha = view.findViewById<MaterialButton>(R.id.btnRedefinirSenha)
         val btnApagarConta = view.findViewById<MaterialButton>(R.id.btnApagarConta)
-        // 🌟 CORRIGIDO: Mapeando o botão de salvar que estava faltando!
-        val btnSalvarADM = view.findViewById<MaterialButton>(R.id.btnSalvarADM)
 
         var senhaVisivel = false
 
@@ -103,7 +101,8 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
             editSenhaADMconfig.setSelection(editSenhaADMconfig.text.length)
         }
 
-        btnSalvarADM?.setOnClickListener {
+        // AÇÃO DE SALVAR
+        btnSalvarADM.setOnClickListener {
             val novoNome = editNomeAdm.text.toString().trim()
             val novoUsuario = editUsuarioAdm.text.toString().trim()
 
@@ -117,9 +116,7 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
         // REDEFINIR SENHA
         btnRedefinirSenha?.setOnClickListener {
             val fragment = TelaRF39RedefinirADMInterno().apply {
-                arguments = Bundle().apply {
-                    putString("USER_EMAIL", emailAdm)
-                }
+                arguments = Bundle().apply { putString("USER_EMAIL", emailAdm) }
             }
             parentFragmentManager.beginTransaction()
                 .replace(R.id.frameLayout, fragment)
@@ -127,7 +124,7 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
                 .commit()
         }
 
-        // APAGAR CONTA
+        // APAGAR CONTA (MANTIDO INTACTO)
         btnApagarConta?.setOnClickListener {
             val dialog = Dialog(requireContext())
             dialog.setContentView(R.layout.popup_apagar_conta)
@@ -177,9 +174,7 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
             try {
                 val user = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["users"]
-                        .select {
-                            filter { eq("email", email) }
-                        }
+                        .select { filter { eq("email", email) } }
                         .decodeSingleOrNull<User>()
                 }
 
@@ -207,31 +202,67 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
         if (processandoSalvamento) return
         processandoSalvamento = true
 
+        // Dá um feedback pro usuário que está carregando
+        btnSalvarADM.text = "Salvando..."
+        btnSalvarADM.isEnabled = false
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                var novaFotoUrl: String? = null
+
+                // 1. SE TIVER FOTO SELECIONADA, FAZ UPLOAD PRO SUPABASE STORAGE
+                if (imagemSelecionadaUri != null) {
+                    val bytes = withContext(Dispatchers.IO) {
+                        requireContext().contentResolver.openInputStream(imagemSelecionadaUri!!)?.readBytes()
+                    }
+                    if (bytes != null) {
+                        val nomeArquivo = "perfil_${System.currentTimeMillis()}.jpg"
+
+                        withContext(Dispatchers.IO) {
+                            // Envia para o bucket "fotos_perfil"
+                            SupabaseConfig.client.storage["fotos_perfil"].upload(nomeArquivo, bytes)
+                        }
+
+                        // Pega o link público gerado
+                        novaFotoUrl = SupabaseConfig.client.storage["fotos_perfil"].publicUrl(nomeArquivo)
+                    }
+                }
+
+                // 2. ATUALIZA A TABELA USERS NO BANCO DE DADOS
                 withContext(Dispatchers.IO) {
-                    // Atualiza o banco do Supabase baseado no e-mail do ADM
                     SupabaseConfig.client.postgrest["users"].update({
                         set("nome", nome)
                         set("usuario", usuario)
+                        // Só atualiza a foto se o usuário realmente enviou uma foto nova
+                        if (novaFotoUrl != null) {
+                            set("foto", novaFotoUrl)
+                        }
                     }) {
                         filter { eq("email", email) }
                     }
                 }
 
-                // Atualiza também os dados locais gravados no SharedPreferences
+                // 3. ATUALIZA A MEMÓRIA DO APLICATIVO
                 val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
                 sharedPref.edit().apply {
                     putString("USER_NOME", nome)
+                    if (novaFotoUrl != null) {
+                        putString("USER_FOTO", novaFotoUrl) // Atualiza sessão se tiver header noutro lugar
+                    }
                     apply()
                 }
 
                 Toast.makeText(requireContext(), "Alterações salvas com sucesso! 👍", Toast.LENGTH_SHORT).show()
+                imagemSelecionadaUri = null // Reseta a imagem pra evitar upload duplo sem querer
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Erro de conexão ao salvar dados.", Toast.LENGTH_SHORT).show()
             } finally {
+                // Devolve o botão ao normal
                 processandoSalvamento = false
+                btnSalvarADM.text = "Salvar alterações"
+                btnSalvarADM.isEnabled = true
             }
         }
     }

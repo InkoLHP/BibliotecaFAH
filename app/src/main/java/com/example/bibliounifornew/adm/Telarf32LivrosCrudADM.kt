@@ -1,13 +1,16 @@
 package com.example.bibliounifornew.adm
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.LivrosAdmAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
@@ -18,7 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
 
 @Serializable
 data class LivroCadastrado(
@@ -45,6 +47,19 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 🌟 NOVO: Recuperando a foto do ADM salva na sessão (SharedPreferences)
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val urlFoto = sharedPref.getString("USER_FOTO", null)
+
+        // 🌟 NOVO: Mapeando a ImageView e carregando com o Coil
+        val imageFotoPerfil = view.findViewById<ImageView>(R.id.imageFotoPerfilLivrosCrud)
+        if (!urlFoto.isNullOrEmpty()) {
+            imageFotoPerfil.load(urlFoto) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+            }
+        }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -68,12 +83,10 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
         }
 
         // 2. Configurar o RecyclerView
-        // 2. Configurar o RecyclerView
         val recycler = view.findViewById<RecyclerView>(R.id.recyclerLivrosAdm)
         recycler.layoutManager = LinearLayoutManager(requireContext())
 
         // Configura o adapter injetando a lógica de clique para enviar o ID
-        // 💡 Certifique-se se o seu adapter usa "LivroCadastrado" ou "Midia"
         adapter = LivrosAdmAdapter(emptyList()) { livroClicado ->
             val argumentos = Bundle().apply {
                 putLong("LIVRO_ID", livroClicado.id)
