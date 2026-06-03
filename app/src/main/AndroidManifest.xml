@@ -52,50 +52,82 @@
 
         <activity
             android:name=".login.TelaRF03LoginAluno"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF04CadastroNovoUsuario"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF05RecuperacaoSenha"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF06ValidacaoDeCodigo"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF07RedefinirSenha"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF16LoginADM"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF17RecuperacaoSenhaADM"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF18ValidaçãoCodigoADM"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF19RedefinirSenhaADM"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".login.TelaRF20NovaContaADM"
-            android:exported="false" />
+            android:exported="false"
 
+            android:windowSoftInputMode="adjustResize"
+            />
 
 
         <!-- USUARIO -->
         <activity
             android:name=".usuario.UsuarioMainActivity"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
         <activity
             android:name=".usuario.TelaRF12TelaDoLivro"
@@ -105,7 +137,10 @@
         <!-- ADM -->
         <activity
             android:name=".adm.AdmMainActivity"
-            android:exported="false" />
+            android:exported="false"
+
+            android:windowSoftInputMode="adjustResize"
+            />
 
     </application>
 
