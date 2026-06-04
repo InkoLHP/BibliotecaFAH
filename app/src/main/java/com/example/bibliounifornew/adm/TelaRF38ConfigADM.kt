@@ -220,24 +220,26 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
 
                         withContext(Dispatchers.IO) {
                             // Envia para o bucket "fotos_perfil"
-                            SupabaseConfig.client.storage["fotos_perfil"].upload(nomeArquivo, bytes)
+                            SupabaseConfig.client.storage.from("fotos_perfil").upload(nomeArquivo, bytes)
                         }
 
                         // Pega o link público gerado
-                        novaFotoUrl = SupabaseConfig.client.storage["fotos_perfil"].publicUrl(nomeArquivo)
+                        novaFotoUrl = SupabaseConfig.client.storage.from("fotos_perfil").publicUrl(nomeArquivo)
                     }
                 }
 
                 // 2. ATUALIZA A TABELA USERS NO BANCO DE DADOS
                 withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["users"].update({
-                        set("nome", nome)
-                        set("usuario", usuario)
-                        // Só atualiza a foto se o usuário realmente enviou uma foto nova
-                        if (novaFotoUrl != null) {
-                            set("foto", novaFotoUrl)
+                    SupabaseConfig.client.postgrest["users"].update(
+                        update = {
+                            set("nome", nome)
+                            set("usuario", usuario)
+                            // Só atualiza a foto se o usuário realmente enviou uma foto nova
+                            if (novaFotoUrl != null) {
+                                set("foto", novaFotoUrl)
+                            }
                         }
-                    }) {
+                    ) {
                         filter { eq("email", email) }
                     }
                 }
@@ -257,7 +259,8 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro de conexão ao salvar dados.", Toast.LENGTH_SHORT).show()
+                // Isso vai exibir o motivo real enviado pelo Supabase na tela do seu celular
+                Toast.makeText(requireContext(), "Erro real: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             } finally {
                 // Devolve o botão ao normal
                 processandoSalvamento = false
