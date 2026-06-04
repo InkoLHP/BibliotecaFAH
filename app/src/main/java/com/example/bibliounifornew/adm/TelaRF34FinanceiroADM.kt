@@ -155,9 +155,11 @@ class TelaRF34FinanceiroADM : Fragment(R.layout.telarf34_finaceiro_adm) {
                 val novaDataVencimento = sdf.format(calendar.time)
 
                 withContext(Dispatchers.IO) {
+                    // Usando a DSL nativa do Supabase corretamente para atualizar múltiplos campos
                     SupabaseConfig.client.postgrest["alugueis"].update(
                         update = {
                             set("data_vencimento", novaDataVencimento)
+                            set("dias_restantes", novosDias) // <--- O segredo está aqui!
                         }
                     ) {
                         filter { eq("id", idSeguro) }
@@ -179,7 +181,9 @@ class TelaRF34FinanceiroADM : Fragment(R.layout.telarf34_finaceiro_adm) {
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao renovar: ${e.message}", Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Erro ao renovar: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
