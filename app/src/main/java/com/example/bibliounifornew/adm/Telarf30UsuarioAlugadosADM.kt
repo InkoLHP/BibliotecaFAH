@@ -31,16 +31,14 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Recebe os dados
+        // 1. Recebe os dados enviados pela tela de Perfil
         nomeUsuario = arguments?.getString("nome")
         emailUsuario = arguments?.getString("email")
         fotoUsuario = arguments?.getString("foto")
 
-        // 2. Preenche o Header Premium
+        // 2. Preenche o Header
         val textNome = view.findViewById<TextView>(R.id.textNomeUsuario)
         val textEmail = view.findViewById<TextView>(R.id.textEmailUsuario)
-
-        // 🌟 NOVO: Pegando a ImageView direto pelo ID
         val imagemFoto = view.findViewById<ImageView>(R.id.imageFotoUsuarioDetalhe)
 
         textNome.text = nomeUsuario ?: "Usuário Desconhecido"
@@ -49,8 +47,8 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
         if (!fotoUsuario.isNullOrEmpty()) {
             imagemFoto.load(fotoUsuario) {
                 crossfade(true)
-                placeholder(R.drawable.user_placeholder) // Imagem enquanto carrega
-                error(R.drawable.user_placeholder)       // Imagem caso dê erro no link
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
             }
         }
 
@@ -58,19 +56,28 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
         recyclerAlugados = view.findViewById(R.id.recyclerAlugados)
         recyclerAlugados.layoutManager = LinearLayoutManager(requireContext())
 
+        // 🌟 AJUSTE CRÍTICO DE NAVEGAÇÃO: Garantindo o fluxo correto ao clicar no botão "Voltar" do celular
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (parentFragmentManager.backStackEntryCount > 0) {
                     parentFragmentManager.popBackStack()
                 } else {
+                    // Se a pilha sumir por algum motivo, recria com segurança a tela de perfil do usuário atual
+                    val fragmentPerfil = Telarf30UsuariosADM().apply {
+                        arguments = Bundle().apply {
+                            putString("nome", nomeUsuario)
+                            putString("email", emailUsuario)
+                            putString("foto", fotoUsuario)
+                        }
+                    }
                     parentFragmentManager.beginTransaction()
-                        .replace(R.id.frameLayout, Telarf29GerenciamentoUsuariosADM())
+                        .replace(R.id.frameLayout, fragmentPerfil)
                         .commit()
                 }
             }
         })
 
-        // 4. Inicia a busca
+        // 4. Inicia a busca filtrada no Supabase
         if (emailUsuario != null) {
             carregarAlugueisDoUsuario(emailUsuario!!)
         } else {
@@ -83,6 +90,7 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // Traz somente os aluguéis cuja coluna 'email_usuario' combine com o leitor selecionado
                 val todosAlugueis = withContext(Dispatchers.IO) {
                     SupabaseConfig.client
                         .from("alugueis")
@@ -103,7 +111,7 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
                 recyclerAlugados.adapter = AluguelADMAdapter(
                     listaAlugueis = listaExibida,
                     onVerLivroClick = { aluguel ->
-                        // Ação ao clicar para ver detalhes/editar mídia
+                        // Direciona para detalhes/edição da mídia correspondente
                         val fragment = TelaRF37EditarMidia().apply {
                             arguments = Bundle().apply {
                                 putString("LIVRO_TITULO", aluguel.titulo_livro)
@@ -115,7 +123,8 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
                             .commit()
                     },
                     onVerUsuarioClick = { aluguel ->
-                        // Já está na tela do usuário, pode ignorar ou exibir um Toast informativo
+                        // Como o Admin já está na área do usuário, exibe um feedback visual simples
+                        Toast.makeText(requireContext(), "Você já está visualizando as posses de $nomeUsuario", Toast.LENGTH_SHORT).show()
                     }
                 )
 
