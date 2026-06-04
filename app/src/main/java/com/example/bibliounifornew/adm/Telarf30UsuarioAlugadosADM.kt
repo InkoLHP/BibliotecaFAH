@@ -40,17 +40,17 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
         val textNome = view.findViewById<TextView>(R.id.textNomeUsuario)
         val textEmail = view.findViewById<TextView>(R.id.textEmailUsuario)
 
-        // Pega a ImageView que está dentro do CardView (já que ela não tem ID no XML)
-        val cardFoto = view.findViewById<androidx.cardview.widget.CardView>(R.id.cardFotoUsuario)
-        val imagemFoto = cardFoto.getChildAt(0) as ImageView
+        // 🌟 NOVO: Pegando a ImageView direto pelo ID
+        val imagemFoto = view.findViewById<ImageView>(R.id.imageFotoUsuarioDetalhe)
 
         textNome.text = nomeUsuario ?: "Usuário Desconhecido"
         textEmail.text = emailUsuario ?: "Sem e-mail"
 
         if (!fotoUsuario.isNullOrEmpty()) {
             imagemFoto.load(fotoUsuario) {
-                placeholder(R.drawable.placeholder)
-                error(R.drawable.placeholder)
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder) // Imagem enquanto carrega
+                error(R.drawable.user_placeholder)       // Imagem caso dê erro no link
             }
         }
 

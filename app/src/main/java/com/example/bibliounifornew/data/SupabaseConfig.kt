@@ -2,6 +2,7 @@ package com.example.bibliounifornew.data
 
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.storage.Storage
 import io.ktor.client.engine.android.Android
 
 object SupabaseConfig {
@@ -11,5 +12,6 @@ object SupabaseConfig {
     ) {
         httpEngine = Android.create()
         install(Postgrest)
+        install(Storage)
     }
 }

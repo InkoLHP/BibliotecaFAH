@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.abs
+import coil.load
 
 class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
 
@@ -37,7 +38,20 @@ class TelaRF28DashboardADM : Fragment(R.layout.telarf28_dashboard_adm) {
         val nomeAdm = sharedPref.getString("USER_NOME", "Administrador")
         val emailAdm = sharedPref.getString("USER_EMAIL", "")
 
+        // 🌟 NOVO: Pegando a URL da foto salva
+        val urlFoto = sharedPref.getString("USER_FOTO", null)
+
         textBemVindoAdm.text = "Bem-vindo, $nomeAdm"
+
+        // 🌟 NOVO: Mapeando a ImageView e carregando a foto com o Coil
+        val imagePerfilAdm = view.findViewById<ImageView>(R.id.imagePerfilAdm)
+        if (!urlFoto.isNullOrEmpty()) {
+            imagePerfilAdm.load(urlFoto) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder) // Mostra isso enquanto carrega
+                error(R.drawable.user_placeholder)       // Mostra isso se der erro
+            }
+        }
 
         // INICIALIZAÇÃO DE COMPONENTES DE NAVEGAÇÃO
         try {

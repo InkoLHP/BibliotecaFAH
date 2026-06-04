@@ -1,14 +1,17 @@
 package com.example.bibliounifornew.adm
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.SolicitacaoAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
@@ -27,6 +30,20 @@ class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // 🌟 NOVO: Recuperando a foto do ADM salva na sessão (SharedPreferences)
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val urlFoto = sharedPref.getString("USER_FOTO", null)
+
+        // 🌟 NOVO: Mapeando a ImageView e carregando com o Coil
+        val imageFotoPerfil = view.findViewById<ImageView>(R.id.imageFotoPerfilSolicitacoes)
+        if (!urlFoto.isNullOrEmpty()) {
+            imageFotoPerfil.load(urlFoto) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+            }
+        }
 
         recyclerSolicitacoes = view.findViewById(R.id.recyclerSolicitacoes)
 
