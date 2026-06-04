@@ -55,8 +55,8 @@ class Telarf29GerenciamentoUsuariosADM : Fragment(R.layout.telarf29_gerenciament
                 }
 
                 recyclerUsuarios.adapter = UsuarioAdapter(usuarios) { usuarioSelecionado ->
-                    // 🌟 CORRIGIDO: Apontando para o nome correto da classe: Telarf30UsuarioAlugadosADM
-                    val fragmentDestino = Telarf30UsuarioAlugadosADM().apply {
+                    // 🌟 CORREÇÃO: Apontando agora para a TELA INTERMEDIÁRIA
+                    val fragmentDestino = Telarf30UsuariosADM().apply {
                         arguments = Bundle().apply {
                             putString("nome", usuarioSelecionado.nome)
                             putString("email", usuarioSelecionado.email)
