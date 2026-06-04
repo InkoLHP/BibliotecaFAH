@@ -1,5 +1,6 @@
-package com.example.bibliounifornew.adapter // ✅ CORRIGIDO: Pacote padronizado em minúsculo
+package com.example.bibliounifornew.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ class AluguelADMAdapter(
         val textAutorLivro: TextView = itemView.findViewById(R.id.textAutorLivroAluguel)
         val textDataAluguel: TextView = itemView.findViewById(R.id.textDataAluguel)
         val textHoraAluguel: TextView = itemView.findViewById(R.id.textHoraAluguel)
+        val textTipoStatus: TextView = itemView.findViewById(R.id.textTipoStatus) // 🌟 NOVO: Mapeado do XML
         val btnVerLivro: MaterialButton = itemView.findViewById(R.id.btnVerLivro)
         val btnVerUsuario: MaterialButton = itemView.findViewById(R.id.btnVerUsuario)
     }
@@ -48,6 +50,15 @@ class AluguelADMAdapter(
 
         holder.textDataAluguel.text = "Vence: ${aluguel.data_vencimento ?: "Sem data"}"
         holder.textHoraAluguel.visibility = View.GONE
+
+        // 🌟 LÓGICA DE COR E TEXTO (RESERVADO vs ALUGADO)
+        if (aluguel.tagTabela == "reservas") {
+            holder.textTipoStatus.text = "Reservado:"
+            holder.textTipoStatus.setTextColor(Color.parseColor("#F57C00")) // Laranja forte para destaque
+        } else {
+            holder.textTipoStatus.text = "Alugado:"
+            holder.textTipoStatus.setTextColor(Color.BLACK) // Preto padrão para alugados
+        }
 
         // Configurando os botões com os callbacks
         holder.btnVerLivro.setOnClickListener { onVerLivroClick(aluguel) }

@@ -24,16 +24,14 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
 
     private lateinit var recyclerAlugueis: RecyclerView
     private lateinit var adapter: AluguelADMAdapter
-    private var listaAlugueis = mutableListOf<Aluguel>()
+    private var listaMista = mutableListOf<Aluguel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 🌟 NOVO: Recuperando a foto do ADM salva na sessão (SharedPreferences)
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val urlFoto = sharedPref.getString("USER_FOTO", null)
 
-        // 🌟 NOVO: Mapeando a ImageView e carregando com o Coil
         val imageFotoPerfil = view.findViewById<ImageView>(R.id.imageFotoPerfilAlugueis)
         if (!urlFoto.isNullOrEmpty()) {
             imageFotoPerfil.load(urlFoto) {
@@ -46,18 +44,17 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
         recyclerAlugueis = view.findViewById(R.id.recyclerAlugueis)
         recyclerAlugueis.layoutManager = LinearLayoutManager(requireContext())
 
-        // Configuração do Adapter com as ações reais de clique
         adapter = AluguelADMAdapter(
-            listaAlugueis = listaAlugueis,
+            listaAlugueis = listaMista,
             onVerLivroClick = { aluguel ->
-                // 1. Criamos o Fragment de Edição de Mídia
                 val fragment = TelaRF37EditarMidia().apply {
                     arguments = Bundle().apply {
                         putString("LIVRO_TITULO", aluguel.titulo_livro)
+                        // 🌟 NOVO: Passando autor e capa caso o livro seja do Google Books
+                        putString("LIVRO_AUTOR", aluguel.autor_livro)
+                        putString("LIVRO_CAPA", aluguel.capa_url)
                     }
                 }
-
-                // 2. Transição de tela jogando o fragment na pilha de volta (BackStack)
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.frameLayout, fragment)
                     .addToBackStack(null)
@@ -67,11 +64,9 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
                 val fragment = Telarf30UsuarioAlugadosADM().apply {
                     arguments = Bundle().apply {
                         putString("email", aluguel.email_usuario)
-                        putString("nome", "Estudante") // Nome padrão caso precise
+                        putString("nome", "Estudante")
                     }
                 }
-
-                // 2. Transição para a tela de gerenciamento de usuários
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.frameLayout, fragment)
                     .addToBackStack(null)
@@ -80,7 +75,6 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
         )
         recyclerAlugueis.adapter = adapter
 
-        // Interceptador do botão de voltar físico do aparelho
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (parentFragmentManager.backStackEntryCount > 0) {
@@ -93,20 +87,41 @@ class Telarf36AlugueisADM : Fragment(R.layout.telarf36_alugueis_adm) {
             }
         })
 
-        buscarAlugueisAtivos()
+        // Chama a nova função mista
+        buscarAlugueisEReservas()
     }
 
-    private fun buscarAlugueisAtivos() {
+    private fun buscarAlugueisEReservas() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // 1. Busca os Aluguéis normais
                 val alugueisDoBanco = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["alugueis"]
                         .select { filter { eq("devolvido", false) } }
                         .decodeList<Aluguel>()
                 }
 
-                listaAlugueis.clear()
-                listaAlugueis.addAll(alugueisDoBanco)
+                // 2. Busca as Reservas usando o mesmo modelo (Aluguel)
+                val reservasDoBanco = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["reservas"]
+                        .select { filter { eq("devolvido", false) } }
+                        .decodeList<Aluguel>()
+                }
+
+                // (Opcional) Informa ao aplicativo que esses itens vieram da tabela de reservas
+                reservasDoBanco.forEach { reserva ->
+                    reserva.tagTabela = "reservas"
+                }
+
+                listaMista.clear()
+
+                // 3. Junta as duas listas em uma só
+                listaMista.addAll(alugueisDoBanco)
+                listaMista.addAll(reservasDoBanco)
+
+                // Organiza por ordem alfabética do título do livro
+                listaMista.sortBy { it.titulo_livro }
+
                 adapter.notifyDataSetChanged()
 
             } catch (e: Exception) {

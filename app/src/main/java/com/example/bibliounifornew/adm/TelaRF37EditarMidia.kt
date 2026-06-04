@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.Midia // 🌟 Importando o seu modelo correto
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
@@ -22,9 +23,11 @@ import kotlinx.coroutines.withContext
 
 class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
 
-    private var livroId: String? = null
+    private var livroTitulo: String? = null
+    private var livroAutorExterna: String? = null
+    private var livroCapaExterna: String? = null
 
-    // Componentes visuais da tela principal
+    // Componentes visuais
     private lateinit var textTitulo: TextView
     private lateinit var textAutor: TextView
     private lateinit var textSobre: TextView
@@ -37,10 +40,11 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Resgata o ID do livro enviado pela tela anterior
-        livroId = arguments?.getString("LIVRO_ID")
+        // Resgata os dados enviados pela tela de Aluguéis
+        livroTitulo = arguments?.getString("LIVRO_TITULO")
+        livroAutorExterna = arguments?.getString("LIVRO_AUTOR")
+        livroCapaExterna = arguments?.getString("LIVRO_CAPA")
 
-        // 2. Inicializa os componentes do XML da tela principal
         textTitulo = view.findViewById(R.id.textTituloLivro)
         textAutor = view.findViewById(R.id.textAutorLivro)
         textSobre = view.findViewById(R.id.textSobreLivro)
@@ -50,46 +54,81 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
         imageLivroDetalhes = view.findViewById(R.id.imageLivroDetalhes)
         buttonApagarMidia = view.findViewById(R.id.buttonApagarMidia)
 
-        // 3. Se o ID existir, busca as informações do banco para preencher a tela
-        if (livroId != null) {
-            carregarDetalhesDoSupabase(livroId!!)
+        if (livroTitulo != null) {
+            carregarDetalhes(livroTitulo!!)
         } else {
-            Toast.makeText(requireContext(), "Erro: ID do livro não encontrado.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Erro: Título do livro não encontrado.", Toast.LENGTH_SHORT).show()
             textTitulo.text = "Erro ao carregar"
-            textSobre.text = "Volte para a tela anterior e tente novamente."
         }
 
-        // 4. Configura o botão vermelho de Apagar
         buttonApagarMidia.setOnClickListener {
             confirmarExclusaoComPopup()
         }
     }
 
-    private fun carregarDetalhesDoSupabase(id: String) {
+    private fun carregarDetalhes(tituloDoLivro: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val livro = withContext(Dispatchers.IO) {
+                // 1. Tenta buscar o livro na tabela "livros" usando o modelo Midia
+                val listaDeLivros = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["livros"]
                         .select {
-                            filter { eq("id", id) }
-                        }.decodeSingle<NovoLivro>()
+                            filter { eq("titulo", tituloDoLivro) }
+                        }.decodeList<Midia>() // 🌟 Alterado para Midia aqui
                 }
 
-                // Preenche os textos
-                textTitulo.text = livro.titulo ?: "Título Indisponível"
-                textAutor.text = livro.autor ?: "Autor Desconhecido"
-                textSobre.text = "Sem descrição disponível."
-                textEditora.text = livro.editora ?: "--"
-                textIsbn13.text = livro.isbn ?: "--"
-                textPaginas.text = livro.paginas.toString()
+                val livro = listaDeLivros.firstOrNull()
 
-                // Carrega a capa usando o Glide
-                if (!livro.capaUrl.isNullOrEmpty()) {
-                    Glide.with(requireContext())
-                        .load(livro.capaUrl)
-                        .placeholder(R.drawable.user_placeholder)
-                        .error(R.drawable.user_placeholder)
-                        .into(imageLivroDetalhes)
+                if (livro != null) {
+                    // 🌟 O LIVRO EXISTE NO BANCO LOCAL (Mídia Própria cadastrada)
+                    textTitulo.text = livro.titulo
+                    textAutor.text = livro.autor
+                    textSobre.text = "Mídia cadastrada no acervo local."
+                    textEditora.text = "Interna"
+                    textIsbn13.text = livro.isbn.ifEmpty { "--" }
+                    textPaginas.text = "--" // O seu modelo Midia não guarda páginas, deixamos padrão
+
+                    if (!livro.capaUrl.isNullOrEmpty()) {
+                        Glide.with(requireContext()).load(livro.capaUrl).placeholder(R.drawable.user_placeholder).into(imageLivroDetalhes)
+                    }
+                } else {
+                    // 🌟 O LIVRO VEIO DO GOOGLE BOOKS API (Busca na API online)
+                    textTitulo.text = livroTitulo ?: "Título Indisponível"
+                    textAutor.text = livroAutorExterna ?: "Autor Desconhecido"
+
+                    if (!livroCapaExterna.isNullOrEmpty()) {
+                        Glide.with(requireContext()).load(livroCapaExterna).placeholder(R.drawable.user_placeholder).into(imageLivroDetalhes)
+                    }
+
+                    textSobre.text = "Buscando detalhes do livro na internet..."
+
+                    try {
+                        val response = com.example.bibliounifornew.api.RetrofitClient.api.searchBooks(query = "intitle:\"${tituloDoLivro}\"")
+                        val item = response.items?.firstOrNull()
+                        val info = item?.volumeInfo
+
+                        if (info != null) {
+                            textSobre.text = info.description ?: "Sem descrição disponível na API do Google."
+                            textIsbn13.text = info.industryIdentifiers?.firstOrNull()?.identifier ?: "Indisponível"
+                            textEditora.text = "Google Books"
+                            textPaginas.text = "N/I"
+                        } else {
+                            textSobre.text = "Detalhes adicionais não encontrados na base do Google Books."
+                            textEditora.text = "--"
+                            textIsbn13.text = "--"
+                            textPaginas.text = "--"
+                        }
+                    } catch (e: Exception) {
+                        textSobre.text = "Este livro foi alugado externamente via Google Books."
+                        textEditora.text = "--"
+                        textIsbn13.text = "--"
+                        textPaginas.text = "--"
+                    }
+
+                    // Configura o botão como apenas leitura para mídias externas
+                    buttonApagarMidia.isEnabled = false
+                    buttonApagarMidia.text = "Mídia Externa (Apenas Leitura)"
+                    buttonApagarMidia.setBackgroundColor(android.graphics.Color.GRAY)
                 }
 
             } catch (e: Exception) {
@@ -101,25 +140,20 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
     }
 
     private fun confirmarExclusaoComPopup() {
-        // CORRIGIDO: Agora aponta exatamente para o seu arquivo popup_apagar_conta.xml
         val viewPopup = LayoutInflater.from(requireContext()).inflate(R.layout.popup_apagar_conta, null)
 
-        // Vincula os componentes de dentro do POP-UP
         val textTituloPopup = viewPopup.findViewById<TextView>(R.id.textTituloApagarConta)
         val editSenha = viewPopup.findViewById<EditText>(R.id.editSenhaPopup)
         val iconOlho = viewPopup.findViewById<ImageView>(R.id.iconOlhoSenhaPopup)
         val textErro = viewPopup.findViewById<TextView>(R.id.textErroSenhaPopup)
         val btnConfirmar = viewPopup.findViewById<MaterialButton>(R.id.buttonConfirmarApagarConta)
 
-        // Modifica o título de "APAGAR CONTA?" para "APAGAR MÍDIA?" dinamicamente
         textTituloPopup.text = "APAGAR MÍDIA?"
 
-        // Cria o Dialog do Android
         val builder = AlertDialog.Builder(requireContext())
         builder.setView(viewPopup)
         val dialog = builder.create()
 
-        // Lógica de mostrar/ocultar senha no olho do pop-up
         var senhaVisivel = false
         iconOlho.setOnClickListener {
             senhaVisivel = !senhaVisivel
@@ -128,20 +162,17 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
             } else {
                 editSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             }
-            editSenha.setSelection(editSenha.text.length) // Mantém o cursor no final
+            editSenha.setSelection(editSenha.text.length)
         }
 
-        // Clique do botão confirmar dentro do Pop-up
         btnConfirmar.setOnClickListener {
             val senhaDigitada = editSenha.text.toString().trim()
 
-            // Altere "admin123" para a senha real que deseja validar!
             if (senhaDigitada == "admin123") {
                 textErro.visibility = View.GONE
-                dialog.dismiss() // Fecha o pop-up
-                apagarLivroDoBanco() // Deleta o livro do Supabase
+                dialog.dismiss()
+                apagarLivroDoBanco()
             } else {
-                // Se errar a senha, mostra o aviso vermelho do seu XML
                 textErro.visibility = View.VISIBLE
             }
         }
@@ -150,7 +181,7 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
     }
 
     private fun apagarLivroDoBanco() {
-        if (livroId == null) return
+        if (livroTitulo == null) return
 
         buttonApagarMidia.isEnabled = false
         buttonApagarMidia.text = "Apagando..."
@@ -159,7 +190,7 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
             try {
                 withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["livros"].delete {
-                        filter { eq("id", livroId!!) }
+                        filter { eq("titulo", livroTitulo!!) }
                     }
                 }
                 Toast.makeText(requireContext(), "Mídia apagada com sucesso!", Toast.LENGTH_SHORT).show()
