@@ -17,7 +17,8 @@ import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.model.*
 
 class SolicitacaoAdapter(
-    private val lista: MutableList<Solicitacao>
+    private val lista: MutableList<Solicitacao>,
+    private val onConcluirSolicitacao: (Solicitacao, Int) -> Unit
 ) : RecyclerView.Adapter<SolicitacaoAdapter.SolicitacaoViewHolder>() {
 
     inner class SolicitacaoViewHolder(view: View) :
@@ -39,10 +40,7 @@ class SolicitacaoAdapter(
             view.findViewById(R.id.imageCapaLivro)
 
         val buttonEnviarPDF: MaterialButton =
-            view.findViewById(R.id.buttonEnviarPDF)
-
-        val buttonEnviarAudiobook: MaterialButton =
-            view.findViewById(R.id.buttonEnviarAudiobook)
+            view.findViewById(R.id.buttonAcaoSolicitacao)
 
         val buttonExcluirSolicitacao: MaterialButton =
             view.findViewById(R.id.buttonExcluirSolicitacao)
@@ -77,61 +75,70 @@ class SolicitacaoAdapter(
 
         holder.textUsuario.text = item.email_usuario
 
-        holder.textTipoSolicitacao.text =
-            "Solicitação: ${item.tipo_solicitacao}"
+        val tipoFormatado = when (item.tipo_solicitacao) {
+            "LIVRO_FISICO" -> "Livro Físico"
+            "PDF_DIGITAL" -> "PDF Digital"
+            "AUDIO_BOOK" -> "Audiobook"
+            else -> item.tipo_solicitacao
+        }
+
+        holder.textTipoSolicitacao.text = tipoFormatado
+
+        when (item.tipo_solicitacao) {
+
+            "PDF_DIGITAL" -> {
+                holder.buttonEnviarPDF.text = "Enviar PDF"
+
+                holder.buttonEnviarPDF.setOnClickListener {
+
+                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                    intent.type = "application/pdf"
+
+                    holder.itemView.context.startActivity(
+                        Intent.createChooser(intent, "Selecionar PDF")
+                    )
+
+                    onConcluirSolicitacao(item, holder.adapterPosition)
+                }
+
+            }
+
+            "AUDIO_BOOK" -> {
+                holder.buttonEnviarPDF.text = "Enviar Audiobook"
+
+                holder.buttonEnviarPDF.setOnClickListener {
+
+                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                    intent.type = "audio/*"
+
+                    holder.itemView.context.startActivity(
+                        Intent.createChooser(intent, "Selecionar Audiobook")
+                    )
+
+                    onConcluirSolicitacao(item, holder.adapterPosition)
+                }
+            }
+
+            "LIVRO_FISICO" -> {
+                holder.buttonEnviarPDF.text = "Confirmar Solicitação"
+
+                holder.buttonEnviarPDF.setOnClickListener {
+
+                    onConcluirSolicitacao(
+                        item,
+                        holder.adapterPosition
+                    )
+                }
+            }
+        }
 
         holder.imageCapaLivro.load(item.capa_url) {
             placeholder(R.drawable.placeholder)
             error(R.drawable.placeholder)
         }
 
-        // =========================
-        // BOTÃO PDF
-        // =========================
 
-        holder.buttonEnviarPDF.setOnClickListener {
 
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-
-            intent.type = "application/pdf"
-
-            holder.itemView.context.startActivity(
-                Intent.createChooser(
-                    intent,
-                    "Selecionar PDF"
-                )
-            )
-
-            Toast.makeText(
-                holder.itemView.context,
-                "Selecionar PDF",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-
-        // =========================
-        // BOTÃO AUDIOBOOK
-        // =========================
-
-        holder.buttonEnviarAudiobook.setOnClickListener {
-
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-
-            intent.type = "audio/*"
-
-            holder.itemView.context.startActivity(
-                Intent.createChooser(
-                    intent,
-                    "Selecionar Audiobook"
-                )
-            )
-
-            Toast.makeText(
-                holder.itemView.context,
-                "Selecionar Audiobook",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
 
         // =========================
         // VER SOLICITAÇÕES

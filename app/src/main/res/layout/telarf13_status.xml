@@ -85,7 +85,7 @@
         android:id="@+id/textNenhumLivro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nenhum livro alugado."
+        android:text="Nenhum livro alugado, solicitado ou reservado."
         android:textSize="18sp"
         android:textColor="#666666"
         android:visibility="gone"

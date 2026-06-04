@@ -54,7 +54,68 @@ class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
 
         recyclerSolicitacoes?.layoutManager = LinearLayoutManager(requireContext())
 
-        solicitacaoAdapter = SolicitacaoAdapter(listaInternaSolicitacoes)
+        solicitacaoAdapter = SolicitacaoAdapter(
+            listaInternaSolicitacoes
+        ) { solicitacao, posicao ->
+
+            lifecycleScope.launch {
+
+                try {
+
+                    withContext(Dispatchers.IO) {
+
+                        SupabaseConfig.client
+                            .from("solicitacoes")
+                            .update(
+                                {
+                                    set("status", "CONCLUIDA")
+                                }
+                            ) {
+                                filter {
+                                    eq("id", solicitacao.id!!)
+                                }
+                            }
+
+                        val timestampAtual = java.text.SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                            java.util.Locale.getDefault()
+                        ).format(java.util.Date())
+
+                        val notificacao = Notificacao(
+                            email_usuario = solicitacao.email_usuario,
+                            titulo = "Solicitação Atendida",
+                            mensagem = "Sua solicitação para '${solicitacao.titulo}' foi concluída.",
+                            visualizada = false,
+                            created_at = timestampAtual
+                        )
+
+                        SupabaseConfig.client
+                            .from("notificacoes")
+                            .insert(notificacao)
+                    }
+
+                    listaInternaSolicitacoes.removeAt(posicao)
+                    solicitacaoAdapter.notifyItemRemoved(posicao)
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Solicitação concluída!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                } catch (e: Exception) {
+
+                    e.printStackTrace()
+
+                    Toast.makeText(
+                        requireContext(),
+                        e.localizedMessage,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
         recyclerSolicitacoes?.adapter = solicitacaoAdapter
 
         // Intercepta o botão de voltar do celular de forma segura
@@ -79,7 +140,11 @@ class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
                 val listaDoBanco = withContext(Dispatchers.IO) {
                     SupabaseConfig.client
                         .from("solicitacoes")
-                        .select()
+                        .select() {
+                            filter {
+                                eq("status", "PENDENTE")
+                            }
+                        }
                         .decodeList<Solicitacao>()
                 }
 
