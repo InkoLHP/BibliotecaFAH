@@ -77,10 +77,15 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
             }
         }
 
-        // 1. NAVEGAÇÃO: TELA DE SOLICITAÇÕES
+        // 1. NAVEGAÇÃO: TELA DE SOLICITAÇÕES (Ajustado para passar o e-mail de filtro do leitor)
         buttonSolicitacoes.setOnClickListener {
+            val fragmentSolicitacoes = Telarf31SolicitacoesADM().apply {
+                arguments = Bundle().apply {
+                    putString("EMAIL_FILTRO_ADM", email) // 🌟 Garante o preenchimento automático na busca que sua amiga fez
+                }
+            }
             parentFragmentManager.beginTransaction()
-                .replace(R.id.frameLayout, Telarf31SolicitacoesADM())
+                .replace(R.id.frameLayout, fragmentSolicitacoes)
                 .addToBackStack(null)
                 .commit()
         }
