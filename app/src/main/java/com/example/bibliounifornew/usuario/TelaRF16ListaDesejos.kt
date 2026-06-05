@@ -2,7 +2,6 @@ package com.example.bibliounifornew.usuario
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -29,7 +28,7 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
     private lateinit var recyclerDesejos: RecyclerView
 
     // 🎨 Componentes do Header (Informações de Login)
-    private lateinit var textEmailDesejos: TextView
+    private lateinit var textNomeDesejos: TextView // 🌟 Alterado de textEmailDesejos para refletir o Nome
     private lateinit var imagePerfilDesejos: ImageView
 
     private var emailUsuario: String = ""
@@ -43,18 +42,40 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
 
         // 1. Referenciar os componentes do XML
         recyclerDesejos = view.findViewById(R.id.recyclerListaDesejos)
-        textEmailDesejos = view.findViewById(R.id.txtEmailUsuarioDesejos) // Verifique esse ID no seu XML
-        imagePerfilDesejos = view.findViewById(R.id.imageUsuarioDesejos) // Verifique esse ID no seu XML
+        textNomeDesejos = view.findViewById(R.id.txtEmailUsuarioDesejos) // Mantive o ID original do XML para não quebrar seu layout
+        imagePerfilDesejos = view.findViewById(R.id.imageUsuarioDesejos)
 
         recyclerDesejos.layoutManager = LinearLayoutManager(requireContext())
 
         // 2. Lendo do arquivo unificado "user_session"
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         emailUsuario = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+        // 3. Atualizar dados da UI (Nome e Foto)
+        atualizarDadosUsuario()
+
+        // 4. Carregar os dados do banco
+        if (emailUsuario.isNotEmpty()) {
+            carregarListaDesejos()
+        } else {
+            Toast.makeText(requireContext(), "Usuário não identificado.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // 🔄 Garante atualização em tempo real caso venha de outra tela
+    override fun onResume() {
+        super.onResume()
+        atualizarDadosUsuario()
+    }
+
+    private fun atualizarDadosUsuario() {
+        if (!isAdded) return // Evita crash se o fragment não estiver anexado à Activity
+
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val nomeUsuario = sharedPref.getString("USER_NOME", "Usuário") // 🌟 Puxa o Nome salvo
         val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
 
-        // 3. Setar as informações no Header
-        textEmailDesejos.text = emailUsuario
+        textNomeDesejos.text = nomeUsuario ?: "Usuário"
 
         if (!fotoSalvaUrl.isNullOrEmpty()) {
             imagePerfilDesejos.load(fotoSalvaUrl) {
@@ -62,13 +83,6 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
                 placeholder(R.drawable.user_placeholder)
                 error(R.drawable.user_placeholder)
             }
-        }
-
-        // 4. Carregar os dados do banco
-        if (emailUsuario.isNotEmpty()) {
-            carregarListaDesejos()
-        } else {
-            Toast.makeText(requireContext(), "Usuário não identificado.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -167,7 +181,6 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Lógica de aluguel futura aqui
                 Toast.makeText(requireContext(), "Solicitando aluguel de: ${item.titulo}", Toast.LENGTH_SHORT).show()
             } finally {
                 processandoClique = false

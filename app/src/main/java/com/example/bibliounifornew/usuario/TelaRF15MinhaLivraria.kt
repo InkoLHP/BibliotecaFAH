@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.bibliounifornew.adapter.LivrariaAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
@@ -24,34 +26,64 @@ import kotlinx.coroutines.withContext
 class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
 
     private lateinit var recyclerLivraria: RecyclerView
-    private lateinit var textEmail: TextView
+    private lateinit var textNomeUsuario: TextView
     private lateinit var btnFiltroLivraria: ImageButton
-
     private var emailUsuario: String = ""
     private var listaOriginal: List<LivrariaItem> = emptyList()
 
-    // Variável de controle para evitar cliques simultâneos ao deletar itens
     private var processandoClique: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerLivraria = view.findViewById(R.id.recyclerMinhaLivraria)
-        textEmail = view.findViewById(R.id.textEmailLivraria)
+        // 🌟 CORRIGIDO: Agora mapeado com o ID correto do seu XML para o Nome!
+        textNomeUsuario = view.findViewById(R.id.textUsuarioLivraria)
         btnFiltroLivraria = view.findViewById(R.id.btnFiltroLivraria)
 
         recyclerLivraria.layoutManager = LinearLayoutManager(requireContext())
 
-        // 🌟 CORRIGIDO: Sempre unificado no "user_session"
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         emailUsuario = sharedPref.getString("USER_EMAIL", "") ?: ""
-        textEmail.text = emailUsuario
+
+        val nomeUsuario = sharedPref.getString("USER_NOME", "Usuário")
+        textNomeUsuario.text = nomeUsuario
+
+        // 📸 Carrega a foto de perfil usando o container atual da View
+        carregarFotoPerfil(view)
 
         btnFiltroLivraria.setOnClickListener { viewSeta ->
             mostrarMenuFiltro(viewSeta)
         }
 
         carregarLivrariaDoBanco()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        view?.let {
+            carregarFotoPerfil(it)
+
+            val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+            val nomeUsuario = sharedPref.getString("USER_NOME", "Usuário")
+            textNomeUsuario.text = nomeUsuario
+        }
+    }
+
+    private fun carregarFotoPerfil(viewContainer: View) {
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val fotoUsuarioUrl = sharedPref.getString("USER_FOTO", null)
+
+        // 🌟 Mapeado com o ID correto do seu XML para a Imagem!
+        val profileImage = viewContainer.findViewById<ImageView>(R.id.imageUsuarioLivraria)
+
+        if (profileImage != null && !fotoUsuarioUrl.isNullOrEmpty()) {
+            profileImage.load(fotoUsuarioUrl) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+            }
+        }
     }
 
     private fun carregarLivrariaDoBanco() {
@@ -89,7 +121,6 @@ class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
         )
     }
 
-    // 🎯 SISTEMA DE FILTRO EM TEMPO REAL
     private fun mostrarMenuFiltro(anchorView: View) {
         val popup = PopupMenu(requireContext(), anchorView)
         popup.menu.add(0, 1, 0, "Todos os Livros")
@@ -98,7 +129,6 @@ class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
         popup.menu.add(0, 4, 3, "Lidos")
 
         popup.setOnMenuItemClickListener { menuItem ->
-            // 🌟 CORRIGIDO: Mudado de "BiblioUniforPrefs" para "user_session" para ler a gravação correta
             val sharedPrefs = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE)
 
             val listaFiltrada = when (menuItem.itemId) {
@@ -115,7 +145,6 @@ class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
     }
 
     private fun abrirDetalhesDoLivro(item: LivrariaItem) {
-        // Convertemos o LivrariaItem em um objeto Livro para a tela de detalhes entender
         val livroMapeado = com.example.bibliounifornew.model.Livro(
             id = item.livro_id ?: 0,
             titulo = item.titulo,
@@ -130,14 +159,12 @@ class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
             pdfUrl = null
         )
 
-        // Abre a Activity de detalhes passando o livro
         val intent = Intent(requireContext(), TelaRF12TelaDoLivro::class.java).apply {
             putExtra("livro", livroMapeado)
         }
         startActivity(intent)
     }
 
-    // 🗑️ DELETAR DA LIVRARIA (PROTEGIDA)
     private fun removerItemDoBanco(item: LivrariaItem) {
         if (processandoClique) return
         processandoClique = true
@@ -156,7 +183,7 @@ class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Erro ao remover livro", Toast.LENGTH_SHORT).show()
             } finally {
-                processandoClique = false // 🔓 Libera para novas remoções
+                processandoClique = false
             }
         }
     }

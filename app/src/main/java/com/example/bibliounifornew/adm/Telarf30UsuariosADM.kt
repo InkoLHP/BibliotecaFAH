@@ -39,7 +39,7 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
         // Elementos da Tela Principal
         val textNomeUsuario = view.findViewById<TextView>(R.id.textNomeUsuario)
         val textEmailUsuario = view.findViewById<TextView>(R.id.textEmailUsuario)
-        val imageUsuario = view.findViewById<ImageView>(R.id.imageUsuario)
+        val imageUsuario = view.findViewById<ImageView>(R.id.imageUsuarioAmigos)
 
         val buttonSolicitacoes = view.findViewById<MaterialButton>(R.id.buttonSolicitacoes)
         val buttonLivrosAlugados = view.findViewById<MaterialButton>(R.id.buttonLivrosAlugados)

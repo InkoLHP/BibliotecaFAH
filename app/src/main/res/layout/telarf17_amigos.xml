@@ -16,9 +16,9 @@
         <View
             android:layout_width="260dp"
             android:layout_height="260dp"
-            android:layout_marginStart="-130dp"
-            android:layout_marginTop="-130dp"
-            android:alpha="0.16"
+            android:layout_marginStart="-120dp"
+            android:layout_marginTop="-120dp"
+            android:alpha="0.15"
             android:background="@drawable/bg_circle"
             android:backgroundTint="@color/white"
             app:layout_constraintStart_toStartOf="parent"
@@ -37,7 +37,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:id="@+id/imageUsuario"
+                android:id="@+id/imageUsuarioAmigos"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
@@ -52,11 +52,11 @@
             android:layout_marginTop="16dp"
             android:text="Adicionar Amigo"
             android:textColor="@color/white"
-            android:textSize="28sp"
+            android:textSize="26sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/cardFotoUsuario"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/cardFotoUsuario" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

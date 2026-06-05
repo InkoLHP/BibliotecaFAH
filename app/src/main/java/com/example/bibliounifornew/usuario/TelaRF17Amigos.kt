@@ -108,6 +108,10 @@ class TelaRF17Amigos : Fragment(R.layout.telarf17_amigos) {
                 buttonBuscarAmigo.text = "Procurar"
             }
         }
+
+        // 📝 Mapeia e insere o Nome do Usuário dinamicamente abaixo da foto
+        val textNome = viewContainer.findViewById<TextView>(R.id.textUsuarioAmigos)
+        textNome?.text = nomeUsuario
     }
 
     private fun abrirPerfilAmigo(usuario: UsuarioItem) {
