@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/biblio_bg">
 
+    <!-- HEADER (IDÊNTICO À IMAGEM) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerDetalhesLivro"
         android:layout_width="match_parent"
@@ -55,24 +56,63 @@
             app:layout_constraintStart_toEndOf="@id/cardCapa"
             app:layout_constraintTop_toTopOf="@id/cardCapa">
 
-            <TextView
-                android:id="@+id/textTituloLivro"
-                android:layout_width="wrap_content"
+            <!-- TÍTULO EDITÁVEL -->
+            <LinearLayout
+                android:id="@+id/btnEditarTitulo"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Carregando..."
-                android:textColor="@color/white"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground">
 
-            <TextView
-                android:id="@+id/textAutorLivro"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/textTituloLivro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Carregando..."
+                    android:textColor="@color/white"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iconLapisTitulo"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="@color/white" />
+            </LinearLayout>
+
+            <!-- AUTOR EDITÁVEL -->
+            <LinearLayout
+                android:id="@+id/btnEditarAutor"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="..."
-                android:textColor="@color/white"
-                android:textSize="17sp"
-                android:alpha="0.8" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/textAutorLivro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="..."
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:alpha="0.8" />
+
+                <ImageView
+                    android:id="@+id/iconLapisAutor"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="@color/white"
+                    android:alpha="0.8" />
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -96,6 +136,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- CONTEÚDO EM LISTA -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -112,50 +153,49 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
                 android:text="Sobre"
                 android:textColor="@color/black"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/textSobreLivro"
+            <!-- SOBRE EDITÁVEL -->
+            <LinearLayout
+                android:id="@+id/btnEditarSobre"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:lineSpacingExtra="4dp"
-                android:text="Buscando detalhes do livro..."
-                android:textColor="#415E5E"
-                android:textSize="17sp" />
+                android:gravity="top"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:padding="4dp">
 
+                <TextView
+                    android:id="@+id/textSobreLivro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Buscando detalhes do livro..."
+                    android:textColor="#415E5E"
+                    android:textSize="17sp" />
+
+                <ImageView
+                    android:id="@+id/iconLapisSobre"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
+            </LinearLayout>
+
+            <!-- LÍNGUA (ESTÁTICA CONFORME O PADRÃO ORIGINAL) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Gênero: "
-                    android:textColor="@color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/textGeneroLivro"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#415E5E"
-                    android:textSize="17sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <TextView
@@ -170,16 +210,21 @@
                     android:id="@+id/textLinguaLivro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="--"
+                    android:text="Português"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
             </LinearLayout>
 
+            <!-- EDITORA EDITÁVEL -->
             <LinearLayout
+                android:id="@+id/btnEditarEditora"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingVertical="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -191,64 +236,32 @@
 
                 <TextView
                     android:id="@+id/textEditoraLivro"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
+
+                <ImageView
+                    android:id="@+id/iconLapisEditora"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
             </LinearLayout>
 
+            <!-- ISBN-13 EDITÁVEL -->
             <LinearLayout
+                android:id="@+id/btnEditarIsbn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Dimensão: "
-                    android:textColor="@color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/textDimensaoLivro"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#415E5E"
-                    android:textSize="17sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ISBN-10: "
-                    android:textColor="@color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/textIsbn10Livro"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#415E5E"
-                    android:textSize="17sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingVertical="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -260,64 +273,32 @@
 
                 <TextView
                     android:id="@+id/textIsbn13Livro"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
+
+                <ImageView
+                    android:id="@+id/iconLapisIsbn"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
             </LinearLayout>
 
+            <!-- PÁGINAS EDITÁVEL -->
             <LinearLayout
+                android:id="@+id/btnEditarPaginas"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ASIN: "
-                    android:textColor="@color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/textAsinLivro"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#415E5E"
-                    android:textSize="17sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Data: "
-                    android:textColor="@color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/textDataLivro"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#415E5E"
-                    android:textSize="17sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:orientation="horizontal">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingVertical="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -329,33 +310,173 @@
 
                 <TextView
                     android:id="@+id/textPaginasLivro"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
+
+                <ImageView
+                    android:id="@+id/iconLapisPaginas"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
             </LinearLayout>
 
+            <!-- EXEMPLARES EDITÁVEL -->
             <LinearLayout
+                android:id="@+id/btnEditarExemplares"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingVertical="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Setor: "
+                    android:text="Exemplares: "
                     android:textColor="@color/black"
                     android:textSize="17sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/textSetorLivro"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/textExemplaresLivro"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="--"
                     android:textColor="#415E5E"
                     android:textSize="17sp" />
+
+                <ImageView
+                    android:id="@+id/iconLapisExemplares"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
+            </LinearLayout>
+
+            <!-- AUDIOBOOK URL EDITÁVEL -->
+            <LinearLayout
+                android:id="@+id/btnEditarAudiobook"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingVertical="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Audiobook URL: "
+                    android:textColor="@color/black"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textAudiobookLivro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="--"
+                    android:textColor="#415E5E"
+                    android:textSize="17sp"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+
+                <ImageView
+                    android:id="@+id/iconLapisAudiobook"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
+            </LinearLayout>
+
+            <!-- PDF URL EDITÁVEL -->
+            <LinearLayout
+                android:id="@+id/btnEditarPdf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingVertical="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PDF URL: "
+                    android:textColor="@color/black"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textPdfLivro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="--"
+                    android:textColor="#415E5E"
+                    android:textSize="17sp"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+
+                <ImageView
+                    android:id="@+id/iconLapisPdf"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
+            </LinearLayout>
+
+            <!-- LINK DA CAPA EDITÁVEL -->
+            <LinearLayout
+                android:id="@+id/btnEditarCapaUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingVertical="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Link da Capa: "
+                    android:textColor="@color/black"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textCapaUrlLivro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="--"
+                    android:textColor="#415E5E"
+                    android:textSize="17sp"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+
+                <ImageView
+                    android:id="@+id/iconLapisCapa"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#415E5E" />
             </LinearLayout>
 
         </LinearLayout>

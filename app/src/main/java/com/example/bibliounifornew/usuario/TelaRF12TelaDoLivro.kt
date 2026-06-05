@@ -8,7 +8,9 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -123,85 +125,155 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             if (processandoClique) return@setOnClickListener
 
             if (isDisponivel && (quantidadeEstoque > 0)) {
-                processandoClique = true
-
-                quantidadeEstoque--
-                textQuantidadeEstoque.text = quantidadeEstoque.toString()
-
-                if (quantidadeEstoque == 0) {
-                    isDisponivel = false
-                    textDisponibilidade.text = "Não Disponível"
-                    textDisponibilidade.setTextColor(Color.RED)
+                // 🌟 Trava o fluxo chamando o Popup de Termos por Scroll antes de gravar no banco
+                exibirTermosComScrollActivity(livro) {
+                    executarProcessoAluguel(livro)
                 }
-
-                val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
-                val emailReal = sharedPref.getString("USER_EMAIL", "")?.lowercase()?.trim() ?: ""
-
-                if (emailReal.isEmpty()) {
-                    Toast.makeText(this, "Faça login para alugar", Toast.LENGTH_SHORT).show()
-                    processandoClique = false
-                    return@setOnClickListener
-                }
-
-                val formatoData = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
-                val calendario = java.util.Calendar.getInstance()
-                calendario.add(java.util.Calendar.DAY_OF_YEAR, 7)
-                val dataVencimento = formatoData.format(calendario.time)
-
-                val novoAluguel = Aluguel(
-                    id = null,
-                    email_usuario = emailReal,
-                    titulo_livro = livro.titulo,
-                    autor_livro = livro.autor,
-                    capa_url = livro.capaUrl,
-                    data_vencimento = dataVencimento,
-                    dias_restantes = 7L,
-                    devolvido = false,
-                    tipo = "ALUGUEL"
-                )
-
-                val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
-                    .format(java.util.Date())
-
-                val novaNotificacao = Notificacao(
-                    email_usuario = emailReal,
-                    titulo = "Aluguel Confirmado!",
-                    mensagem = "Você alugou '${livro.titulo}'. Vencimento: $dataVencimento.",
-                    visualizada = false,
-                    created_at = dataHoraAtual
-                )
-
-                lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        SupabaseConfig.client.postgrest["alugueis"].insert(novoAluguel)
-                        SupabaseConfig.client.postgrest["notificacoes"].insert(novaNotificacao)
-
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@TelaRF12TelaDoLivro, "Aluguel salvo no banco!", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@TelaRF12TelaDoLivro, "Erro ao salvar aluguel: ${e.message}", Toast.LENGTH_LONG).show()
-                        }
-                    } finally {
-                        processandoClique = false
-                    }
-                }
-
-                dispararNotificacaoLocal("Aluguel Confirmado!", "O livro '${livro.titulo}' foi reservado. Vencimento: $dataVencimento.")
-
             } else {
                 Toast.makeText(this, "Desculpe, este livro não está disponível no estoque no momento.", Toast.LENGTH_LONG).show()
             }
         }
     }
 
+    // 🌟 Lógica de gravação do Aluguel migrada para uma função isolada
+    private fun executarProcessoAluguel(livro: Livro) {
+        val textDisponibilidade = findViewById<TextView>(R.id.textDisponibilidade)
+        val textQuantidadeEstoque = findViewById<TextView>(R.id.textQuantidadeEstoque)
+
+        processandoClique = true
+        quantidadeEstoque--
+        textQuantidadeEstoque.text = quantidadeEstoque.toString()
+
+        if (quantidadeEstoque == 0) {
+            isDisponivel = false
+            textDisponibilidade.text = "Não Disponível"
+            textDisponibilidade.setTextColor(Color.RED)
+        }
+
+        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+        val emailReal = sharedPref.getString("USER_EMAIL", "")?.lowercase()?.trim() ?: ""
+
+        if (emailReal.isEmpty()) {
+            Toast.makeText(this, "Faça login para alugar", Toast.LENGTH_SHORT).show()
+            processandoClique = false
+            return
+        }
+
+        val formatoData = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+        val calendario = java.util.Calendar.getInstance()
+        calendario.add(java.util.Calendar.DAY_OF_YEAR, 7)
+        val dataVencimento = formatoData.format(calendario.time)
+
+        val novoAluguel = Aluguel(
+            id = null,
+            email_usuario = emailReal,
+            titulo_livro = livro.titulo,
+            autor_livro = livro.autor,
+            capa_url = livro.capaUrl,
+            data_vencimento = dataVencimento,
+            dias_restantes = 7L,
+            devolvido = false,
+            tipo = "ALUGUEL"
+        )
+
+        val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        val novaNotificacao = Notificacao(
+            email_usuario = emailReal,
+            titulo = "Aluguel Confirmado!",
+            mensagem = "Você alugou '${livro.titulo}'. Vencimento: $dataVencimento.",
+            visualizada = false,
+            created_at = dataHoraAtual
+        )
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                SupabaseConfig.client.postgrest["alugueis"].insert(novoAluguel)
+                SupabaseConfig.client.postgrest["notificacoes"].insert(novaNotificacao)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@TelaRF12TelaDoLivro, "Aluguel salvo no banco!", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@TelaRF12TelaDoLivro, "Erro ao salvar aluguel: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            } finally {
+                processandoClique = false
+            }
+        }
+
+        dispararNotificacaoLocal("Aluguel Confirmado!", "O livro '${livro.titulo}' foi reservado. Vencimento: $dataVencimento.")
+    }
+
+    // 🌟 Gerador do Popup de Termos e Rolagem estruturado para a Activity
+    private fun exibirTermosComScrollActivity(livro: Livro, onTermosAceitos: () -> Unit) {
+        val dialogView = layoutInflater.inflate(R.layout.popup_termos, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(false)
+
+        val scrollTermos = dialogView.findViewById<androidx.core.widget.NestedScrollView>(R.id.scrollTermos)
+        val textCorpoTermos = dialogView.findViewById<TextView>(R.id.textCorpoTermos)
+        val checkAceitarTermos = dialogView.findViewById<CheckBox>(R.id.checkAceitarTermos)
+        val btnConfirmar = dialogView.findViewById<MaterialButton>(R.id.btnConfirmarTermos)
+        val btnRecusar = dialogView.findViewById<MaterialButton>(R.id.btnRecusarTermos)
+
+        textCorpoTermos.text = """
+            TERMOS E DIRETRIZES DE USO DA BIBLIOTECA
+
+            1. DO COMPROMISSO DE RETIRADA
+            Ao efetuar o empréstimo/aluguel do livro "${livro.titulo}", o usuário assume total responsabilidade de comparecer ao balcão de atendimento e zelar pelo material.
+            
+            2. DA DEVOLUÇÃO E PRAZOS
+            O empréstimo físico é válido pelo período regular estabelecido pelo sistema da instituição. A não devolução ou não renovação do exemplar acarretará no bloqueio automático de novas solicitações digitais ou físicas.
+            
+            3. DA CONSERVAÇÃO DO EXEMPLAR
+            O aluno compromete-se a inspecionar o livro no ato da retirada e mantê-lo nas mesmas condições de conservação. É estritamente proibido realizar rasuras, marcações com caneta ou marca-texto, dobrar páginas ou danificar a capa do material de estudo.
+            
+            4. DAS PENALIDADES E SUSPENSÃO
+            Caso ocorram avarias críticas que impossibilitem a leitura por outros estudantes, o usuário concorda com a aplicação das sanções administrativas vigentes no regimento acadêmico da instituição, incluindo reposição do item ou taxas de manutenção patrimonial.
+            
+            5. CONSIDERAÇÕES FINAIS
+            O preenchimento e confirmação deste formulário atesta que o leitor está de acordo com as normas estipuladas, valendo como assinatura eletrônica termo de aceite para todos os fins internos.
+        """.trimIndent()
+
+        scrollTermos.setOnScrollChangeListener { v: androidx.core.widget.NestedScrollView, _, scrollY, _, _ ->
+            val childHeight = v.getChildAt(0).measuredHeight
+            val totalScrollPossivel = childHeight - v.measuredHeight
+
+            if (scrollY >= totalScrollPossivel - 10) {
+                if (checkAceitarTermos.visibility == View.GONE) {
+                    checkAceitarTermos.visibility = View.VISIBLE
+                    Toast.makeText(this, "Por favor, marque a caixinha para avançar.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        checkAceitarTermos.setOnCheckedChangeListener { _, isChecked ->
+            btnConfirmar.isEnabled = isChecked
+        }
+
+        btnConfirmar.setOnClickListener {
+            dialog.dismiss()
+            onTermosAceitos()
+        }
+
+        btnRecusar.setOnClickListener {
+            dialog.dismiss()
+            Toast.makeText(this, "Aluguel cancelado. É necessário aceitar os termos.", Toast.LENGTH_SHORT).show()
+        }
+
+        dialog.show()
+    }
+
     private fun configurarBotaoSolicitar(livro: Livro) {
         val buttonSolicitar = findViewById<Button>(R.id.buttonSolicitarLivro)
 
         buttonSolicitar.setOnClickListener {
-            val opcoes = arrayOf(
+            val opciones = arrayOf(
                 "Solicitar Livro Físico",
                 "Solicitar PDF / Versão Digital",
                 "Solicitar Audiobook"
@@ -209,7 +281,7 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
             AlertDialog.Builder(this)
                 .setTitle("Escolha o tipo de solicitação")
-                .setItems(opcoes) { _, itemSelecionado ->
+                .setItems(opciones) { _, itemSelecionado ->
                     when (itemSelecionado) {
                         0 -> enviarSolicitacaoReal(livro, "LIVRO_FISICO", "do livro físico")
                         1 -> enviarSolicitacaoReal(livro, "PDF_DIGITAL", "do PDF / Versão Digital")

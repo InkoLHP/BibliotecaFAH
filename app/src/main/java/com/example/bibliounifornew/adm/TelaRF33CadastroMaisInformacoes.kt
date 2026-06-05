@@ -21,47 +21,40 @@ class TelaRF33CadastroMaisInformacoes : Fragment(R.layout.telarf33_cadastro_mais
         val btnIrVersoes = view.findViewById<MaterialButton>(R.id.btnIrVersoes)
 
         btnIrVersoes.setOnClickListener {
-
-            // 1. Validação de campos vazios
             if (editPaginas.text.isBlank() || editCategoria.text.isBlank() || editEditora.text.isBlank()) {
                 Toast.makeText(requireContext(), "Preencha as páginas, categoria e editora!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // ==========================================
-            // 👇 AQUI ENTRA A VALIDAÇÃO DO LINK DA CAPA 👇
-            // ==========================================
             val linkCapa = editCapa.text.toString().trim()
             if (linkCapa.isNotEmpty() && !linkCapa.startsWith("http")) {
                 Toast.makeText(requireContext(), "O link da capa deve começar com 'http' ou 'https'!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener // Trava a tela e não deixa avançar
+                return@setOnClickListener
             }
-            // ==========================================
 
-            // Resgatar os dados da Tela 1
-            val tituloAntigo = arguments?.getString("TITULO") ?: ""
-            val autorAntigo = arguments?.getString("AUTOR") ?: ""
-            val isbnAntigo = arguments?.getString("ISBN") ?: ""
-            val dataAntiga = arguments?.getString("DATA") ?: ""
-            val exemplaresAntigo = arguments?.getString("EXEMPLARES") ?: ""
+            // CORRIGIDO: Agora lê em minúsculas batendo com a Tela 1
+            val titulo = arguments?.getString("titulo") ?: ""
+            val autor = arguments?.getString("autor") ?: ""
+            val isbn = arguments?.getString("isbn") ?: ""
+            val data = arguments?.getString("data") ?: ""
+            val exemplares = arguments?.getString("exemplares") ?: ""
 
-            // Prepara a Tela 3 com todos os dados
+            // Monta o pacote para a Tela 3 com chaves unificadas
             val fragment = Telarf33AdicionarMidiaArquivos().apply {
                 arguments = Bundle().apply {
-                    putString("TITULO", tituloAntigo)
-                    putString("AUTOR", autorAntigo)
-                    putString("ISBN", isbnAntigo)
-                    putString("DATA", dataAntiga)
-                    putString("EXEMPLARES", exemplaresAntigo)
-                    putString("PAGINAS", editPaginas.text.toString().trim())
-                    putString("CATEGORIA", editCategoria.text.toString().trim())
-                    putString("EDITORA", editEditora.text.toString().trim())
-                    putString("CAPA", linkCapa) // Manda o link que foi validado
-                    putString("SINOPSE", editSinopse.text.toString().trim())
+                    putString("titulo", titulo)
+                    putString("autor", autor)
+                    putString("isbn", isbn)
+                    putString("data", data)
+                    putString("exemplares", exemplares)
+                    putString("paginas", editPaginas.text.toString().trim())
+                    putString("categoria", editCategoria.text.toString().trim())
+                    putString("editora", editEditora.text.toString().trim())
+                    putString("capa", linkCapa)
+                    putString("sinopse", editSinopse.text.toString().trim())
                 }
             }
 
-            // Navega para a última tela
             parentFragmentManager.beginTransaction()
                 .replace(R.id.frameLayout, fragment)
                 .addToBackStack(null)

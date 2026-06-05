@@ -37,11 +37,18 @@ class LivrosAdmAdapter(
         holder.autor.text = livro.autor ?: "Autor desconhecido"
         holder.isbn.text = "ISBN: ${livro.isbn ?: "N/A"}"
 
-        // 🚀 Padronizado: Agora usa Coil em vez de Glide
         holder.imgCapa.load(livro.capaUrl) {
             crossfade(true)
             placeholder(R.drawable.placeholder)
             error(R.drawable.placeholder)
+        }
+
+        if (livro.veioDaApi) {
+            holder.btnEditar.text = "Visualizar Mídia"
+            // Se preferir sumir com o botão para itens da API, use: holder.btnEditar.visibility = View.GONE
+        } else {
+            holder.btnEditar.text = "Editar Informações"
+            holder.btnEditar.visibility = View.VISIBLE
         }
 
         holder.btnEditar.setOnClickListener {
