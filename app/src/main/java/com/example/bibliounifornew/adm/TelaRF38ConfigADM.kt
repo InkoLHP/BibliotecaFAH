@@ -30,22 +30,24 @@ import kotlinx.coroutines.withContext
 
 class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
 
-    private lateinit var olhoADMconfig: ImageView
-    private lateinit var editSenhaADMconfig: EditText
-    private lateinit var textUsuarioHeader: TextView
+    // Componentes da tela
     private lateinit var editNomeAdm: EditText
     private lateinit var editUsuarioAdm: EditText
+    private lateinit var editSenhaAtual: EditText
+    private lateinit var textUsuarioHeader: TextView
     private lateinit var imagePerfilUsuario: ImageView
-    private lateinit var btnSalvarADM: MaterialButton // Declarado globalmente para podermos mudar o texto dele
+    private lateinit var btnSalvarADM: MaterialButton
+    private lateinit var iconOlhoSenhaAtual: ImageView
 
     private var processandoSalvamento = false
     private var imagemSelecionadaUri: Uri? = null
+    private var senhaVisivel = false
 
     // Launcher para abrir a galeria
     private val selecionarImagem =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
-                imagemSelecionadaUri = uri // Guarda a imagem escolhida
+                imagemSelecionadaUri = uri
                 imagePerfilUsuario.load(uri) {
                     crossfade(true)
                     placeholder(R.drawable.user_placeholder)
@@ -58,63 +60,82 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Inicialização dos componentes
+        vincularComponentes(view)
+
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val emailAdm = sharedPref.getString("USER_EMAIL", "") ?: ""
 
-        // INICIALIZANDO COMPONENTES VISUAIS
-        olhoADMconfig = view.findViewById(R.id.iconOlhoSenhaAtual)
-        editSenhaADMconfig = view.findViewById(R.id.editSenhaAtual)
-        textUsuarioHeader = view.findViewById(R.id.textUsuario)
+        // Carrega dados iniciais
+        carregarDadosADM(emailAdm)
+
+        // Configura as ações dos botões e ícones
+        configurarCliquesDeEdicao(view)
+        configurarOlhoSenha()
+        configurarBotoesAcao(emailAdm)
+    }
+
+    private fun vincularComponentes(view: View) {
         editNomeAdm = view.findViewById(R.id.editNomeAdm)
         editUsuarioAdm = view.findViewById(R.id.editUsuarioAdm)
+        editSenhaAtual = view.findViewById(R.id.editSenhaAtual)
+        textUsuarioHeader = view.findViewById(R.id.textUsuario)
         imagePerfilUsuario = view.findViewById(R.id.imagePerfilUsuario)
         btnSalvarADM = view.findViewById(R.id.btnSalvarADM)
+        iconOlhoSenhaAtual = view.findViewById(R.id.iconOlhoSenhaAtual)
+    }
 
-        // Clique na foto para abrir a galeria
-        imagePerfilUsuario.setOnClickListener {
+    private fun configurarCliquesDeEdicao(view: View) {
+        // Lápis do campo Nome
+        view.findViewById<ImageView>(R.id.iconEditNomeAdm).setOnClickListener {
+            editNomeAdm.isEnabled = !editNomeAdm.isEnabled
+            if (editNomeAdm.isEnabled) editNomeAdm.requestFocus()
+        }
+
+        // Lápis do campo Usuário
+        view.findViewById<ImageView>(R.id.iconEditUsuarioAdm).setOnClickListener {
+            editUsuarioAdm.isEnabled = !editUsuarioAdm.isEnabled
+            if (editUsuarioAdm.isEnabled) editUsuarioAdm.requestFocus()
+        }
+
+        // Lápis do Header
+        view.findViewById<ImageView>(R.id.btnEditarUsuario).setOnClickListener {
             selecionarImagem.launch("image/*")
         }
 
-        textUsuarioHeader.text = emailAdm
-        editNomeAdm.setText(sharedPref.getString("USER_NOME", ""))
-
-        // Busca dados iniciais
-        carregarDadosADM(emailAdm)
-
-        // BOTÕES
-        val btnRedefinirSenha = view.findViewById<MaterialButton>(R.id.btnRedefinirSenha)
-        val btnApagarConta = view.findViewById<MaterialButton>(R.id.btnApagarConta)
-
-        var senhaVisivel = false
-
-        // MOSTRAR / ESCONDER SENHA
-        olhoADMconfig.setOnClickListener {
-            if (senhaVisivel) {
-                editSenhaADMconfig.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                olhoADMconfig.setImageResource(R.drawable.ic_eye_closed)
-                senhaVisivel = false
-            } else {
-                editSenhaADMconfig.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                olhoADMconfig.setImageResource(R.drawable.ic_eye_open)
-                senhaVisivel = true
-            }
-            editSenhaADMconfig.setSelection(editSenhaADMconfig.text.length)
+        // Clique na foto também abre a galeria
+        imagePerfilUsuario.setOnClickListener {
+            selecionarImagem.launch("image/*")
         }
+    }
 
-        // AÇÃO DE SALVAR
+    private fun configurarOlhoSenha() {
+        iconOlhoSenhaAtual.setOnClickListener {
+            senhaVisivel = !senhaVisivel
+            if (senhaVisivel) {
+                editSenhaAtual.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                iconOlhoSenhaAtual.setImageResource(R.drawable.ic_eye_open)
+            } else {
+                editSenhaAtual.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                iconOlhoSenhaAtual.setImageResource(R.drawable.ic_eye_closed)
+            }
+            editSenhaAtual.setSelection(editSenhaAtual.text.length)
+        }
+    }
+
+    private fun configurarBotoesAcao(emailAdm: String) {
         btnSalvarADM.setOnClickListener {
             val novoNome = editNomeAdm.text.toString().trim()
             val novoUsuario = editUsuarioAdm.text.toString().trim()
 
             if (novoNome.isEmpty() || novoUsuario.isEmpty()) {
-                Toast.makeText(requireContext(), "Preencha todos os campos antes de salvar!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Preencha todos os campos!", Toast.LENGTH_SHORT).show()
             } else {
                 salvarAlteracoesADM(emailAdm, novoNome, novoUsuario)
             }
         }
 
-        // REDEFINIR SENHA
-        btnRedefinirSenha?.setOnClickListener {
+        view?.findViewById<MaterialButton>(R.id.btnRedefinirSenha)?.setOnClickListener {
             val fragment = TelaRF39RedefinirADMInterno().apply {
                 arguments = Bundle().apply { putString("USER_EMAIL", emailAdm) }
             }
@@ -124,46 +145,8 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
                 .commit()
         }
 
-        // APAGAR CONTA (MANTIDO INTACTO)
-        btnApagarConta?.setOnClickListener {
-            val dialog = Dialog(requireContext())
-            dialog.setContentView(R.layout.popup_apagar_conta)
-            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-            val editSenha = dialog.findViewById<EditText>(R.id.editSenhaPopup)
-            val textErro = dialog.findViewById<TextView>(R.id.textErroSenhaPopup)
-            val btnConfirmar = dialog.findViewById<Button>(R.id.buttonConfirmarApagarConta)
-            val iconOlho = dialog.findViewById<ImageView>(R.id.iconOlhoSenhaPopup)
-
-            val senhaAdm = "123456"
-            var senhaVisivelPopup = false
-
-            iconOlho.setOnClickListener {
-                if (senhaVisivelPopup) {
-                    editSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    iconOlho.setImageResource(R.drawable.ic_eye_closed)
-                    senhaVisivelPopup = false
-                } else {
-                    editSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                    iconOlho.setImageResource(R.drawable.ic_eye_open)
-                    senhaVisivelPopup = true
-                }
-                editSenha.setSelection(editSenha.text.length)
-            }
-
-            btnConfirmar.setOnClickListener {
-                val senhaDigitada = editSenha.text.toString()
-                if (senhaDigitada == senhaAdm) {
-                    dialog.dismiss()
-                    val intent = Intent(requireActivity(), TelaRF02Intermediaria::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    requireActivity().finish()
-                } else {
-                    textErro.visibility = View.VISIBLE
-                }
-            }
-            dialog.show()
+        view?.findViewById<MaterialButton>(R.id.btnApagarConta)?.setOnClickListener {
+            mostrarDialogApagarConta()
         }
     }
 
@@ -182,7 +165,7 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
                     textUsuarioHeader.text = it.email
                     editNomeAdm.setText(it.nome)
                     editUsuarioAdm.setText(it.usuario)
-                    editSenhaADMconfig.setText(it.senha)
+                    editSenhaAtual.setText(it.senha)
 
                     if (!it.foto.isNullOrEmpty()) {
                         imagePerfilUsuario.load(it.foto) {
@@ -202,7 +185,6 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
         if (processandoSalvamento) return
         processandoSalvamento = true
 
-        // Dá um feedback pro usuário que está carregando
         btnSalvarADM.text = "Salvando..."
         btnSalvarADM.isEnabled = false
 
@@ -210,63 +192,94 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
             try {
                 var novaFotoUrl: String? = null
 
-                // 1. SE TIVER FOTO SELECIONADA, FAZ UPLOAD PRO SUPABASE STORAGE
                 if (imagemSelecionadaUri != null) {
                     val bytes = withContext(Dispatchers.IO) {
                         requireContext().contentResolver.openInputStream(imagemSelecionadaUri!!)?.readBytes()
                     }
                     if (bytes != null) {
                         val nomeArquivo = "perfil_${System.currentTimeMillis()}.jpg"
-
                         withContext(Dispatchers.IO) {
-                            // Envia para o bucket "fotos_perfil"
                             SupabaseConfig.client.storage.from("fotos_perfil").upload(nomeArquivo, bytes)
                         }
-
-                        // Pega o link público gerado
                         novaFotoUrl = SupabaseConfig.client.storage.from("fotos_perfil").publicUrl(nomeArquivo)
                     }
                 }
 
-                // 2. ATUALIZA A TABELA USERS NO BANCO DE DADOS
                 withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["users"].update(
                         update = {
                             set("nome", nome)
                             set("usuario", usuario)
-                            // Só atualiza a foto se o usuário realmente enviou uma foto nova
-                            if (novaFotoUrl != null) {
-                                set("foto", novaFotoUrl)
-                            }
+                            if (novaFotoUrl != null) set("foto", novaFotoUrl)
                         }
                     ) {
                         filter { eq("email", email) }
                     }
                 }
 
-                // 3. ATUALIZA A MEMÓRIA DO APLICATIVO
+                // Atualiza SharedPreferences
                 val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
                 sharedPref.edit().apply {
                     putString("USER_NOME", nome)
-                    if (novaFotoUrl != null) {
-                        putString("USER_FOTO", novaFotoUrl) // Atualiza sessão se tiver header noutro lugar
-                    }
+                    if (novaFotoUrl != null) putString("USER_FOTO", novaFotoUrl)
                     apply()
                 }
 
-                Toast.makeText(requireContext(), "Alterações salvas com sucesso! 👍", Toast.LENGTH_SHORT).show()
-                imagemSelecionadaUri = null // Reseta a imagem pra evitar upload duplo sem querer
+                Toast.makeText(requireContext(), "Alterações salvas!", Toast.LENGTH_SHORT).show()
+                imagemSelecionadaUri = null
+                
+                // Tranca campos novamente
+                editNomeAdm.isEnabled = false
+                editUsuarioAdm.isEnabled = false
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Isso vai exibir o motivo real enviado pelo Supabase na tela do seu celular
-                Toast.makeText(requireContext(), "Erro real: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Erro ao salvar: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             } finally {
-                // Devolve o botão ao normal
                 processandoSalvamento = false
-                btnSalvarADM.text = "Salvar alterações"
+                btnSalvarADM.text = "Salvar Alterações"
                 btnSalvarADM.isEnabled = true
             }
         }
+    }
+
+    private fun mostrarDialogApagarConta() {
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(R.layout.popup_apagar_conta)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val editSenha = dialog.findViewById<EditText>(R.id.editSenhaPopup)
+        val textErro = dialog.findViewById<TextView>(R.id.textErroSenhaPopup)
+        val btnConfirmar = dialog.findViewById<Button>(R.id.buttonConfirmarApagarConta)
+        val iconOlho = dialog.findViewById<ImageView>(R.id.iconOlhoSenhaPopup)
+
+        var senhaVisivelPopup = false
+
+        iconOlho.setOnClickListener {
+            senhaVisivelPopup = !senhaVisivelPopup
+            if (senhaVisivelPopup) {
+                editSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                iconOlho.setImageResource(R.drawable.ic_eye_open)
+            } else {
+                editSenha.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                iconOlho.setImageResource(R.drawable.ic_eye_closed)
+            }
+            editSenha.setSelection(editSenha.text.length)
+        }
+
+        btnConfirmar.setOnClickListener {
+            val senhaDigitada = editSenha.text.toString()
+            // Aqui você deve validar com a senha real do admin vinda do DB
+            if (senhaDigitada == editSenhaAtual.text.toString()) {
+                dialog.dismiss()
+                val intent = Intent(requireActivity(), TelaRF02Intermediaria::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                requireActivity().finish()
+            } else {
+                textErro.visibility = View.VISIBLE
+            }
+        }
+        dialog.show()
     }
 }
