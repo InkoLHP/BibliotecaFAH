@@ -2,7 +2,6 @@ package com.example.bibliounifornew.usuario
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
@@ -21,8 +20,11 @@ import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.model.Livro
 import com.example.bibliounifornew.model.LivrariaItem
 import com.example.bibliounifornew.model.DesejoItem
+import com.example.bibliounifornew.adm.MidiaLivroDetalhes // Reutilizando seu modelo serializável estável
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -65,23 +67,68 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
                 Toast.makeText(requireContext(), "Digite um título ou autor", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            buscarLivros(pesquisa)
+            buscarLivrosMesclados(pesquisa)
         }
 
         iconFiltro.setOnClickListener { exibirPopupFiltros() }
     }
 
-    private fun buscarLivros(pesquisa: String) {
+    private fun buscarLivrosMesclados(pesquisa: String) {
         buttonProcurar.isEnabled = false
         buttonProcurar.text = "Buscando..."
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = com.example.bibliounifornew.api.RetrofitClient
-                    .api
-                    .searchBooks(query = pesquisa)
+                // 🚀 BUSCA ASSÍNCRONA PARALELA: Dispara as duas buscas na mesma fração de segundo
+                val buscaSupabase = async(Dispatchers.IO) {
+                    try {
+                        // Filtra se o termo está contido no título OR no autor (ignora case)
+                        SupabaseConfig.client.from("livros").select {
+                            filter {
+                                or {
+                                    ilike("titulo", "%$pesquisa%")
+                                    ilike("autor", "%$pesquisa%")
+                                }
+                            }
+                        }.decodeList<MidiaLivroDetalhes>()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        emptyList<MidiaLivroDetalhes>()
+                    }
+                }
 
-                val livrosEncontrados = response.items?.map { item ->
+                val buscaGoogleBooks = async(Dispatchers.IO) {
+                    try {
+                        com.example.bibliounifornew.api.RetrofitClient.api.searchBooks(query = pesquisa)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
+                }
+
+                // Aguarda o término de ambas de forma simultânea
+                val localResult = buscaSupabase.await()
+                val apiResult = buscaGoogleBooks.await()
+
+                // 1. Mapeia os livros internos do Supabase (Prioridade Máxima)
+                val livrosSupabase = localResult.map { local ->
+                    Livro(
+                        id = local.id?.hashCode() ?: (1000..9999).random(),
+                        titulo = local.titulo ?: "Sem título",
+                        autor = local.autor ?: "Autor desconhecido",
+                        isbn = local.isbn ?: "Sem ISBN",
+                        capaUrl = local.capaUrl ?: "",
+                        sinopse = local.sinopse,
+                        data_publicacao = "--",
+                        categoria = "Biblioteca Local", // Tag visual identificadora
+                        formato = "Físico / Digital",
+                        disponivel = (local.exemplares ?: 0) > 0,
+                        pdfUrl = local.pdf_url
+                    )
+                }
+
+                // 2. Mapeia os livros da API Externa do Google
+                val livrosGoogle = apiResult?.items?.map { item ->
                     val info = item.volumeInfo
                     Livro(
                         id = item.id.hashCode(),
@@ -98,14 +145,36 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
                     )
                 } ?: emptyList()
 
+                // 3. MESCLAGEM INTELIGENTE: Remove itens duplicados com base no título e autor
+                val listaCompletaFinal = mutableListOf<Livro>()
+                listaCompletaFinal.addAll(livrosSupabase)
+
+                for (googleLivro in livrosGoogle) {
+                    // Evita inserir o mesmo livro da API caso ele já tenha sido puxado do Supabase
+                    val jaExisteNoBanco = livrosSupabase.any {
+                        it.titulo.equals(googleLivro.titulo, ignoreCase = true) ||
+                                (it.isbn != "Sem ISBN" && it.isbn == googleLivro.isbn)
+                    }
+                    if (!jaExisteNoBanco) {
+                        listaCompletaFinal.add(googleLivro)
+                    }
+                }
+
+                // Atualiza o adapter com a listagem combinada
                 recyclerLivros.adapter = LivroUsuarioAdapter(
-                    livros = livrosEncontrados,
+                    livros = listaCompletaFinal,
                     onVerMaisClick = { livro -> abrirOpcoesLivro(livro) },
                     onAddListaDesejosClick = { livro -> adicionarAListaDesejos(livro) },
                     onAddMinhaLivrariaClick = { livro -> adicionarAMinhaLivraria(livro) }
                 )
+
+                if (listaCompletaFinal.isEmpty()) {
+                    Toast.makeText(requireContext(), "Nenhum livro localizado.", Toast.LENGTH_SHORT).show()
+                }
+
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Erro na busca", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao processar busca unificada", Toast.LENGTH_SHORT).show()
             } finally {
                 buttonProcurar.isEnabled = true
                 buttonProcurar.text = "Procurar"
@@ -116,7 +185,6 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
     private fun exibirPopupFiltros() {
         val popup = PopupMenu(requireContext(), iconFiltro)
 
-        // --- SUBMENU FICÇÃO (Nomes em PT) ---
         val fics = popup.menu.addSubMenu("Ficção")
         fics.add("Ficção Geral")
         fics.add("Fantasia")
@@ -126,7 +194,6 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
         fics.add("Aventura")
         fics.add("Distopia")
 
-        // --- SUBMENU NÃO FICÇÃO (Nomes em PT) ---
         val nonFics = popup.menu.addSubMenu("Não Ficção")
         nonFics.add("Biografia")
         nonFics.add("Autoajuda")
@@ -140,7 +207,6 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
         popup.setOnMenuItemClickListener { item ->
             if (item.hasSubMenu()) return@setOnMenuItemClickListener false
 
-            // MAPEAMENTO: Nome em PT -> Termo em EN para a API
             val categoriaEN = when (item.title.toString()) {
                 "Ficção Geral" -> "Fiction"
                 "Fantasia" -> "Fantasy"
@@ -162,9 +228,9 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
             val termoBusca = editPesquisarLivro.text.toString().trim()
             if (termoBusca.isEmpty()) {
-                buscarLivros("subject:\"$categoriaEN\"")
+                buscarLivrosMesclados("subject:\"$categoriaEN\"")
             } else {
-                buscarLivros("$termoBusca+subject:\"$categoriaEN\"")
+                buscarLivrosMesclados("$termoBusca+subject:\"$categoriaEN\"")
             }
             true
         }

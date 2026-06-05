@@ -1,60 +1,46 @@
 package com.example.bibliounifornew.usuario
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import coil.load
 import com.example.bibliounifornew.R
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class TelaRF17PerfilAmigo : Fragment(R.layout.telarf17_5_perfil_amigo) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [TelaRF17PerfilAmigo.newInstance] factory method to
- * create an instance of this fragment.
- */
-class TelaRF17PerfilAmigo : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+        // Mapeia os componentes do seu XML de perfil
+        val imagePerfilAmigo = view.findViewById<ImageView>(R.id.imagePerfilAmigo)
+        val textEmailPerfilAmigo = view.findViewById<TextView>(R.id.textEmailPerfilAmigo)
+        val textNomePerfilAmigo = view.findViewById<TextView>(R.id.textNomePerfilAmigo)
+        val textUsuarioPerfilAmigo = view.findViewById<TextView>(R.id.textUsuarioPerfilAmigo)
+        val textBioPerfilAmigo = view.findViewById<TextView>(R.id.textBioPerfilAmigo)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.telarf17_5_perfil_amigo, container, false)
-    }
+        // Recupera os dados que foram passados pelo Bundle da tela anterior
+        val amigoNome = arguments?.getString("AMIGO_NOME")
+        val amigoEmail = arguments?.getString("AMIGO_EMAIL")
+        val amigoFoto = arguments?.getString("AMIGO_FOTO")
+        val amigoBio = arguments?.getString("AMIGO_BIO")
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment telarf17_5_perfil_amigo.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            TelaRF17PerfilAmigo().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        // Injeta os textos nos componentes
+        textNomePerfilAmigo.text = amigoNome ?: "Sem Nome"
+        textEmailPerfilAmigo.text = amigoEmail ?: "Sem E-mail"
+        textUsuarioPerfilAmigo.text = amigoEmail?.substringBefore("@") ?: "usuario"
+        textBioPerfilAmigo.text = if (!amigoBio.isNullOrEmpty()) amigoBio else "Este usuário não informou uma biografia."
+
+        // Carrega a foto do usuário clicado usando o Coil
+        if (!amigoFoto.isNullOrEmpty()) {
+            imagePerfilAmigo.load(amigoFoto) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
             }
+        } else {
+            imagePerfilAmigo.setImageResource(R.drawable.user_placeholder)
+        }
     }
 }

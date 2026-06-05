@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
@@ -69,10 +70,12 @@ class TelaRF14Leitura : Fragment(R.layout.telarf14_leitura) {
         val btnAbrirAudio = view.findViewById<MaterialButton>(R.id.buttonAbrirAudioLivro)
         val btnReservar = view.findViewById<MaterialButton>(R.id.buttonReservarLivro)
 
-        // Botão Alugar
+        // Botão Alugar - Validando com o Popup de Scroll
         btnAlugar.setOnClickListener {
             if (livro.disponivel) {
-                Toast.makeText(requireContext(), "Livro disponível! Iniciando aluguel...", Toast.LENGTH_LONG).show()
+                exibirTermosComScroll(livro) {
+                    Toast.makeText(requireContext(), "Livro disponível! Iniciando aluguel...", Toast.LENGTH_LONG).show()
+                }
             } else {
                 Toast.makeText(requireContext(), "Livro indisponível no momento.", Toast.LENGTH_LONG).show()
             }
@@ -99,14 +102,79 @@ class TelaRF14Leitura : Fragment(R.layout.telarf14_leitura) {
             Toast.makeText(requireContext(), "Audiobook indisponível no momento.", Toast.LENGTH_SHORT).show()
         }
 
-        // Botão Reservar
+        // Botão Reservar - Validando com o Popup de Scroll
         btnReservar.setOnClickListener {
             if (!livro.disponivel) {
                 Toast.makeText(requireContext(), "Esse livro já está disponível. Você pode alugá-lo diretamente.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-            abrirDialogReserva(livro)
+
+            exibirTermosComScroll(livro) {
+                abrirDialogReserva(livro)
+            }
         }
+    }
+
+    // Função que gerencia o Popup com trava de Scroll e Checkbox
+    private fun exibirTermosComScroll(livro: Livro, onTermosAceitos: () -> Unit) {
+        val dialogView = layoutInflater.inflate(R.layout.popup_termos, null)
+        val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(false)
+
+        val scrollTermos = dialogView.findViewById<androidx.core.widget.NestedScrollView>(R.id.scrollTermos)
+        val textCorpoTermos = dialogView.findViewById<TextView>(R.id.textCorpoTermos)
+        val checkAceitarTermos = dialogView.findViewById<CheckBox>(R.id.checkAceitarTermos)
+        val btnConfirmar = dialogView.findViewById<MaterialButton>(R.id.btnConfirmarTermos)
+        val btnRecusar = dialogView.findViewById<MaterialButton>(R.id.btnRecusarTermos)
+
+        textCorpoTermos.text = """
+            TERMOS E DIRETRIZES DE USO DA BIBLIOTECA
+
+            1. DO COMPROMISSO DE RETIRADA
+            Ao efetuar a reserva do livro "${livro.titulo}", o usuário assume total responsabilidade de comparecer ao balcão de atendimento na data selecionada no agendamento.
+            
+            2. DA DEVOLUÇÃO E PRAZOS
+            O empréstimo físico é válido pelo período regular estabelecido pelo sistema da instituição. A não devolução ou não renovação do exemplar acarretará no bloqueio automático de novas solicitações digitais ou físicas.
+            
+            3. DA CONSERVAÇÃO DO EXEMPLAR
+            O aluno compromete-se a inspecionar o livro no ato da retirada e mantê-lo nas mesmas condições de conservação. É estritamente proibido realizar rasuras, marcações com caneta ou marca-texto, dobrar páginas ou danificar a capa do material de estudo.
+            
+            4. DAS PENALIDADES E SUSPENSÃO
+            Caso ocorram avarias críticas que impossibilitem a leitura por outros estudantes, o usuário concorda com a aplicação das sanções administrativas vigentes no regimento acadêmico da instituição, incluindo reposição do item ou taxas de manutenção patrimonial.
+            
+            5. CONSIDERAÇÕES FINAIS
+            O preenchimento e confirmação deste formulário atesta que o leitor está de acordo com as normas estipuladas, valendo como assinatura eletrônica termo de aceite para todos os fins internos.
+        """.trimIndent()
+
+        // Escuta as mudanças de rolagem
+        scrollTermos.setOnScrollChangeListener { v: androidx.core.widget.NestedScrollView, _, scrollY, _, _ ->
+            val childHeight = v.getChildAt(0).measuredHeight
+            val totalScrollPossivel = childHeight - v.measuredHeight
+
+            if (scrollY >= totalScrollPossivel - 10) {
+                if (checkAceitarTermos.visibility == View.GONE) {
+                    checkAceitarTermos.visibility = View.VISIBLE
+                    Toast.makeText(requireContext(), "Por favor, marque a caixinha para avançar.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        checkAceitarTermos.setOnCheckedChangeListener { _, isChecked ->
+            btnConfirmar.isEnabled = isChecked
+        }
+
+        btnConfirmar.setOnClickListener {
+            dialog.dismiss()
+            onTermosAceitos()
+        }
+
+        btnRecusar.setOnClickListener {
+            dialog.dismiss()
+            Toast.makeText(requireContext(), "Reserva cancelada. É necessário aceitar os termos.", Toast.LENGTH_SHORT).show()
+        }
+
+        dialog.show()
     }
 
     // Dialog de Reserva
@@ -163,12 +231,10 @@ class TelaRF14Leitura : Fragment(R.layout.telarf14_leitura) {
     }
 
     // Salvar Reserva no Supabase
-    // Salvar Reserva no Supabase
     private fun salvarReserva(livro: Livro, dataRetirada: String) {
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val emailUsuario = sharedPref.getString("USER_EMAIL", "")?.trim()?.lowercase() ?: ""
 
-        // 🌟 Gera o carimbo de data e hora atual no formato do Supabase
         val timestampAtual = java.text.SimpleDateFormat(
             "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
             java.util.Locale.getDefault()
@@ -177,7 +243,6 @@ class TelaRF14Leitura : Fragment(R.layout.telarf14_leitura) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    // 1️⃣ Envia os dados exatos para a tabela "reservas"
                     val jsonReserva = buildJsonObject {
                         put("email_usuario", emailUsuario)
                         put("titulo_livro", livro.titulo)
@@ -188,16 +253,15 @@ class TelaRF14Leitura : Fragment(R.layout.telarf14_leitura) {
                         put("devolvido", false)
                         put("oculto_historico", false)
                         put("data_retirada", dataRetirada)
-                        put("created_at", timestampAtual) // 🌟 Enviando o carimbo de data
+                        put("created_at", timestampAtual)
                     }
                     SupabaseConfig.client.postgrest["reservas"].insert(jsonReserva)
 
-                    // 2️⃣ Salva a notificação do sistema
                     val jsonNotificacao = buildJsonObject {
                         put("email_usuario", emailUsuario)
                         put("titulo", "Reserva Realizada")
                         put("mensagem", "Sua reserva do livro '${livro.titulo}' foi agendada para $dataRetirada.")
-                        put("created_at", timestampAtual) // 🌟 Enviando o carimbo de data aqui também
+                        put("created_at", timestampAtual)
                     }
                     SupabaseConfig.client.postgrest["notificacoes"].insert(jsonNotificacao)
                 }
