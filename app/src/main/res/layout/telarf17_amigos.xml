@@ -18,9 +18,9 @@
         <View
             android:layout_width="260dp"
             android:layout_height="260dp"
-            android:layout_marginStart="-130dp"
-            android:layout_marginTop="-130dp"
-            android:alpha="0.16"
+            android:layout_marginStart="-120dp"
+            android:layout_marginTop="-120dp"
+            android:alpha="0.15"
             android:background="@drawable/bg_circle"
             android:backgroundTint="@color/white"
             app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +40,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:id="@+id/imageUsuario"
+                android:id="@+id/imageUsuarioAmigos"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
@@ -48,28 +48,28 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- TÍTULO -->
+        <!-- NOME DO USUÁRIO (Abaixo da foto de perfil) -->
         <TextView
-            android:id="@+id/textTituloAmigos"
+            android:id="@+id/textUsuarioAmigos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Amigos"
+            android:layout_marginTop="12dp"
+            android:text="Usuário"
             android:textColor="@color/white"
-            android:textSize="28sp"
+            android:textSize="26sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/cardFotoUsuario"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/cardFotoUsuario" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- ÁREA ADICIONAR AMIGOS (Pill Aesthetic) -->
+    <!-- ÁREA ADICIONAR AMIGOS (Pill Aesthetic - Fica em cima agora) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/layoutAdicionarAmigos"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_marginHorizontal="32dp"
+        android:layout_marginHorizontal="24dp"
         android:layout_marginTop="24dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="4dp"
@@ -105,20 +105,41 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- SCROLL AREA -->
+    <!-- SEÇÃO TÍTULO DA TELA (Movido para baixo do botão) -->
+    <LinearLayout
+        android:id="@+id/layoutTituloAmigos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/layoutAdicionarAmigos">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Amigos"
+            android:textColor="@color/biblio_dark"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- SCROLL AREA (Ajustado para começar depois do título) -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/layoutAdicionarAmigos"
+        app:layout_constraintTop_toBottomOf="@id/layoutTituloAmigos"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="32dp"
+            android:paddingHorizontal="24dp"
             android:paddingBottom="40dp">
 
             <!-- ITEM 1 -->

@@ -70,6 +70,7 @@
         android:layout_marginBottom="56dp"
         android:backgroundTint="@color/biblio_blue"
         android:text="Começar"
+        android:textAllCaps="false"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
