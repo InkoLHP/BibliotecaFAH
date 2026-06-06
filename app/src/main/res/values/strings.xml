@@ -235,6 +235,9 @@
     <string name="hint_audiobook">Audiobook...</string>
     <string name="label_disponivel_braille">Disponível em Braille</string>
     <string name="btn_salvar_novo_livro">Salvar novo livro</string>
+
+    <string name="termos_diretrizes_uso">TERMOS E DIRETRIZES DE USO DA BIBLIOTECA\n\n1. DO COMPROMISSO DE RETIRADA\nAo efetuar o empréstimo/aluguel do livro \"%s\", o usuário assume total responsabilidade de comparecer ao balcão de atendimento e zelar pelo material.\n\n2. DA DEVOLUÇÃO E PRAZOS\nO empréstimo físico é válido pelo período regular estabelecido pelo sistema da instituição. A não devolução ou não renovação do exemplar acarretará no bloqueio automático de novas solicitações digitais ou físicas.\n\n3. DA CONSERVAÇÃO DO EXEMPLAR\nO aluno compromete-se a inspecionar o livro no ato da retirada e mantê-lo nas mesmas condições de conservação. É estritamente proibido realizar rasuras, marcações com caneta ou marca-texto, dobrar páginas ou danificar a capa do material de estudo.\n\n4. DAS PENALIDADES E SUSPENSÃO\nCaso ocorram avarias críticas que impossibilitem a leitura por outros estudantes, o usuário concorda com a aplicação das sanções administrativas vigentes no regimento acadêmico da instituição, incluindo reposição do item ou taxas de manutenção patrimonial.\n\n5. CONSIDERAÇÕES FINAIS\nO preenchimento e confirmação deste formulário atesta que o leitor está de acordo com as normas estipuladas, valendo como assinatura eletrônica termo de aceite para todos os fins internos.</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

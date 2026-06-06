@@ -74,9 +74,10 @@ class TelaRF03LoginAluno : AppCompatActivity() {
                         if (contaEstudante != null) {
                             val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
                             sharedPref.edit()
+                                .putLong("USER_ID", contaEstudante.id ?: 0)
                                 .putString("USER_NOME", contaEstudante.nome)
                                 .putString("USER_EMAIL", contaEstudante.email)
-                                .putString("USER_FOTO", contaEstudante.foto) // ⬅️ SALVANDO A FOTO AGORA
+                                .putString("USER_FOTO", contaEstudante.foto)
                                 .putString("USER_TIPO", "usuario")
                                 .apply()
 

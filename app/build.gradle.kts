@@ -22,6 +22,15 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 🌟 Movemos para cá para que a chave esteja disponível em todas as versões (Debug e Release)
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+        val apiKey = properties.getProperty("GOOGLE_BOOKS_API_KEY") ?: ""
+        buildConfigField("String", "BOOKS_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -33,12 +42,7 @@ android {
             )
         }
         debug {
-            val properties = Properties()
-            val localPropertiesFile = project.rootProject.file("local.properties")
-            if (localPropertiesFile.exists()) {
-                properties.load(localPropertiesFile.inputStream())
-            }
-            buildConfigField("String", "BOOKS_API_KEY", "\"${properties.getProperty("GOOGLE_BOOKS_API_KEY") ?: ""}\"")
+            // Removido daqui para evitar duplicidade
         }
     }
     buildFeatures {

@@ -20,7 +20,7 @@ import com.google.android.material.button.MaterialButton
 import com.example.bibliounifornew.model.Livro
 import com.example.bibliounifornew.model.LivrariaItem
 import com.example.bibliounifornew.model.DesejoItem
-import com.example.bibliounifornew.adm.MidiaLivroDetalhes // Reutilizando seu modelo serializável estável
+import com.example.bibliounifornew.adm.MidiaLivroDetalhes
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
@@ -79,10 +79,9 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // 🚀 BUSCA ASSÍNCRONA PARALELA: Dispara as duas buscas na mesma fração de segundo
+                // 🚀 BUSCA ASSÍNCRONA PARALELA: Dispara as duas buscas simultaneamente
                 val buscaSupabase = async(Dispatchers.IO) {
                     try {
-                        // Filtra se o termo está contido no título OR no autor (ignora case)
                         SupabaseConfig.client.from("livros").select {
                             filter {
                                 or {
@@ -106,32 +105,31 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
                     }
                 }
 
-                // Aguarda o término de ambas de forma simultânea
                 val localResult = buscaSupabase.await()
                 val apiResult = buscaGoogleBooks.await()
 
-                // 1. Mapeia os livros internos do Supabase (Prioridade Máxima)
+                // 1. Mapeia os livros internos (ID como String UUID)
                 val livrosSupabase = localResult.map { local ->
                     Livro(
-                        id = local.id?.hashCode() ?: (1000..9999).random(),
+                        id = local.id?.toString() ?: "", // 🌟 Convertido para String (UUID)
                         titulo = local.titulo ?: "Sem título",
                         autor = local.autor ?: "Autor desconhecido",
                         isbn = local.isbn ?: "Sem ISBN",
                         capaUrl = local.capaUrl ?: "",
                         sinopse = local.sinopse,
                         data_publicacao = "--",
-                        categoria = "Biblioteca Local", // Tag visual identificadora
+                        categoria = "Biblioteca Local",
                         formato = "Físico / Digital",
                         disponivel = (local.exemplares ?: 0) > 0,
                         pdfUrl = local.pdf_url
                     )
                 }
 
-                // 2. Mapeia os livros da API Externa do Google
+                // 2. Mapeia os livros do Google (ID como String Nativa)
                 val livrosGoogle = apiResult?.items?.map { item ->
                     val info = item.volumeInfo
                     Livro(
-                        id = item.id.hashCode(),
+                        id = item.id ?: "", // 🌟 Usando o ID String original do Google
                         titulo = info.title ?: "Sem título",
                         autor = info.authors?.joinToString(", ") ?: "Autor desconhecido",
                         isbn = info.industryIdentifiers?.firstOrNull()?.identifier ?: "Sem ISBN",
@@ -145,12 +143,10 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
                     )
                 } ?: emptyList()
 
-                // 3. MESCLAGEM INTELIGENTE: Remove itens duplicados com base no título e autor
                 val listaCompletaFinal = mutableListOf<Livro>()
                 listaCompletaFinal.addAll(livrosSupabase)
 
                 for (googleLivro in livrosGoogle) {
-                    // Evita inserir o mesmo livro da API caso ele já tenha sido puxado do Supabase
                     val jaExisteNoBanco = livrosSupabase.any {
                         it.titulo.equals(googleLivro.titulo, ignoreCase = true) ||
                                 (it.isbn != "Sem ISBN" && it.isbn == googleLivro.isbn)
@@ -160,7 +156,6 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
                     }
                 }
 
-                // Atualiza o adapter com a listagem combinada
                 recyclerLivros.adapter = LivroUsuarioAdapter(
                     livros = listaCompletaFinal,
                     onVerMaisClick = { livro -> abrirOpcoesLivro(livro) },
@@ -249,9 +244,13 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
         processandoClique = true
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // 🚀 Salvando com o ID original (String)
                 val item = LivrariaItem(null, emailUsuario, livro.id, livro.titulo, livro.autor, livro.capaUrl, livro.categoria)
                 withContext(Dispatchers.IO) { SupabaseConfig.client.postgrest["minha_livraria"].insert(item) }
                 Toast.makeText(requireContext(), "Adicionado! 📚", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao salvar: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally { processandoClique = false }
         }
     }
@@ -262,11 +261,15 @@ class TelaRF11TelaDePesquisa : Fragment(R.layout.telarf11_tela_pesquisa) {
         processandoClique = true
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // 🚀 Salvando com o ID original (String)
                 val item = DesejoItem(null, emailUsuario, livro.id, livro.titulo, livro.autor, livro.capaUrl, livro.categoria, true)
                 withContext(Dispatchers.IO) { SupabaseConfig.client.postgrest["lista_desejos"].insert(item) }
                 val prefs = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE)
                 prefs.edit().putString("status_${livro.id}", "NAO_LIDO").apply()
                 Toast.makeText(requireContext(), "Salvo! ⏱️", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao salvar: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally { processandoClique = false }
         }
     }

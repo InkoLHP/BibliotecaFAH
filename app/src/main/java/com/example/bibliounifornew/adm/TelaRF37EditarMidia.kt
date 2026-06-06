@@ -14,7 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.google.android.material.button.MaterialButton
@@ -166,11 +166,11 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
                     textPdf.text = livro.pdf_url ?: "--"
                     textCapaUrl.text = livro.capaUrl ?: "--"
 
-                    if (!livro.capaUrl.isNullOrEmpty()) {
-                        Glide.with(requireContext())
-                            .load(livro.capaUrl)
-                            .placeholder(R.drawable.placeholder)
-                            .into(imageLivroDetalhes)
+                    // 🚀 Padronizado: Sempre carrega com Coil para aplicar o placeholder se a URL for vazia
+                    imageLivroDetalhes.load(livro.capaUrl) {
+                        crossfade(true)
+                        placeholder(R.drawable.placeholder)
+                        error(R.drawable.placeholder)
                     }
                 } else {
                     isMidiaExterna = true

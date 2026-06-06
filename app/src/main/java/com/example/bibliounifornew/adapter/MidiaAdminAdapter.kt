@@ -22,7 +22,7 @@ class MidiaAdminAdapter(
         val textAutorLivro: TextView = itemView.findViewById(R.id.textAutorLivro)
         val textIsbnLivro: TextView = itemView.findViewById(R.id.textIsbnLivro)
         val imgCapaLivro: ImageView = itemView.findViewById(R.id.imgCapaLivro)
-        val btnEditarInformacoes: MaterialButton = itemView.findViewById(R.id.btnEditarInformacoes)
+        val btnEditarInformacoes: MaterialButton = itemView.findViewById(R.id.btnVerInformacoes)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MidiaViewHolder {

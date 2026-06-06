@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
-    var id: Int? = null,
+    var id: Long? = null,
     var nome: String = "",       // Valor padrão evita crash se vier nulo do banco
     var email: String = "",      // Valor padrão
     var usuario: String = "",    // Valor padrão

@@ -240,7 +240,7 @@ class TelaRF08DashboardUsuario : Fragment(R.layout.telarf08_dashboardusuario) {
 
                         Livro(
 
-                            id = item.id?.hashCode() ?: 0,
+                            id = item.id ?: "",
 
                             titulo = info.title ?: "Título Indisponível",
 

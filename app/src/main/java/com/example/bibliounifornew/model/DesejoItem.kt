@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class DesejoItem(
     val id: Int? = null,
     val email_usuario: String,
-    val livro_id: Int? = null,
+    val livro_id: String? = null, // 🌟 Alterado de Int para String para bater com o tipo Text do banco
     val titulo: String,
     val autor: String,
     val capa_url: String? = null,

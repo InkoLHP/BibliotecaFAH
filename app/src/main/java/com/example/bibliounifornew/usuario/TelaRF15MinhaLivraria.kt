@@ -18,6 +18,7 @@ import com.example.bibliounifornew.adapter.LivrariaAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.LivrariaItem
+import com.example.bibliounifornew.model.Livro
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -145,8 +146,8 @@ class TelaRF15MinhaLivraria : Fragment(R.layout.telarf15_minha_livraria) {
     }
 
     private fun abrirDetalhesDoLivro(item: LivrariaItem) {
-        val livroMapeado = com.example.bibliounifornew.model.Livro(
-            id = item.livro_id ?: 0,
+        val livroMapeado = Livro(
+            id = item.livro_id ?: "",
             titulo = item.titulo,
             autor = item.autor,
             isbn = "Sem ISBN",

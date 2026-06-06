@@ -190,7 +190,7 @@ class TelaRF16ListaDesejos : Fragment(R.layout.telarf16_lista_desejos) {
 
     private fun abrirDetalhesDoLivro(item: DesejoItem) {
         val livroMapeado = Livro(
-            id = item.livro_id ?: 0,
+            id = item.livro_id ?: "",
             titulo = item.titulo,
             autor = item.autor,
             isbn = "Sem ISBN",

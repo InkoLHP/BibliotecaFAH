@@ -19,6 +19,7 @@ import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.LivrosAdmAdapter
 import com.example.bibliounifornew.api.RetrofitClient
 import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.Livro
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +44,7 @@ data class LivroCadastrado(
     @SerialName("isbn")
     val isbn: String? = null,
 
-    @SerialName("capaUrl")
+    @SerialName("capa_url") // 🌟 CORRIGIDO: Bate com a coluna do banco
     val capaUrl: String? = null,
 
     val veioDaApi: Boolean = false
@@ -62,10 +63,8 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 🌟 CORREÇÃO DE ID: Vinculado ao ID correto definido no seu XML
         editPesquisaLivro = view.findViewById(R.id.etProcurarMidia)
 
-        // Recuperando a foto do ADM salva na sessão
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val urlFoto = sharedPref.getString("USER_FOTO", null)
 
@@ -78,7 +77,6 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
             }
         }
 
-        // Configuração do botão voltar nativo
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (parentFragmentManager.backStackEntryCount > 0) {
@@ -91,7 +89,6 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
             }
         })
 
-        // Botão "Adicionar Nova Mídia"
         val btnAdicionarMidia = view.findViewById<MaterialButton>(R.id.btnAdicionarMidia)
         btnAdicionarMidia.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -100,26 +97,38 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
                 .commit()
         }
 
-        // Configurar o RecyclerView
         val recycler = view.findViewById<RecyclerView>(R.id.recyclerLivrosAdm)
         recycler.layoutManager = LinearLayoutManager(requireContext())
-
-        // Como está dentro de um NestedScrollView, isso evita engasgos na rolagem
         recycler.isNestedScrollingEnabled = false
 
         adapter = LivrosAdmAdapter(listaFiltradaExibicao) { livroClicado ->
-            if (livroClicado.veioDaApi) {
-                Toast.makeText(requireContext(), "Este livro pertence à API do Google e não pode ser editado.", Toast.LENGTH_SHORT).show()
-            } else {
-                val argumentos = Bundle().apply {
-                    putString("LIVRO_ID", livroClicado.id)
-                }
-                val telaDetalhes = TelaRF37EditarMidia().apply { arguments = argumentos }
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.frameLayout, telaDetalhes)
-                    .addToBackStack(null)
-                    .commit()
+            // Mapeando para o modelo Livro oficial (String ID)
+            val livroParaDetalhes = Livro(
+                id = livroClicado.id,
+                titulo = livroClicado.titulo ?: "Sem título",
+                autor = livroClicado.autor ?: "Autor desconhecido",
+                isbn = livroClicado.isbn ?: "Sem ISBN",
+                capaUrl = livroClicado.capaUrl ?: "",
+                sinopse = "Carregado do Acervo ADM",
+                data_publicacao = null,
+                categoria = null,
+                formato = "Físico",
+                disponivel = true,
+                pdfUrl = null
+            )
+
+            val argumentos = Bundle().apply {
+                putSerializable("livro", livroParaDetalhes)
             }
+            
+            val telaDetalhes = TelaRF12TelaDoLivroADM().apply { 
+                arguments = argumentos 
+            }
+            
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frameLayout, telaDetalhes)
+                .addToBackStack(null)
+                .commit()
         }
         recycler.adapter = adapter
 
@@ -139,12 +148,11 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
 
                 todosOsLivrosSupabase.clear()
                 todosOsLivrosSupabase.addAll(livrosBuscados)
-
                 aplicarFiltroLocalESubsidiarApi()
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao carregar acervo: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Erro: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -179,7 +187,6 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
                 val titulo = (livro.titulo ?: "").lowercase()
                 val autor = (livro.autor ?: "").lowercase()
                 val isbn = (livro.isbn ?: "").lowercase()
-
                 titulo.contains(textoDigitado) || autor.contains(textoDigitado) || isbn.contains(textoDigitado)
             }
         }
@@ -206,10 +213,8 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
 
                 val livrosConvertidosApi = respostaApi.items?.map { itemApi ->
                     val info = itemApi.volumeInfo
-
                     val isbnConvertido = info?.industryIdentifiers?.firstOrNull { it.type == "ISBN_13" }?.identifier
-                        ?: info?.industryIdentifiers?.firstOrNull()?.identifier
-                        ?: ""
+                        ?: info?.industryIdentifiers?.firstOrNull()?.identifier ?: ""
 
                     LivroCadastrado(
                         id = itemApi.id ?: java.util.UUID.randomUUID().toString(),
@@ -226,7 +231,6 @@ class Telarf32LivrosCrudADM : Fragment(R.layout.telarf32_livros_crud_adm) {
                     listaFiltradaExibicao.addAll(livrosConvertidosApi)
                     adapter.notifyDataSetChanged()
                 }
-
             } catch (e: Exception) {
                 e.printStackTrace()
             }
