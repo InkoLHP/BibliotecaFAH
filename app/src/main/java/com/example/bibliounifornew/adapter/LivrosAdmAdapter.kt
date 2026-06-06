@@ -13,7 +13,7 @@ import com.google.android.material.button.MaterialButton
 
 class LivrosAdmAdapter(
     private var livros: List<LivroCadastrado>,
-    private val onEditarClick: (LivroCadastrado) -> Unit
+    private val onVerMaisClick: (LivroCadastrado) -> Unit
 ) : RecyclerView.Adapter<LivrosAdmAdapter.LivroViewHolder>() {
 
     class LivroViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -21,7 +21,7 @@ class LivrosAdmAdapter(
         val autor: TextView = view.findViewById(R.id.textAutorLivro)
         val isbn: TextView = view.findViewById(R.id.textIsbnLivro)
         val imgCapa: ImageView = view.findViewById(R.id.imgCapaLivro)
-        val btnEditar: MaterialButton = view.findViewById(R.id.btnEditarInformacoes)
+        val btnVerMais: MaterialButton = view.findViewById(R.id.btnVerInformacoes)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LivroViewHolder {
@@ -43,16 +43,9 @@ class LivrosAdmAdapter(
             error(R.drawable.placeholder)
         }
 
-        if (livro.veioDaApi) {
-            holder.btnEditar.text = "Visualizar Mídia"
-            // Se preferir sumir com o botão para itens da API, use: holder.btnEditar.visibility = View.GONE
-        } else {
-            holder.btnEditar.text = "Editar Informações"
-            holder.btnEditar.visibility = View.VISIBLE
-        }
-
-        holder.btnEditar.setOnClickListener {
-            onEditarClick(livro)
+        // Não forçamos texto via código para respeitar o XML "Ver Mais"
+        holder.btnVerMais.setOnClickListener {
+            onVerMaisClick(livro)
         }
     }
 

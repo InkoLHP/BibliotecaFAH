@@ -77,21 +77,21 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEditarInformacoes"
+            android:id="@+id/btnVerInformacoes"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="20dp"
-            android:text="Editar Informações"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Ver Mais"
             android:textAllCaps="false"
             android:textColor="@color/biblio_blue"
             android:textSize="14sp"
             android:textStyle="bold"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
+            app:cornerRadius="24dp"
             app:strokeColor="@color/biblio_blue"
-            app:strokeWidth="1.2dp"
-            app:cornerRadius="24dp" />
+            app:strokeWidth="1.2dp" />
 
     </LinearLayout>
 

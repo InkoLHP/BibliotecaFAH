@@ -19,8 +19,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.core.view.isGone
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.example.bibliounifornew.adapter.ComentariosAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.model.Aluguel
 import com.example.bibliounifornew.model.Livro
@@ -30,8 +36,13 @@ import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import kotlin.random.Random
 import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.Avaliacao
 import io.github.jan.supabase.postgrest.postgrest
 
 class TelaRF12TelaDoLivro : AppCompatActivity() {
@@ -41,12 +52,30 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
     private var quantidadeEstoque: Int = 0
     private var processandoClique: Boolean = false
 
+    private var notaSelecionada: Int = 0
+    private var usuarioId: Long = 0
+
+    private lateinit var recyclerComentarios: RecyclerView
+    private lateinit var adapterComentarios: ComentariosAdapter
+    private lateinit var textSemComentarios: TextView
+    private lateinit var textMediaAvaliacoes: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.telarf12_tela_livro)
 
         progressBar = findViewById(R.id.progressBarDetalhes)
+        recyclerComentarios = findViewById(R.id.recyclerComentarios)
+        textSemComentarios = findViewById(R.id.textSemComentarios)
+        textMediaAvaliacoes = findViewById(R.id.textMediaAvaliacoes)
+
+        adapterComentarios = ComentariosAdapter(emptyList())
+        recyclerComentarios.layoutManager = LinearLayoutManager(this)
+        recyclerComentarios.adapter = adapterComentarios
+
+        val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+        usuarioId = sharedPref.getLong("USER_ID", 0)
 
         val livro = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getSerializableExtra("livro", Livro::class.java)
@@ -60,6 +89,10 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             configurarEstoqueEAluguel(livro)
             configurarBotaoSolicitar(livro)
             configurarMarcadoresDeLeitura(livro)
+            configurarEstrelas()
+            configurarBotaoEnviarAvaliacao(livro)
+
+            carregarComentarios(livro.id)
         } else {
             Toast.makeText(this, "Livro não encontrado", Toast.LENGTH_SHORT).show()
             finish()
@@ -75,6 +108,44 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
                 .replace(R.id.main_detalhes_container, fragmentLeitura)
                 .addToBackStack(null)
                 .commit()
+        }
+    }
+
+    private fun carregarComentarios(livroId: String?) {
+        if (livroId == null) return
+
+        lifecycleScope.launch {
+            try {
+                val listaAvaliacoes = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client
+                        .postgrest["avaliacoes"]
+                        .select {
+                            filter {
+                                eq("livro_id", livroId)
+                            }
+                        }
+                        .decodeList<Avaliacao>()
+                }
+
+                if (listaAvaliacoes.isEmpty()) {
+                    textSemComentarios.visibility = View.VISIBLE
+                    recyclerComentarios.visibility = View.GONE
+                    textMediaAvaliacoes.text = "Nenhuma avaliação ainda."
+                } else {
+                    textSemComentarios.visibility = View.GONE
+                    recyclerComentarios.visibility = View.VISIBLE
+
+                    val media = listaAvaliacoes.map { it.nota.toInt() }.average()
+                    textMediaAvaliacoes.text = String.format(Locale.getDefault(), "Média: %.1f / 5", media)
+
+                    adapterComentarios = ComentariosAdapter(listaAvaliacoes)
+                    recyclerComentarios.adapter = adapterComentarios
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this@TelaRF12TelaDoLivro, "Erro ao carregar comentários.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -98,8 +169,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         findViewById<TextView>(R.id.textDimensaoLivro).text = "N/I"
         findViewById<TextView>(R.id.textPaginasLivro).text = "N/I"
 
-        val eDigital = livro.formato.contains("pdf", ignoreCase = true) ||
-                livro.formato.contains("epub", ignoreCase = true)
+        val eDigital = (livro.formato).contains("pdf", ignoreCase = true) ||
+                (livro.formato).contains("epub", ignoreCase = true)
         findViewById<TextView>(R.id.textPdfDisponivel).text = if (eDigital) "Sim" else "Não"
     }
 
@@ -125,7 +196,6 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             if (processandoClique) return@setOnClickListener
 
             if (isDisponivel && (quantidadeEstoque > 0)) {
-                // 🌟 Trava o fluxo chamando o Popup de Termos por Scroll antes de gravar no banco
                 exibirTermosComScrollActivity(livro) {
                     executarProcessoAluguel(livro)
                 }
@@ -135,7 +205,6 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         }
     }
 
-    // 🌟 Lógica de gravação do Aluguel migrada para uma função isolada
     private fun executarProcessoAluguel(livro: Livro) {
         val textDisponibilidade = findViewById<TextView>(R.id.textDisponibilidade)
         val textQuantidadeEstoque = findViewById<TextView>(R.id.textQuantidadeEstoque)
@@ -159,8 +228,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             return
         }
 
-        val formatoData = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
-        val calendario = java.util.Calendar.getInstance()
+        val formatoData = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val calendario = Calendar.getInstance()
         calendario.add(java.util.Calendar.DAY_OF_YEAR, 7)
         val dataVencimento = formatoData.format(calendario.time)
 
@@ -176,8 +245,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             tipo = "ALUGUEL"
         )
 
-        val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
-            .format(java.util.Date())
+        val dataHoraAtual = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
+            .format(Date())
 
         val novaNotificacao = Notificacao(
             email_usuario = emailReal,
@@ -208,44 +277,26 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         dispararNotificacaoLocal("Aluguel Confirmado!", "O livro '${livro.titulo}' foi reservado. Vencimento: $dataVencimento.")
     }
 
-    // 🌟 Gerador do Popup de Termos e Rolagem estruturado para a Activity
     private fun exibirTermosComScrollActivity(livro: Livro, onTermosAceitos: () -> Unit) {
         val dialogView = layoutInflater.inflate(R.layout.popup_termos, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.setCancelable(false)
 
-        val scrollTermos = dialogView.findViewById<androidx.core.widget.NestedScrollView>(R.id.scrollTermos)
+        val scrollTermos = dialogView.findViewById<NestedScrollView>(R.id.scrollTermos)
         val textCorpoTermos = dialogView.findViewById<TextView>(R.id.textCorpoTermos)
         val checkAceitarTermos = dialogView.findViewById<CheckBox>(R.id.checkAceitarTermos)
         val btnConfirmar = dialogView.findViewById<MaterialButton>(R.id.btnConfirmarTermos)
         val btnRecusar = dialogView.findViewById<MaterialButton>(R.id.btnRecusarTermos)
 
-        textCorpoTermos.text = """
-            TERMOS E DIRETRIZES DE USO DA BIBLIOTECA
+        textCorpoTermos.text = getString(R.string.termos_diretrizes_uso, livro.titulo)
 
-            1. DO COMPROMISSO DE RETIRADA
-            Ao efetuar o empréstimo/aluguel do livro "${livro.titulo}", o usuário assume total responsabilidade de comparecer ao balcão de atendimento e zelar pelo material.
-            
-            2. DA DEVOLUÇÃO E PRAZOS
-            O empréstimo físico é válido pelo período regular estabelecido pelo sistema da instituição. A não devolução ou não renovação do exemplar acarretará no bloqueio automático de novas solicitações digitais ou físicas.
-            
-            3. DA CONSERVAÇÃO DO EXEMPLAR
-            O aluno compromete-se a inspecionar o livro no ato da retirada e mantê-lo nas mesmas condições de conservação. É estritamente proibido realizar rasuras, marcações com caneta ou marca-texto, dobrar páginas ou danificar a capa do material de estudo.
-            
-            4. DAS PENALIDADES E SUSPENSÃO
-            Caso ocorram avarias críticas que impossibilitem a leitura por outros estudantes, o usuário concorda com a aplicação das sanções administrativas vigentes no regimento acadêmico da instituição, incluindo reposição do item ou taxas de manutenção patrimonial.
-            
-            5. CONSIDERAÇÕES FINAIS
-            O preenchimento e confirmação deste formulário atesta que o leitor está de acordo com as normas estipuladas, valendo como assinatura eletrônica termo de aceite para todos os fins internos.
-        """.trimIndent()
-
-        scrollTermos.setOnScrollChangeListener { v: androidx.core.widget.NestedScrollView, _, scrollY, _, _ ->
+        scrollTermos.setOnScrollChangeListener { v: NestedScrollView, _, scrollY, _, _ ->
             val childHeight = v.getChildAt(0).measuredHeight
             val totalScrollPossivel = childHeight - v.measuredHeight
 
             if (scrollY >= totalScrollPossivel - 10) {
-                if (checkAceitarTermos.visibility == View.GONE) {
+                if (checkAceitarTermos.isGone) {
                     checkAceitarTermos.visibility = View.VISIBLE
                     Toast.makeText(this, "Por favor, marque a caixinha para avançar.", Toast.LENGTH_SHORT).show()
                 }
@@ -306,8 +357,8 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
             return
         }
 
-        val dataHoraAtual = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.getDefault())
-            .format(java.util.Date())
+        val dataHoraAtual = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
+            .format(Date())
 
         val novaSolicitacao = Solicitacao(
             id = null,
@@ -355,25 +406,25 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
 
         val sharedPrefs = getSharedPreferences("user_session", MODE_PRIVATE)
 
-        val livroIdentificador = livro.id ?: "0"
+        val livroIdentificador = livro.id
         val statusSalvo = sharedPrefs.getString("status_$livroIdentificador", "NAO_LIDO")
 
         atualizarVisualBotoesLeitura(statusSalvo, buttonNaoLido, buttonLendo, buttonLido)
 
         buttonNaoLido.setOnClickListener {
-            sharedPrefs.edit().putString("status_$livroIdentificador", "NAO_LIDO").apply()
+            sharedPrefs.edit { putString("status_$livroIdentificador", "NAO_LIDO") }
             atualizarVisualBotoesLeitura("NAO_LIDO", buttonNaoLido, buttonLendo, buttonLido)
             Toast.makeText(this, "Marcado como: Não Lido", Toast.LENGTH_SHORT).show()
         }
 
         buttonLendo.setOnClickListener {
-            sharedPrefs.edit().putString("status_$livroIdentificador", "LENDO").apply()
+            sharedPrefs.edit { putString("status_$livroIdentificador", "LENDO") }
             atualizarVisualBotoesLeitura("LENDO", buttonNaoLido, buttonLendo, buttonLido)
             Toast.makeText(this, "Marcado como: Lendo", Toast.LENGTH_SHORT).show()
         }
 
         buttonLido.setOnClickListener {
-            sharedPrefs.edit().putString("status_$livroIdentificador", "LIDO").apply()
+            sharedPrefs.edit { putString("status_$livroIdentificador", "LIDO") }
             atualizarVisualBotoesLeitura("LIDO", buttonNaoLido, buttonLendo, buttonLido)
             Toast.makeText(this, "Marcado como: Lido!", Toast.LENGTH_SHORT).show()
         }
@@ -399,12 +450,95 @@ class TelaRF12TelaDoLivro : AppCompatActivity() {
         }
     }
 
+    private fun configurarEstrelas() {
+        val estrelas = listOf<ImageView>(
+            findViewById(R.id.star1),
+            findViewById(R.id.star2),
+            findViewById(R.id.star3),
+            findViewById(R.id.star4),
+            findViewById(R.id.star5)
+        )
+
+        estrelas.forEachIndexed { index, imageView ->
+            imageView.setOnClickListener {
+                notaSelecionada = index + 1
+                estrelas.forEachIndexed { i, estrela ->
+                    estrela.setImageResource(
+                        if (i < notaSelecionada) R.drawable.ic_filled_star else R.drawable.ic_outlined_star
+                    )
+                }
+            }
+        }
+    }
+
+    private fun configurarBotaoEnviarAvaliacao(livro: Livro) {
+        val botao = findViewById<Button>(R.id.buttonEnviarAvaliacao)
+        val editComentario = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editComentario)
+
+        botao.setOnClickListener {
+            if (notaSelecionada == 0) {
+                Toast.makeText(this, "Escolha uma nota.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val textoComentario = editComentario.text.toString().trim()
+            if (textoComentario.isEmpty()) {
+                Toast.makeText(this, "Escreva um comentário.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val sharedPref = getSharedPreferences("user_session", MODE_PRIVATE)
+            val emailLogado = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+            val avaliacao = Avaliacao(
+                id = null,
+                comentarios = textoComentario,
+                email = emailLogado,
+                livro_id = livro.id,
+                nota = notaSelecionada.toShort()
+            )
+
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        SupabaseConfig.client
+                            .postgrest["avaliacoes"]
+                            .insert(avaliacao)
+                    }
+
+                    Toast.makeText(this@TelaRF12TelaDoLivro, "Avaliação enviada!", Toast.LENGTH_SHORT).show()
+                    editComentario.setText("")
+                    notaSelecionada = 0
+                    atualizarVisualEstrelas()
+
+                    carregarComentarios(livro.id)
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this@TelaRF12TelaDoLivro, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    private fun atualizarVisualEstrelas() {
+        val estrelas = listOf<ImageView>(
+            findViewById(R.id.star1),
+            findViewById(R.id.star2),
+            findViewById(R.id.star3),
+            findViewById(R.id.star4),
+            findViewById(R.id.star5)
+        )
+        estrelas.forEach {
+            it.setImageResource(R.drawable.ic_outlined_star)
+        }
+    }
+
     private fun dispararNotificacaoLocal(titulo: String, message: String) {
         val channelId = "canal_biblioteca"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val canal =
-                NotificationChannel(channelId, "Notificações BiblioUnifor", NotificationManager.IMPORTANCE_HIGH)
+            val canal = NotificationChannel(channelId, "Notificações BiblioUnifor", NotificationManager.IMPORTANCE_HIGH)
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(canal)
         }
