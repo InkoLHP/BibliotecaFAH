@@ -13,6 +13,7 @@ import com.google.android.material.card.MaterialCardView
 
 class UsuarioBuscaAdapter(
     private val usuarios: List<UsuarioItem>,
+    private val meusAmigosEmails: List<String>, // 🌟 NOVA LISTA DE E-MAILS DOS AMIGOS AQUI
     private val onCardClick: (UsuarioItem) -> Unit,
     private val onAdicionarClick: (UsuarioItem) -> Unit
 ) : RecyclerView.Adapter<UsuarioBuscaAdapter.BuscaViewHolder>() {
@@ -42,6 +43,14 @@ class UsuarioBuscaAdapter(
             holder.imageUsuario.setImageResource(R.drawable.user_placeholder)
         }
 
+        // 🌟 LÓGICA DO BOTÃO: Verifica se já é amigo
+        if (meusAmigosEmails.contains(usuario.email)) {
+            holder.btnAdicionar.visibility = View.GONE // Esconde o botão "+" da lista
+        } else {
+            holder.btnAdicionar.visibility = View.VISIBLE // Mostra o botão para quem não é amigo
+        }
+
+        // Ações de clique
         holder.itemView.setOnClickListener { onCardClick(usuario) }
         holder.btnAdicionar.setOnClickListener { onAdicionarClick(usuario) }
     }
