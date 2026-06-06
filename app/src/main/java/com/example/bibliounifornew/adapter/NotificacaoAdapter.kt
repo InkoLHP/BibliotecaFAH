@@ -8,67 +8,85 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.model.Notificacao
-import java.text.SimpleDateFormat
-import java.util.*
+import com.google.android.material.button.MaterialButton
 
 class NotificacaoAdapter(
-    private val listaNotif: List<Notificacao>,
-    private val onMarcarComoLida: (Notificacao) -> Unit
-) : RecyclerView.Adapter<NotificacaoAdapter.NotifViewHolder>() {
+    private val listaNotificacoes: List<Notificacao>,
+    private val onAvisoLido: (Notificacao) -> Unit,
+    private val onAceitarConvite: (Notificacao) -> Unit,
+    private val onRecusarConvite: (Notificacao) -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    class NotifViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val txtTitulo: TextView = view.findViewById(R.id.txtTituloItemNotif)
-        val txtMensagem: TextView = view.findViewById(R.id.txtMensagemItemNotif)
-        val txtTempo: TextView = view.findViewById(R.id.txtTempoItemNotif)
-        val checkLida: CheckBox = view.findViewById(R.id.checkLidaItemNotif)
+    companion object {
+        private const val TIPO_AVISO = 0
+        private const val TIPO_CONVITE = 1
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotifViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_notificacao, parent, false)
-        return NotifViewHolder(view)
+    // 🌟 Verifica o tipo para decidir qual layout usar
+    override fun getItemViewType(position: Int): Int {
+        return if (listaNotificacoes[position].tipo == "convite_amizade") {
+            TIPO_CONVITE
+        } else {
+            TIPO_AVISO
+        }
     }
 
-    override fun onBindViewHolder(holder: NotifViewHolder, position: Int) {
-        val notificacao = listaNotif[position]
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == TIPO_CONVITE) {
+            // Usa o layout novo que criamos para o pedido de amizade
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_notificacao_amizade, parent, false)
+            ConviteViewHolder(view)
+        } else {
+            // Usa o layout padrão de notificação (substitua o nome se o seu for diferente)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_notificacao, parent, false)
+            AvisoViewHolder(view)
+        }
+    }
 
-        holder.txtTitulo.text = notificacao.titulo
-        holder.txtMensagem.text = notificacao.mensagem
-        holder.txtTempo.text = calcularTempoDecorrido(notificacao.created_at)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val notificacao = listaNotificacoes[position]
 
-        holder.checkLida.setOnCheckedChangeListener(null)
+        if (holder is ConviteViewHolder) {
+            holder.bind(notificacao, onAceitarConvite, onRecusarConvite)
+        } else if (holder is AvisoViewHolder) {
+            holder.bind(notificacao, onAvisoLido)
+        }
+    }
 
-        // Define o estado correto vindo do banco
-        holder.checkLida.isChecked = notificacao.visualizada
+    override fun getItemCount(): Int = listaNotificacoes.size
 
-        holder.checkLida.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                onMarcarComoLida(notificacao)
+    // ViewHolder para o Aviso Comum
+    class AvisoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val txtTitulo = itemView.findViewById<TextView>(R.id.txtTituloItemNotif)
+        private val txtMensagem = itemView.findViewById<TextView>(R.id.txtMensagemItemNotif)
+        private val checkLida = itemView.findViewById<CheckBox>(R.id.checkLidaItemNotif)
+
+        fun bind(notificacao: Notificacao, onLido: (Notificacao) -> Unit) {
+            txtTitulo.text = notificacao.titulo
+            txtMensagem.text = notificacao.mensagem
+
+            checkLida.setOnCheckedChangeListener(null)
+            checkLida.isChecked = notificacao.visualizada
+
+            checkLida.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) onLido(notificacao)
             }
         }
     }
 
-    override fun getItemCount(): Int = listaNotif.size
+    // ViewHolder para o Convite de Amizade
+    class ConviteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val txtTitulo = itemView.findViewById<TextView>(R.id.textTituloConvite)
+        private val txtMensagem = itemView.findViewById<TextView>(R.id.textMensagemConvite)
+        private val btnAceitar = itemView.findViewById<MaterialButton>(R.id.buttonAceitarAmigo)
+        private val btnRecusar = itemView.findViewById<MaterialButton>(R.id.buttonRecusarAmigo)
 
-    private fun calcularTempoDecorrido(dataCriacaoIso: String?): String {
-        if (dataCriacaoIso.isNullOrEmpty()) return "Agora"
-        return try {
-            val formatoIso = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-            val dataNotif = formatoIso.parse(dataCriacaoIso) ?: return "Agora"
-            val agora = Date()
+        fun bind(notificacao: Notificacao, onAceitar: (Notificacao) -> Unit, onRecusar: (Notificacao) -> Unit) {
+            txtTitulo.text = notificacao.titulo
+            txtMensagem.text = notificacao.mensagem
 
-            val diferencaMili = agora.time - dataNotif.time
-            val minutos = diferencaMili / (1000 * 60)
-            val horas = diferencaMili / (1000 * 60 * 60)
-            val dias = diferencaMili / (1000 * 60 * 60 * 24)
-
-            when {
-                minutos < 1 -> "Agora mesmo"
-                minutos < 60 -> "Há $minutos min"
-                horas < 24 -> "Há $horas h"
-                else -> "Há $dias dias"
-            }
-        } catch (e: Exception) {
-            "Recentemente"
+            btnAceitar.setOnClickListener { onAceitar(notificacao) }
+            btnRecusar.setOnClickListener { onRecusar(notificacao) }
         }
     }
 }

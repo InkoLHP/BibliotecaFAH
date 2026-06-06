@@ -14,6 +14,7 @@ import coil.load
 import com.example.bibliounifornew.adapter.NotificacaoAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.Amigo
 import com.example.bibliounifornew.model.Notificacao
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
@@ -73,18 +74,20 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
                         .decodeList<Notificacao>()
                 }
 
-                recyclerNotificacoes.adapter = NotificacaoAdapter(notificacoesDoBanco) { notifClicada ->
-                    marcarComoLidaNoBanco(notifClicada, email)
-                }
+                // 🌟 Adapter atualizado com os novos parâmetros
+                recyclerNotificacoes.adapter = NotificacaoAdapter(
+                    listaNotificacoes = notificacoesDoBanco,
+                    onAvisoLido = { notifClicada -> marcarComoLidaNoBanco(notifClicada, email) },
+                    onAceitarConvite = { convite -> aceitarAmizade(convite, email) },
+                    onRecusarConvite = { convite -> marcarComoLidaNoBanco(convite, email) } // Recusar apenas deleta a notificação
+                )
 
-                // 💡 Feedback visual amigável se a caixa de entrada estiver limpa
                 if (notificacoesDoBanco.isEmpty()) {
                     Toast.makeText(requireContext(), "Sua caixa de notificações está vazia.", Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Mostra o erro real em caso de falha de serialização/mapeamento de campos
                 Toast.makeText(requireContext(), "Erro ao carregar notificações: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             }
         }
@@ -103,13 +106,39 @@ class TelaRF14Notificacoes : Fragment(R.layout.telarf14_notificacoes) {
                             }
                         }
                 }
-
-                Toast.makeText(requireContext(), "Notificação removida", Toast.LENGTH_SHORT).show()
-                carregarNotificacoes(email)
+                carregarNotificacoes(email) // Recarrega a lista para sumir da tela
 
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Erro ao excluir notificação", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // 🌟 Nova função para lidar com o clique no botão "Aceitar"
+    private fun aceitarAmizade(notificacao: Notificacao, meuEmail: String) {
+        val emailRemetente = notificacao.remetente_email ?: return
+        val idNotificacao = notificacao.id ?: return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    // 🌟 1. Prepara as DUAS vias da amizade
+                    val amizadeIda = Amigo(usuario_email = meuEmail, amigo_email = emailRemetente)
+                    val amizadeVolta = Amigo(usuario_email = emailRemetente, amigo_email = meuEmail)
+
+                    // 🌟 2. Salva as duas linhas no banco ao mesmo tempo
+                    SupabaseConfig.client.postgrest["amigos"].insert(listOf(amizadeIda, amizadeVolta))
+
+                    // 🌟 3. Deleta a notificação
+                    SupabaseConfig.client.postgrest["notificacoes"]
+                        .delete { filter { eq("id", idNotificacao) } }
+                }
+                Toast.makeText(requireContext(), "Amizade aceita!", Toast.LENGTH_SHORT).show()
+                carregarNotificacoes(meuEmail)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao aceitar: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

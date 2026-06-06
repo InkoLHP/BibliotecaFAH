@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -14,9 +15,12 @@ import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.adapter.UsuarioBuscaAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
+import com.example.bibliounifornew.model.Amigo
+import com.example.bibliounifornew.model.Notificacao // 🌟 Importado o modelo de Notificacao
 import com.example.bibliounifornew.model.UsuarioItem
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest // 🌟 Importado para permitir o insert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,7 +32,7 @@ class TelaRF17Amigos : Fragment(R.layout.telarf17_amigos) {
     private lateinit var buttonBuscarAmigo: MaterialButton
     private lateinit var imageUsuarioLogado: ImageView
 
-    // 🌟 Variável para guardar o e-mail de quem está usando o app
+    // Variável para guardar o e-mail de quem está usando o app
     private var meuEmailLogado: String = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -37,15 +41,19 @@ class TelaRF17Amigos : Fragment(R.layout.telarf17_amigos) {
         recyclerUsuarios = view.findViewById(R.id.recyclerBuscaUsuarios)
         editBuscarAmigo = view.findViewById(R.id.editBuscarAmigo)
         buttonBuscarAmigo = view.findViewById(R.id.buttonBuscarAmigo)
-        imageUsuarioLogado = view.findViewById(R.id.imageUsuario)
+        imageUsuarioLogado = view.findViewById(R.id.imageUsuarioAmigos)
 
         recyclerUsuarios.layoutManager = LinearLayoutManager(requireContext())
 
-        // 🌟 Carrega a sessão do SharedPreferences
+        // Carrega a sessão do SharedPreferences
         val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
 
-        // 🌟 Captura o e-mail logado (Veja se a chave no seu Login se chama "USER_EMAIL" ou apenas "EMAIL")
+        // Captura dados do usuário logado
         meuEmailLogado = sharedPref.getString("USER_EMAIL", "") ?: ""
+        val meuNomeLogado = sharedPref.getString("USER_NOME", "Usuário")
+
+        // Exibe o nome do usuário no título do cabeçalho
+        view.findViewById<TextView>(R.id.textTituloBuscaAmigo)?.text = "Olá, $meuNomeLogado"
 
         val fotoSalvaUrl = sharedPref.getString("USER_FOTO", null)
         if (!fotoSalvaUrl.isNullOrEmpty()) {
@@ -56,7 +64,7 @@ class TelaRF17Amigos : Fragment(R.layout.telarf17_amigos) {
             }
         }
 
-        // Carrega todos os usuários (menos você e menos os ADMs)
+        // Carrega todos os usuários inicialmente
         buscarUsuariosNoBanco("")
 
         buttonBuscarAmigo.setOnClickListener {
@@ -71,47 +79,53 @@ class TelaRF17Amigos : Fragment(R.layout.telarf17_amigos) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // 🌟 1. Primeiro, baixa a SUA lista de amigos
+                val meusAmigos = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.from("amigos").select {
+                        filter {
+                            eq("usuario_email", meuEmailLogado)
+                        }
+                    }.decodeList<Amigo>()
+                }
+
+                // Extrai apenas os e-mails para facilitar
+                val listaDeEmailsAmigos = meusAmigos.map { it.amigo_email }
+
+                // 2. Depois, baixa a lista de todos os usuários (como já estava)
                 val listaUsuarios = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.from("users").select {
                         filter {
-                            // 1. Remove os administradores
                             neq("tipo", "adm")
-
-                            // 2. 🌟 REMOVE SEU PRÓPRIO PERFIL: Se houver um e-mail na sessão, filtra ele fora
-                            if (meuEmailLogado.isNotEmpty()) {
-                                neq("email", meuEmailLogado)
-                            }
-
-                            // 3. Filtro de busca por nome (se digitado)
-                            if (pesquisa.isNotEmpty()) {
-                                ilike("nome", "%$pesquisa%")
-                            }
+                            if (meuEmailLogado.isNotEmpty()) { neq("email", meuEmailLogado) }
+                            if (pesquisa.isNotEmpty()) { ilike("nome", "%$pesquisa%") }
                         }
                     }.decodeList<UsuarioItem>()
                 }
 
+                // 🌟 3. Passa a lista de e-mails de amigos para o Adapter
                 recyclerUsuarios.adapter = UsuarioBuscaAdapter(
                     listaUsuarios,
+                    listaDeEmailsAmigos, // <-- Passando a lista aqui!
                     onCardClick = { usuario -> abrirPerfilAmigo(usuario) },
-                    onAdicionarClick = { usuario -> abrirPerfilAmigo(usuario) }
+                    onAdicionarClick = { usuario ->
+                        val email = usuario.email
+                        val nome = usuario.nome
+                        if (!email.isNullOrEmpty() && !nome.isNullOrEmpty()) {
+                            enviarConviteAmizade(email, nome)
+                        } else {
+                            Toast.makeText(requireContext(), "Dados do usuário incompletos.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Erro detalhado do Supabase")
-                    .setMessage(e.localizedMessage ?: e.toString())
-                    .setPositiveButton("Ok", null)
-                    .show()
+                Toast.makeText(requireContext(), "Erro ao buscar usuários", Toast.LENGTH_SHORT).show()
             } finally {
                 buttonBuscarAmigo.isEnabled = true
                 buttonBuscarAmigo.text = "Procurar"
             }
         }
-
-        // 📝 Mapeia e insere o Nome do Usuário dinamicamente abaixo da foto
-        val textNome = viewContainer.findViewById<TextView>(R.id.textUsuarioAmigos)
-        textNome?.text = nomeUsuario
     }
 
     private fun abrirPerfilAmigo(usuario: UsuarioItem) {
@@ -129,5 +143,38 @@ class TelaRF17Amigos : Fragment(R.layout.telarf17_amigos) {
             .replace(R.id.frameLayout, fragmentPerfil)
             .addToBackStack(null)
             .commit()
+    }
+
+    // 🌟 Função para registrar a notificação de amizade no banco de dados
+    private fun enviarConviteAmizade(destinatarioEmail: String, destinatarioNome: String) {
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val meuNome = sharedPref.getString("USER_NOME", "Alguém") ?: "Alguém"
+        val meuEmail = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+        if (meuEmail.isEmpty()) return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    // Prepara a notificação usando o modelo atualizado
+                    val novoConvite = Notificacao(
+                        email_usuario = destinatarioEmail,
+                        titulo = "Novo Pedido de Amizade \uD83D\uDC4B",
+                        mensagem = "$meuNome enviou uma solicitação de amizade para você.",
+                        visualizada = false,
+                        tipo = "convite_amizade",
+                        remetente_email = meuEmail
+                    )
+
+                    // Insere no banco na tabela de notificações
+                    SupabaseConfig.client.postgrest["notificacoes"].insert(novoConvite)
+                }
+                Toast.makeText(requireContext(), "Convite enviado para $destinatarioNome!", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // 🌟 Mudamos aqui para mostrar o erro real na tela!
+                Toast.makeText(requireContext(), "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 }
