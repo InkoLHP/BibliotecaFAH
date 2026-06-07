@@ -130,7 +130,7 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
                     try {
                         withContext(Dispatchers.IO) {
                             SupabaseConfig.client.postgrest["users"].update(
-                                { set("senha", novaSenha) }
+                                update = { set("senha", novaSenha) }
                             ) {
                                 filter { eq("email", emailAdm!!) }
                             }

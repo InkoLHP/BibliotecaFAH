@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
@@ -25,6 +24,8 @@ import com.example.bibliounifornew.login.TelaRF01BemVindo
 import com.example.bibliounifornew.model.User
 import com.google.android.material.button.MaterialButton
 import io.github.jan.supabase.postgrest.postgrest
+// 🌟 IMPORTAÇÃO NOVA PARA O UPLOAD DA FOTO FUNCIONAR
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,21 +36,20 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
     private var objetoUsuarioAtual: User? = null
     private lateinit var imagePerfilUsuario: ImageView
 
+    // 🌟 VARIÁVEL: Guarda a foto escolhida até o usuário clicar em "Salvar"
+    private var uriFotoTemporaria: Uri? = null
+
     private val selecionarImagem =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
-                val urlString = uri.toString()
+                uriFotoTemporaria = uri // Guarda a imagem na memória
 
+                // Mostra a foto na tela pro usuário ver como ficou (Ilusão de ótica antes de salvar)
                 imagePerfilUsuario.load(uri) {
                     crossfade(true)
                     placeholder(R.drawable.user_placeholder)
                     error(R.drawable.user_placeholder)
                 }
-
-                val sharedPref = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE)
-                sharedPref.edit().putString("USER_FOTO", urlString).apply()
-
-                salvarNoBanco("foto", urlString)
             }
         }
 
@@ -106,20 +106,10 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
             }
         }
 
-        // 🌟 CLIQUE NOS LÁPIS: Habilita e foca dinamicamente no campo desejado
-        iconEditNome.setOnClickListener {
-            liberarCampoEdicao(editNome)
-        }
+        iconEditNome.setOnClickListener { liberarCampoEdicao(editNome) }
+        iconEditUsuario.setOnClickListener { liberarCampoEdicao(editUsuario) }
+        iconEditBio.setOnClickListener { liberarCampoEdicao(editBio) }
 
-        iconEditUsuario.setOnClickListener {
-            liberarCampoEdicao(editUsuario)
-        }
-
-        iconEditBio.setOnClickListener {
-            liberarCampoEdicao(editBio)
-        }
-
-        // Exibir / Ocultar Senha Atual (Ela continua sem poder ser alterada por texto)
         var senhaPrincipalVisivel = false
         iconOlhoSenhaAtual.setOnClickListener {
             senhaPrincipalVisivel = !senhaPrincipalVisivel
@@ -148,27 +138,52 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
             else Toast.makeText(requireContext(), "Aguardando sincronização...", Toast.LENGTH_SHORT).show()
         }
 
+        // 🌟 ATUALIZADO: Agora sim o botão Salvar envia a FOTO REAL para a nuvem
         btnSalvarAlteracoes.setOnClickListener {
-            salvarNoBanco("nome", editNome.text.toString().trim())
-            salvarNoBanco("usuario", editUsuario.text.toString().trim())
-            salvarNoBanco("bio", editBio.text.toString().trim())
-
-            // Trava os campos novamente após clicar em salvar
+            // Trava os campos e o botão para evitar cliques duplos enquanto salva
             editNome.isEnabled = false
             editUsuario.isEnabled = false
             editBio.isEnabled = false
+            btnSalvarAlteracoes.isEnabled = false
+            btnSalvarAlteracoes.text = "Salvando..."
 
-            Toast.makeText(requireContext(), "Alterações salvas com sucesso!", Toast.LENGTH_SHORT).show()
+            viewLifecycleOwner.lifecycleScope.launch {
+                // 1. Salva os textos normais
+                salvarNoBanco("nome", editNome.text.toString().trim())
+                salvarNoBanco("usuario", editUsuario.text.toString().trim())
+                salvarNoBanco("bio", editBio.text.toString().trim())
+
+                // 2. Se o usuário escolheu uma foto nova, envia para o Storage
+                if (uriFotoTemporaria != null) {
+                    val linkPublicoDaFoto = fazerUploadDaFoto(uriFotoTemporaria!!)
+
+                    if (linkPublicoDaFoto != null) {
+                        salvarNoBanco("foto", linkPublicoDaFoto) // Agora salva o link https!
+
+                        // Salva no cache local do app
+                        requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+                            .edit().putString("USER_FOTO", linkPublicoDaFoto).apply()
+
+                        // Limpa a variável pois já foi salva
+                        uriFotoTemporaria = null
+                    } else {
+                        Toast.makeText(requireContext(), "Erro ao enviar a foto para a nuvem. Tente novamente.", Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                Toast.makeText(requireContext(), "Alterações salvas com sucesso!", Toast.LENGTH_SHORT).show()
+                // Destrava o botão
+                btnSalvarAlteracoes.isEnabled = true
+                btnSalvarAlteracoes.text = "Salvar Alterações"
+            }
         }
     }
 
-    // 🔥 Função Útil para liberar a digitação e abrir o teclado na tela
     private fun liberarCampoEdicao(editText: EditText) {
         editText.isEnabled = true
         editText.requestFocus()
         editText.setSelection(editText.text.length)
 
-        // Puxa o teclado nativo do Android
         val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
     }
@@ -213,7 +228,7 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
             try {
                 withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["users"]
-                        .update({ set(coluna, novoValor) }) {
+                        .update(update = { set(coluna, novoValor) }) {
                             filter { eq("email", emailUsuarioLogado!!) }
                         }
                 }
@@ -244,78 +259,92 @@ class TelaRF09Configuracao : Fragment(R.layout.telarf09_configuracao) {
         }
     }
 
-    private fun abrirDialogEdicao(titulo: String, valorAtual: String, coluna: String, onSuccess: (String) -> Unit) {
+    private fun abrirDialogEdicao(titulo: String, valorAtual: String, campoBanco: String, onSuccess: (String) -> Unit) {
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle("Editar $titulo")
-        val input = EditText(requireContext()).apply { setText(valorAtual) }
+
+        val input = EditText(requireContext())
+        input.setText(valorAtual)
         builder.setView(input)
 
-        builder.setPositiveButton("Salvar") { dialog, _ ->
+        builder.setPositiveButton("Salvar") { _, _ ->
             val novoValor = input.text.toString().trim()
             if (novoValor.isNotEmpty()) {
-                salvarNoBanco(coluna, novoValor)
+                salvarNoBanco(campoBanco, novoValor)
                 onSuccess(novoValor)
             }
-            dialog.dismiss()
         }
         builder.setNegativeButton("Cancelar") { dialog, _ -> dialog.cancel() }
         builder.show()
     }
 
     private fun exibirPopupApagarConta() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_apagar_conta, null)
-        val alertDialog = AlertDialog.Builder(requireContext()).setView(dialogView).setCancelable(true).create()
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        val editSenhaPopup = dialogView.findViewById<EditText>(R.id.editSenhaPopup)
-        val textErroSenhaPopup = dialogView.findViewById<TextView>(R.id.textErroSenhaPopup)
-        val buttonConfirmar = dialogView.findViewById<MaterialButton>(R.id.buttonConfirmarApagarConta)
-        val iconOlhoPopup = dialogView.findViewById<ImageView>(R.id.iconOlhoSenhaPopup)
-
-        var senderPopupVisivel = false
-        iconOlhoPopup.setOnClickListener {
-            senderPopupVisivel = !senderPopupVisivel
-            editSenhaPopup.inputType = if (senderPopupVisivel) {
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            } else {
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        AlertDialog.Builder(requireContext())
+            .setTitle("Apagar Conta")
+            .setMessage("Tem certeza que deseja apagar sua conta? Esta ação é irreversível.")
+            .setPositiveButton("Sim, Apagar") { _, _ ->
+                apagarContaNoBanco()
             }
-            editSenhaPopup.setSelection(editSenhaPopup.text.length)
-        }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
 
-        buttonConfirmar.setOnClickListener {
-            val senhaDigitada = editSenhaPopup.text.toString().trim()
-            if (senhaDigitada == objetoUsuarioAtual?.senha) {
-                textErroSenhaPopup.visibility = View.GONE
-                buttonConfirmar.isEnabled = false
+    private fun apagarContaNoBanco() {
+        if (emailUsuarioLogado.isNullOrBlank()) return
 
-                viewLifecycleOwner.lifecycleScope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            SupabaseConfig.client.postgrest["users"]
-                                .delete { filter { eq("email", emailUsuarioLogado!!) } }
-                        }
-                        alertDialog.dismiss()
-                        Toast.makeText(requireContext(), "Conta excluída!", Toast.LENGTH_SHORT).show()
-
-                        requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE).edit().clear().apply()
-
-                        val intent = Intent(requireContext(), TelaRF01BemVindo::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        }
-                        startActivity(intent)
-                        requireActivity().finish()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Toast.makeText(requireContext(), "Erro ao deletar conta", Toast.LENGTH_SHORT).show()
-                        buttonConfirmar.isEnabled = true
-                    }
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.postgrest["users"]
+                        .delete { filter { eq("email", emailUsuarioLogado!!) } }
                 }
-            } else {
-                textErroSenhaPopup.text = "Digite sua senha atual!"
-                textErroSenhaPopup.visibility = View.VISIBLE
+
+                // Limpa a sessão e volta para o login
+                val sharedPref = requireContext().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+                sharedPref.edit().clear().apply()
+
+                Toast.makeText(requireContext(), "Conta excluída com sucesso.", Toast.LENGTH_SHORT).show()
+
+                val intent = Intent(requireContext(), TelaRF01BemVindo::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro ao apagar conta", Toast.LENGTH_SHORT).show()
             }
         }
-        alertDialog.show()
+    }
+
+    // =========================================================
+    // 🌟 NOVA FUNÇÃO: Envia a imagem real para o Supabase Storage
+    // =========================================================
+    private suspend fun fazerUploadDaFoto(uri: Uri): String? {
+        return try {
+            withContext(Dispatchers.IO) {
+                // Transforma a foto do celular em "Bytes" (dados brutos)
+                val bytes = requireContext().contentResolver.openInputStream(uri)?.readBytes()
+
+                if (bytes != null) {
+                    // Cria um nome único para o arquivo usando a data/hora exata
+                    val nomeDoArquivo = "perfil_${System.currentTimeMillis()}.jpg"
+
+                    // Conecta na pasta "fotos_perfil" usando .from()
+                    val bucket = SupabaseConfig.client.storage.from("fotos_perfil")
+
+                    // Faz o upload de verdade usando o bloco de opções
+                    bucket.upload(nomeDoArquivo, bytes) {
+                        upsert = true
+                    }
+
+                    // Pede pro Supabase qual é o link público (https) dessa foto pra gente salvar
+                    bucket.publicUrl(nomeDoArquivo)
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }

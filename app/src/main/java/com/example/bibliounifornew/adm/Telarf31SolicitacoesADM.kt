@@ -66,11 +66,9 @@ class Telarf31SolicitacoesADM : Fragment(R.layout.telarf31_solicitacoes_adm) {
 
                         SupabaseConfig.client
                             .from("solicitacoes")
-                            .update(
-                                {
-                                    set("status", "CONCLUIDA")
-                                }
-                            ) {
+                            .update(update = {
+                                set("status", "CONCLUIDA")
+                            }) {
                                 filter {
                                     eq("id", solicitacao.id!!)
                                 }

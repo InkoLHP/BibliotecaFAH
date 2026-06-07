@@ -94,6 +94,32 @@ class TelaRF17PerfilAmigo : Fragment(R.layout.telarf17_5_perfil_amigo) {
     }
 
     private fun enviarConviteAmizade(destinatarioEmail: String, destinatarioNome: String, botao: MaterialButton) {
-        // ... (Mantenha o código de enviarConviteAmizade exatamente igual ao que fizemos antes)
+        val sharedPref = requireActivity().getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val meuNome = sharedPref.getString("USER_NOME", "Alguém") ?: "Alguém"
+        val meuEmail = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+        if (meuEmail.isEmpty()) return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val novoConvite = Notificacao(
+                        email_usuario = destinatarioEmail,
+                        titulo = "Novo Pedido de Amizade 👋",
+                        mensagem = "$meuNome enviou uma solicitação de amizade para você.",
+                        visualizada = false,
+                        tipo = "convite_amizade",
+                        remetente_email = meuEmail
+                    )
+                    SupabaseConfig.client.postgrest["notificacoes"].insert(novoConvite)
+                }
+                Toast.makeText(requireContext(), "Convite enviado para $destinatarioNome!", Toast.LENGTH_SHORT).show()
+                botao.text = "Convite Enviado"
+                botao.isEnabled = false
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 }

@@ -15,7 +15,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
+// 🌟 IMPORTANTE: Usando Coil para padronizar com o resto do app
+import coil.load
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.google.android.material.button.MaterialButton
@@ -25,6 +26,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
+// Voltando para o EmailSender original
+import com.example.bibliounifornew.utils.EmailSender
 
 class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
 
@@ -59,12 +62,12 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                 textEmailUsuario.text = email
 
                 // Busca as informações restantes (nome e foto) no banco de dados
-                buscarDadosDoUsuario(email) { nomeBanco, fotoBanco ->
+                buscarDadosDoUsuario(email) { nomeBanco: String, fotoBanco: String? ->
                     nome = nomeBanco
                     fotoUrl = fotoBanco
 
                     textNomeUsuario.text = nome
-                    Glide.with(this).load(fotoUrl).placeholder(R.drawable.user_placeholder).into(imageUsuario)
+                    carregarFotoPerfil(imageUsuario, fotoUrl)
                 }
             } else {
                 // SE JÁ VEIO TUDO COMPLETO (Fluxo tradicional da Tela 29)
@@ -73,15 +76,15 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
 
                 textNomeUsuario.text = nome
                 textEmailUsuario.text = email
-                Glide.with(this).load(fotoUrl).placeholder(R.drawable.user_placeholder).into(imageUsuario)
+                carregarFotoPerfil(imageUsuario, fotoUrl) // 🌟 Chamando a função unificada
             }
         }
 
-        // 1. NAVEGAÇÃO: TELA DE SOLICITAÇÕES (Ajustado para passar o e-mail de filtro do leitor)
+        // 1. NAVEGAÇÃO: TELA DE SOLICITAÇÕES
         buttonSolicitacoes.setOnClickListener {
             val fragmentSolicitacoes = Telarf31SolicitacoesADM().apply {
                 arguments = Bundle().apply {
-                    putString("EMAIL_FILTRO_ADM", email) // 🌟 Garante o preenchimento automático na busca que sua amiga fez
+                    putString("EMAIL_FILTRO_ADM", email) // 🌟 Garante o preenchimento automático na busca
                 }
             }
             parentFragmentManager.beginTransaction()
@@ -174,8 +177,52 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
             val btnCancelar = dialog.findViewById<TextView>(R.id.textCancelarPermissao)
 
             btnMudar.setOnClickListener {
-                Toast.makeText(requireContext(), "$nome agora possui privilégios de ADM.", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
+                // 1. Gera uma credencial aleatória de 8 números (ex: 22112006, 93847582)
+                val novaCredencial = (10000000..99999999).random().toString()
+
+                // Desabilita o botão para o administrador não clicar duas vezes sem querer
+                btnMudar.isEnabled = false
+                btnMudar.text = "Processando..."
+
+                // 2. Abre a conexão com o banco de dados
+                viewLifecycleOwner.lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            SupabaseConfig.client.from("users").update(
+                                {
+                                    set("tipo", "adm") // Atualiza para Administrador
+                                    set("credencial", novaCredencial) // Salva a senha de 8 dígitos
+                                }
+                            ) {
+                                filter { eq("email", email) } // Apenas para o e-mail que estamos vendo
+                            }
+                        }
+
+                        // 3. Dispara o E-mail usando o EmailSender original
+                        EmailSender.enviarEmail(
+                            email = email,
+                            codigo = novaCredencial,
+                            onSuccess = {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(requireContext(), "$nome agora é ADM! A credencial foi enviada por e-mail.", Toast.LENGTH_LONG).show()
+                                    dialog.dismiss()
+                                }
+                            },
+                            onError = {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(requireContext(), "$nome agora é ADM, MAS houve uma falha ao enviar o e-mail.", Toast.LENGTH_LONG).show()
+                                    dialog.dismiss()
+                                }
+                            }
+                        )
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(requireContext(), "Erro ao conectar com o banco de dados.", Toast.LENGTH_SHORT).show()
+                        btnMudar.isEnabled = true
+                        btnMudar.text = "Sim, Mudar para ADM"
+                    }
+                }
             }
             btnCancelar.setOnClickListener { dialog.dismiss() }
 
@@ -240,32 +287,38 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
         }
     }
 
-    // Função auxiliar para buscar o perfil completo do usuário usando apenas o e-mail
-    private fun buscarDadosDoUsuario(emailBusca: String, onResultado: (String, String?) -> Unit) {
+    // 🌟 NOVA FUNÇÃO: Isola a responsabilidade de carregar a imagem com segurança (Coil)
+    private fun carregarFotoPerfil(imageView: ImageView, urlDaFoto: String?) {
+        if (!urlDaFoto.isNullOrEmpty()) {
+            imageView.load(urlDaFoto) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+            }
+        } else {
+            imageView.setImageResource(R.drawable.user_placeholder)
+        }
+    }
+
+    private fun buscarDadosDoUsuario(email: String, onResult: (String, String?) -> Unit) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val usuarioBanco = withContext(Dispatchers.IO) {
+                val usuario = withContext(Dispatchers.IO) {
                     SupabaseConfig.client.from("users")
-                        .select { filter { eq("email", emailBusca) } }
-                        .decodeSingleOrNull<JsonObject>()
+                        .select {
+                            filter {
+                                eq("email", email)
+                            }
+                        }.decodeSingleOrNull<JsonObject>()
                 }
 
-                if (usuarioBanco != null) {
-                    // Mapeia de forma segura independente se a coluna chama 'nome' ou 'name' no banco
-                    val nomeBanco = usuarioBanco["nome"]?.jsonPrimitive?.content
-                        ?: usuarioBanco["name"]?.jsonPrimitive?.content
-                        ?: "Usuário"
-
-                    val fotoBanco = usuarioBanco["foto"]?.jsonPrimitive?.content
-                        ?: usuarioBanco["foto_url"]?.jsonPrimitive?.content
-
-                    onResultado(nomeBanco, fotoBanco)
-                } else {
-                    onResultado("Usuário Desconhecido", null)
+                if (usuario != null) {
+                    val nomeBanco = usuario["nome"]?.jsonPrimitive?.content ?: "Usuário"
+                    val fotoBanco = usuario["foto"]?.jsonPrimitive?.content
+                    onResult(nomeBanco, fotoBanco)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                onResultado("Erro ao carregar", null)
             }
         }
     }

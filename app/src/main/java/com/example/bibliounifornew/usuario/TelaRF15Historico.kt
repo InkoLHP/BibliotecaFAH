@@ -133,7 +133,7 @@ class TelaRF15Historico : Fragment(R.layout.telarf15_historico) {
             try {
                 withContext(Dispatchers.IO) {
                     SupabaseConfig.client.postgrest["alugueis"]
-                        .update({ set("oculto_historico", true) }) {
+                        .update(update = { set("oculto_historico", true) }) {
                             filter { eq("id", aluguel.id ?: 0L) }
                         }
                 }

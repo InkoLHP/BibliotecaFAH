@@ -104,7 +104,7 @@ class TelaRF07RedefinirSenha : AppCompatActivity() {
                     try {
                         withContext(Dispatchers.IO) {
                             SupabaseConfig.client.postgrest["users"].update(
-                                { set("senha", senhanova) },
+                                update = { set("senha", senhanova) }
                             ) {
                                 filter { eq("email", emailUsuario!!) }
                             }

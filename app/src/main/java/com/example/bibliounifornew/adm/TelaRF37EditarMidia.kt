@@ -203,7 +203,7 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.from("livros").update({
+                    SupabaseConfig.client.from("livros").update(update = {
                         set(coluna, novoValor)
                     }) {
                         filter {
@@ -272,7 +272,7 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.from("livros").update({
+                    SupabaseConfig.client.from("livros").update(update = {
                         set(coluna, novoValor)
                     }) { filter { eq("id", livroId!!) } }
                 }
@@ -291,7 +291,7 @@ class TelaRF37EditarMidia : Fragment(R.layout.telarf37_editar_midia) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.from("livros").update({
+                    SupabaseConfig.client.from("livros").update(update = {
                         set(coluna, novoValor)
                     }) { filter { eq("id", livroId!!) } }
                 }
