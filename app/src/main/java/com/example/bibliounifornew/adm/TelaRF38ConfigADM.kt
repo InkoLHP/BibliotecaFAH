@@ -199,7 +199,9 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
                     if (bytes != null) {
                         val nomeArquivo = "perfil_${System.currentTimeMillis()}.jpg"
                         withContext(Dispatchers.IO) {
-                            SupabaseConfig.client.storage.from("fotos_perfil").upload(nomeArquivo, bytes)
+                            SupabaseConfig.client.storage.from("fotos_perfil").upload(nomeArquivo, bytes) {
+                                upsert = true
+                            }
                         }
                         novaFotoUrl = SupabaseConfig.client.storage.from("fotos_perfil").publicUrl(nomeArquivo)
                     }

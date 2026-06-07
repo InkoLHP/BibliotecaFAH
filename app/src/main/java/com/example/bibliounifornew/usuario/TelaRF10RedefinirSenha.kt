@@ -101,7 +101,7 @@ class TelaRF10RedefinirSenha : Fragment(R.layout.telarf10_redefinir_senha) {
                     try {
                         withContext(Dispatchers.IO) {
                             SupabaseConfig.client.postgrest["users"].update(
-                                { set("senha", novaSenha) }
+                                update = { set("senha", novaSenha) }
                             ) {
                                 filter { eq("email", emailUsuarioLogado!!) }
                             }

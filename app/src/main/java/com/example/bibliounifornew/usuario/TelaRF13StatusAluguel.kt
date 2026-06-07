@@ -173,19 +173,16 @@ class TelaRF13StatusAluguel : Fragment(R.layout.telarf13_status) {
             try {
                 withContext(Dispatchers.IO) {
 
-                    // 1️⃣ Executa a atualização lógica baseada nas colunas reais da tabela
-                    val jsonUpdateStatus = kotlinx.serialization.json.buildJsonObject {
+                    SupabaseConfig.client.postgrest[tabela].update(update = {
                         if (tabela.lowercase() == "solicitacoes") {
-                            put("status", "cancelado")
+                            set("status", "cancelado")
                         } else {
-                            put("oculto_historico", true)
+                            set("oculto_historico", true)
                             if (tabela.lowercase() == "alugueis") {
-                                put("devolvido", true)
+                                set("devolvido", true)
                             }
                         }
-                    }
-
-                    SupabaseConfig.client.postgrest[tabela].update(jsonUpdateStatus) {
+                    }) {
                         filter { eq("id", idSeguro) }
                     }
 

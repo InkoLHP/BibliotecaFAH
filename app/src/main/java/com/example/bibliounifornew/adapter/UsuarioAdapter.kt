@@ -31,13 +31,20 @@ class UsuarioAdapter(
         val usuario = lista[position]
         holder.nome.text = usuario.nome
 
-        holder.foto.load(usuario.foto) {
-            crossfade(true)
-            placeholder(R.drawable.user_placeholder)
-            error(R.drawable.user_placeholder)
-            transformations(CircleCropTransformation())
+        // 🌟 Verifica se o link da foto realmente existe antes de pedir pro Coil carregar
+        if (!usuario.foto.isNullOrEmpty()) {
+            holder.foto.load(usuario.foto) {
+                crossfade(true)
+                placeholder(R.drawable.user_placeholder)
+                error(R.drawable.user_placeholder)
+                // Removi o CircleCropTransformation() para evitar conflitos com o seu XML
+            }
+        } else {
+            // 🌟 Se não tiver foto no banco, injeta o placeholder direto!
+            holder.foto.setImageResource(R.drawable.user_placeholder)
         }
 
+        // Ações de clique
         holder.itemView.setOnClickListener {
             onUsuarioClick(usuario)
         }

@@ -116,7 +116,7 @@ class TelaRF19RedefinirSenhaADM : AppCompatActivity() {
                     try {
                         withContext(Dispatchers.IO) {
                             SupabaseConfig.client.postgrest["users"].update(
-                                { set("senha", textoSenha) }
+                                update = { set("senha", textoSenha) }
                             ) {
                                 filter { eq("email", emailAdm!!) }
                             }
