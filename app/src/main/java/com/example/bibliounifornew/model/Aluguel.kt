@@ -8,6 +8,8 @@ import kotlinx.serialization.Transient
 data class Aluguel(
     @SerialName("id")
     val id: Long? = null,
+    @SerialName("id_livro")
+    val id_livro: String? = null, // 🌟 Adicionado para vincular ao ID da tabela livros
     @SerialName("email_usuario")
     val email_usuario: String? = "",
     @SerialName("titulo_livro")

@@ -19,7 +19,7 @@ import com.example.bibliounifornew.adapter.AtrasadosAdapter
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.Aluguel
 import com.example.bibliounifornew.model.User
-import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,10 +71,10 @@ class TelaRF34FinanceiroADM : Fragment(R.layout.telarf34_finaceiro_adm) {
             try {
 
                 val todosAlugueis = withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["alugueis"].select().decodeList<Aluguel>()
+                    SupabaseConfig.client.from("alugueis").select().decodeList<Aluguel>()
                 }
                 val todosUsuarios = withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["users"].select().decodeList<User>()
+                    SupabaseConfig.client.from("users").select().decodeList<User>()
                 }
 
                 val alugueisVencidos = todosAlugueis.filter { aluguel ->
@@ -126,7 +126,7 @@ class TelaRF34FinanceiroADM : Fragment(R.layout.telarf34_finaceiro_adm) {
                     try {
 
                         withContext(Dispatchers.IO) {
-                            SupabaseConfig.client.postgrest["alugueis"].delete { filter { eq("id", idSeguro) } }
+                            SupabaseConfig.client.from("alugueis").delete { filter { eq("id", idSeguro) } }
                         }
                         Toast.makeText(requireContext(), "Usuário notificado e registro apagado!", Toast.LENGTH_LONG).show()
                         carregarAlugueisVencidos()
@@ -173,7 +173,7 @@ class TelaRF34FinanceiroADM : Fragment(R.layout.telarf34_finaceiro_adm) {
 
                 withContext(Dispatchers.IO) {
                     // Usando a DSL nativa do Supabase corretamente para atualizar múltiplos campos
-                    SupabaseConfig.client.postgrest["alugueis"].update(
+                    SupabaseConfig.client.from("alugueis").update(
                         update = {
                             set("data_vencimento", novaDataVencimento)
                             set("dias_restantes", novosDias) // <--- O segredo está aqui!

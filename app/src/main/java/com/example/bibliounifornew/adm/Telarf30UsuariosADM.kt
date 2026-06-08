@@ -26,8 +26,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
-// Voltando para o EmailSender original
-import com.example.bibliounifornew.utils.EmailSender
+// Voltando para o EmailSenderAdm correto
+import com.example.bibliounifornew.api.EmailSenderAdm
 
 class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
 
@@ -198,10 +198,10 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                             }
                         }
 
-                        // 3. Dispara o E-mail usando o EmailSender original
-                        EmailSender.enviarEmail(
+                        // 3. Dispara o E-mail usando o EmailSenderAdm correto
+                        EmailSenderAdm.enviarEmailCredencial(
                             email = email,
-                            codigo = novaCredencial,
+                            credencial = novaCredencial,
                             onSuccess = {
                                 requireActivity().runOnUiThread {
                                     Toast.makeText(requireContext(), "$nome agora é ADM! A credencial foi enviada por e-mail.", Toast.LENGTH_LONG).show()
@@ -309,13 +309,11 @@ class Telarf30UsuariosADM : Fragment(R.layout.telarf30_usuarios_adm) {
                             filter {
                                 eq("email", email)
                             }
-                        }.decodeSingleOrNull<JsonObject>()
+                        }.decodeSingleOrNull<com.example.bibliounifornew.model.User>()
                 }
 
                 if (usuario != null) {
-                    val nomeBanco = usuario["nome"]?.jsonPrimitive?.content ?: "Usuário"
-                    val fotoBanco = usuario["foto"]?.jsonPrimitive?.content
-                    onResult(nomeBanco, fotoBanco)
+                    onResult(usuario.nome, usuario.foto)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

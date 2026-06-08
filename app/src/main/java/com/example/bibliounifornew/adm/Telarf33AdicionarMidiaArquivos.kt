@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.google.android.material.button.MaterialButton
-import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -90,7 +90,7 @@ class Telarf33AdicionarMidiaArquivos : Fragment(R.layout.telarf33_adicionar_midi
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        SupabaseConfig.client.postgrest["livros"].insert(livroParaSalvar)
+                        SupabaseConfig.client.from("livros").insert(livroParaSalvar)
                     }
                     mostrarPopupSucesso()
                 } catch (e: Exception) {

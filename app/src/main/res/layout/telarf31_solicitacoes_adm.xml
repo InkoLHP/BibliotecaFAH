@@ -91,44 +91,9 @@
             android:paddingBottom="32dp">
 
             <!-- PESQUISA -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="@color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="20dp">
-
-                    <EditText
-                        android:id="@+id/editPesquisaMidia"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@android:color/transparent"
-                        android:hint="Pesquisar solicitações..."
-                        android:singleLine="true"
-                        android:textColor="@color/black"
-                        android:textColorHint="#8A8A8A"
-                        android:textSize="16sp" />
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_sort_by_size"
-                        app:tint="@color/biblio_blue" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- RECYCLER -->
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerSolicitacoes"
                 android:layout_width="match_parent"

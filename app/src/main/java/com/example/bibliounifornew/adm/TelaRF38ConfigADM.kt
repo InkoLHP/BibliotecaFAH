@@ -22,7 +22,7 @@ import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.login.TelaRF02Intermediaria
 import com.example.bibliounifornew.model.User
 import com.google.android.material.button.MaterialButton
-import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -156,7 +156,7 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val user = withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["users"]
+                    SupabaseConfig.client.from("users")
                         .select { filter { eq("email", email) } }
                         .decodeSingleOrNull<User>()
                 }
@@ -208,7 +208,7 @@ class TelaRF38ConfigADM : Fragment(R.layout.telarf38_config_adm) {
                 }
 
                 withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["users"].update(
+                    SupabaseConfig.client.from("users").update(
                         update = {
                             set("nome", nome)
                             set("usuario", usuario)

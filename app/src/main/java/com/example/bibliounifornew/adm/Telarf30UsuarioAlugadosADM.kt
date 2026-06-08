@@ -15,6 +15,7 @@ import com.example.bibliounifornew.adapter.AluguelADMAdapter
 import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.example.bibliounifornew.model.Aluguel
+import com.example.bibliounifornew.model.Livro
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +24,6 @@ import kotlinx.coroutines.withContext
 class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_adm) {
 
     private lateinit var recyclerAlugados: RecyclerView
-
     private var emailUsuario: String? = null
     private var nomeUsuario: String? = null
     private var fotoUsuario: String? = null
@@ -31,12 +31,10 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Recebe os dados enviados pela tela de Perfil
         nomeUsuario = arguments?.getString("nome")
         emailUsuario = arguments?.getString("email")
         fotoUsuario = arguments?.getString("foto")
 
-        // 2. Preenche o Header
         val textNome = view.findViewById<TextView>(R.id.textNomeUsuario)
         val textEmail = view.findViewById<TextView>(R.id.textEmailUsuario)
         val imagemFoto = view.findViewById<ImageView>(R.id.imageFotoUsuarioDetalhe)
@@ -46,91 +44,65 @@ class Telarf30UsuarioAlugadosADM : Fragment(R.layout.telarf30_usuario_alugados_a
 
         if (!fotoUsuario.isNullOrEmpty()) {
             imagemFoto.load(fotoUsuario) {
-                crossfade(true)
                 placeholder(R.drawable.user_placeholder)
                 error(R.drawable.user_placeholder)
             }
         }
 
-        // 3. Configura o RecyclerView
         recyclerAlugados = view.findViewById(R.id.recyclerAlugados)
         recyclerAlugados.layoutManager = LinearLayoutManager(requireContext())
 
-        // 🌟 AJUSTE CRÍTICO DE NAVEGAÇÃO: Garantindo o fluxo correto ao clicar no botão "Voltar" do celular
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (parentFragmentManager.backStackEntryCount > 0) {
-                    parentFragmentManager.popBackStack()
-                } else {
-                    // Se a pilha sumir por algum motivo, recria com segurança a tela de perfil do usuário atual
-                    val fragmentPerfil = Telarf30UsuariosADM().apply {
-                        arguments = Bundle().apply {
-                            putString("nome", nomeUsuario)
-                            putString("email", emailUsuario)
-                            putString("foto", fotoUsuario)
-                        }
-                    }
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.frameLayout, fragmentPerfil)
-                        .commit()
-                }
+                parentFragmentManager.popBackStack()
             }
         })
 
-        // 4. Inicia a busca filtrada no Supabase
         if (emailUsuario != null) {
             carregarAlugueisDoUsuario(emailUsuario!!)
-        } else {
-            Toast.makeText(context, "Erro: E-mail não encontrado.", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun carregarAlugueisDoUsuario(email: String) {
-        val apenasAtrasos = arguments?.getBoolean("apenasAtrasos") ?: false
-
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Traz somente os aluguéis cuja coluna 'email_usuario' combine com o leitor selecionado
-                val todosAlugueis = withContext(Dispatchers.IO) {
-                    SupabaseConfig.client
-                        .from("alugueis")
-                        .select {
-                            filter {
-                                eq("email_usuario", email)
-                            }
-                        }
-                        .decodeList<Aluguel>()
-                }
-
-                val listaExibida = if (apenasAtrasos) {
-                    todosAlugueis.filter { it.dias_restantes != null && it.dias_restantes < 0 && it.devolvido == false }
-                } else {
-                    todosAlugueis
+                val lista = withContext(Dispatchers.IO) {
+                    SupabaseConfig.client.from("alugueis").select {
+                        filter { eq("email_usuario", email) }
+                    }.decodeList<Aluguel>()
                 }
 
                 recyclerAlugados.adapter = AluguelADMAdapter(
-                    listaAlugueis = listaExibida,
+                    listaAlugueis = lista,
                     onVerLivroClick = { aluguel ->
-                        // Direciona para detalhes/edição da mídia correspondente
-                        val fragment = TelaRF37EditarMidia().apply {
-                            arguments = Bundle().apply {
-                                putString("LIVRO_TITULO", aluguel.titulo_livro)
-                            }
+                        val livro = Livro(
+                            id = aluguel.id_livro ?: "",
+                            titulo = aluguel.titulo_livro ?: "",
+                            autor = aluguel.autor_livro ?: "",
+                            isbn = "",
+                            capaUrl = aluguel.capa_url ?: "",
+                            sinopse = "Visualizado via Perfil do Usuário",
+                            data_publicacao = null,
+                            categoria = null,
+                            formato = "Físico",
+                            disponivel = false,
+                            pdfUrl = null
+                        )
+                        val telaDetalhes = TelaRF12TelaDoLivroADM().apply {
+                            arguments = Bundle().apply { putSerializable("livro", livro) }
                         }
                         parentFragmentManager.beginTransaction()
-                            .replace(R.id.frameLayout, fragment)
+                            .replace(R.id.frameLayout, telaDetalhes)
                             .addToBackStack(null)
                             .commit()
                     },
-                    onVerUsuarioClick = { aluguel ->
-                        // Como o Admin já está na área do usuário, exibe um feedback visual simples
-                        Toast.makeText(requireContext(), "Você já está visualizando as posses de $nomeUsuario", Toast.LENGTH_SHORT).show()
+                    onVerUsuarioClick = {
+                        Toast.makeText(requireContext(), "Você já está no perfil deste usuário", Toast.LENGTH_SHORT).show()
                     }
                 )
-
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Erro ao carregar livros: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Erro ao carregar aluguéis", Toast.LENGTH_SHORT).show()
             }
         }
     }

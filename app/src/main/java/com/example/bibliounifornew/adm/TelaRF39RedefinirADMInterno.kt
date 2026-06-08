@@ -15,7 +15,7 @@ import com.example.bibliounifornew.R
 import com.example.bibliounifornew.data.SupabaseConfig
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
-import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -129,7 +129,7 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
                         withContext(Dispatchers.IO) {
-                            SupabaseConfig.client.postgrest["users"].update(
+                            SupabaseConfig.client.from("users").update(
                                 update = { set("senha", novaSenha) }
                             ) {
                                 filter { eq("email", emailAdm!!) }
@@ -164,7 +164,7 @@ class TelaRF39RedefinirADMInterno : Fragment(R.layout.telarf39_redefinir_adm_int
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val user = withContext(Dispatchers.IO) {
-                    SupabaseConfig.client.postgrest["users"]
+                    SupabaseConfig.client.from("users")
                         .select { filter { eq("email", emailAdm!!) } }
                         .decodeSingleOrNull<User>()
                 }
